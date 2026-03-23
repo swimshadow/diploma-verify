@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/bloc/auth_bloc.dart';
 import '../../features/auth/bloc/auth_event.dart';
 import '../../features/auth/bloc/auth_state.dart';
+import '../../features/notifications/bloc/notification_bloc.dart';
+import '../../features/notifications/bloc/notification_event_state.dart';
 
 class DashboardScaffold extends StatelessWidget {
   final String title;
@@ -28,10 +30,28 @@ class DashboardScaffold extends StatelessWidget {
       appBar: AppBar(
         title: Text(title),
         actions: [
+          // Search
           IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            tooltip: 'Уведомления',
-            onPressed: () => context.push('/notifications'),
+            icon: const Icon(Icons.search),
+            tooltip: 'Поиск',
+            onPressed: () => context.push('/search'),
+          ),
+          // Notification bell with badge
+          BlocBuilder<NotificationBloc, NotificationState>(
+            builder: (context, nState) {
+              final unread = nState is NotificationLoaded
+                  ? nState.unreadCount
+                  : 0;
+              return IconButton(
+                icon: Badge(
+                  isLabelVisible: unread > 0,
+                  label: Text('$unread'),
+                  child: const Icon(Icons.notifications_outlined),
+                ),
+                tooltip: 'Уведомления',
+                onPressed: () => context.push('/notifications'),
+              );
+            },
           ),
           IconButton(
             icon: const Icon(Icons.person_outlined),

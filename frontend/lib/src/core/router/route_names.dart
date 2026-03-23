@@ -31,4 +31,28 @@ class RouteNames {
   static const String employerChatConversation = 'employer-chat-conversation';
   static const String employerApi = 'employer-api';
   static const String employerProfile = 'employer-profile';
+
+  // University
+  static const String universityDiplomaUpload = 'university-diploma-upload';
+  static const String universityImport = 'university-import';
+  static const String universityRegistry = 'university-registry';
+  static const String universityDiplomaCard = 'university-diploma-card';
+  static const String universityCertificates = 'university-certificates';
+  static const String universityProfile = 'university-profile';
+
+  // Admin
+  static const String adminUsers = 'admin-users';
+  static const String adminModeration = 'admin-moderation';
+  static const String adminDiplomas = 'admin-diplomas';
+  static const String adminDiplomaReview = 'admin-diploma-review';
+  static const String adminMonitoring = 'admin-monitoring';
+  static const String adminStatistics = 'admin-statistics';
+  static const String adminLogs = 'admin-logs';
+  static const String adminCreateAdmin = 'admin-create-admin';
+
+  // Cross-cutting
+  static const String search = 'search';
+  static const String oneTimeLink = 'one-time-link';
+  static const String comparison = 'comparison';
+  static const String demoLogin = 'demo-login';
 }

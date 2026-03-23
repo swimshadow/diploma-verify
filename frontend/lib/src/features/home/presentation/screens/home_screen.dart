@@ -71,6 +71,12 @@ class HomeScreen extends StatelessWidget {
                     onPressed: () => context.push('/role-select'),
                     child: const Text('Зарегистрироваться'),
                   ),
+                  const SizedBox(height: 12),
+                  TextButton.icon(
+                    onPressed: () => context.push('/demo-login'),
+                    icon: const Icon(Icons.play_circle_outline),
+                    label: const Text('Demo Mode'),
+                  ),
                   const SizedBox(height: 40),
                 ],
               ),

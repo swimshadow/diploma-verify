@@ -31,6 +31,25 @@ import '../../features/employer/presentation/screens/employer_chat_list_screen.d
 import '../../features/employer/presentation/screens/employer_chat_conversation_screen.dart';
 import '../../features/employer/presentation/screens/api_integration_screen.dart';
 import '../../features/employer/presentation/screens/employer_profile_screen.dart';
+import '../../features/university/presentation/screens/university_diploma_upload_screen.dart';
+import '../../features/university/presentation/screens/university_bulk_import_screen.dart';
+import '../../features/university/presentation/screens/university_registry_screen.dart';
+import '../../features/university/presentation/screens/university_diploma_card_screen.dart';
+import '../../features/university/presentation/screens/university_certificates_screen.dart';
+import '../../features/university/presentation/screens/university_profile_screen.dart';
+import '../../features/admin/presentation/screens/admin_dashboard_screen.dart';
+import '../../features/admin/presentation/screens/admin_users_screen.dart';
+import '../../features/admin/presentation/screens/admin_moderation_screen.dart';
+import '../../features/admin/presentation/screens/admin_diplomas_screen.dart';
+import '../../features/admin/presentation/screens/admin_diploma_review_screen.dart';
+import '../../features/admin/presentation/screens/admin_monitoring_screen.dart';
+import '../../features/admin/presentation/screens/admin_statistics_screen.dart';
+import '../../features/admin/presentation/screens/admin_logs_screen.dart';
+import '../../features/admin/presentation/screens/admin_create_admin_screen.dart';
+import '../../features/search/presentation/screens/global_search_screen.dart';
+import '../../features/certificate/presentation/screens/one_time_link_screen.dart';
+import '../../features/comparison/presentation/screens/diploma_comparison_screen.dart';
+import '../../features/demo/presentation/screens/demo_mode_screen.dart';
 import 'route_names.dart';
 
 GoRouter createRouter(AuthBloc authBloc) {
@@ -45,6 +64,7 @@ GoRouter createRouter(AuthBloc authBloc) {
           state.matchedLocation == '/forgot-password';
       final isOnPublic = state.matchedLocation == '/' ||
           state.matchedLocation == '/splash' ||
+          state.matchedLocation == '/demo-login' ||
           isOnAuth;
 
       if (authState is AuthLoading || authState is AuthInitial) {
@@ -107,6 +127,8 @@ GoRouter createRouter(AuthBloc authBloc) {
                 return const StudentDashboardScreen();
               case 'employer':
                 return const EmployerDashboardScreen();
+              case 'admin':
+                return const AdminDashboardScreen();
             }
           }
           return const HomeScreen();
@@ -209,6 +231,102 @@ GoRouter createRouter(AuthBloc authBloc) {
         path: '/employer/profile',
         name: RouteNames.employerProfile,
         builder: (_, _) => const EmployerProfileScreen(),
+      ),
+      // University routes
+      GoRoute(
+        path: '/university/diploma-upload',
+        name: RouteNames.universityDiplomaUpload,
+        builder: (_, _) => const UniversityDiplomaUploadScreen(),
+      ),
+      GoRoute(
+        path: '/university/import',
+        name: RouteNames.universityImport,
+        builder: (_, _) => const UniversityBulkImportScreen(),
+      ),
+      GoRoute(
+        path: '/university/registry',
+        name: RouteNames.universityRegistry,
+        builder: (_, _) => const UniversityRegistryScreen(),
+      ),
+      GoRoute(
+        path: '/university/diploma/:id',
+        name: RouteNames.universityDiplomaCard,
+        builder: (_, state) =>
+            UniversityDiplomaCardScreen(diplomaId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/university/certificates',
+        name: RouteNames.universityCertificates,
+        builder: (_, _) => const UniversityCertificatesScreen(),
+      ),
+      GoRoute(
+        path: '/university/profile',
+        name: RouteNames.universityProfile,
+        builder: (_, _) => const UniversityProfileScreen(),
+      ),
+      // Admin routes
+      GoRoute(
+        path: '/admin/users',
+        name: RouteNames.adminUsers,
+        builder: (_, _) => const AdminUsersScreen(),
+      ),
+      GoRoute(
+        path: '/admin/moderation',
+        name: RouteNames.adminModeration,
+        builder: (_, _) => const AdminModerationScreen(),
+      ),
+      GoRoute(
+        path: '/admin/diplomas',
+        name: RouteNames.adminDiplomas,
+        builder: (_, _) => const AdminDiplomasScreen(),
+      ),
+      GoRoute(
+        path: '/admin/diploma/:id',
+        name: RouteNames.adminDiplomaReview,
+        builder: (_, state) =>
+            AdminDiplomaReviewScreen(diplomaId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/admin/monitoring',
+        name: RouteNames.adminMonitoring,
+        builder: (_, _) => const AdminMonitoringScreen(),
+      ),
+      GoRoute(
+        path: '/admin/statistics',
+        name: RouteNames.adminStatistics,
+        builder: (_, _) => const AdminStatisticsScreen(),
+      ),
+      GoRoute(
+        path: '/admin/logs',
+        name: RouteNames.adminLogs,
+        builder: (_, _) => const AdminLogsScreen(),
+      ),
+      GoRoute(
+        path: '/admin/create-admin',
+        name: RouteNames.adminCreateAdmin,
+        builder: (_, _) => const AdminCreateAdminScreen(),
+      ),
+      // Cross-cutting routes
+      GoRoute(
+        path: '/search',
+        name: RouteNames.search,
+        builder: (_, _) => const GlobalSearchScreen(),
+      ),
+      GoRoute(
+        path: '/diploma/:id/share-link',
+        name: RouteNames.oneTimeLink,
+        builder: (_, state) =>
+            OneTimeLinkScreen(diplomaId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/comparison',
+        name: RouteNames.comparison,
+        builder: (_, _) => const DiplomaComparisonScreen(),
+      ),
+      GoRoute(
+        path: '/demo-login',
+        name: RouteNames.demoLogin,
+        builder: (_, _) => const DemoModeScreen(),
       ),
     ],
   );

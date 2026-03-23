@@ -16,6 +16,13 @@ import 'src/features/employer/bloc/employer_event.dart';
 import 'src/features/employer/bloc/verify_bloc.dart';
 import 'src/features/employer/bloc/employer_chat_bloc.dart';
 import 'src/features/employer/bloc/employer_chat_event.dart';
+import 'src/features/university/bloc/university_bloc.dart';
+import 'src/features/university/bloc/university_event.dart';
+import 'src/features/university/bloc/import_bloc.dart';
+import 'src/features/admin/bloc/admin_bloc.dart';
+import 'src/features/admin/bloc/admin_event.dart';
+import 'src/features/notifications/bloc/notification_bloc.dart';
+import 'src/features/notifications/bloc/notification_event_state.dart';
 
 class App extends StatefulWidget {
   const App({super.key});
@@ -31,6 +38,10 @@ class _AppState extends State<App> {
   late final EmployerBloc _employerBloc;
   late final VerifyBloc _verifyBloc;
   late final EmployerChatBloc _employerChatBloc;
+  late final UniversityBloc _universityBloc;
+  late final ImportBloc _importBloc;
+  late final AdminBloc _adminBloc;
+  late final NotificationBloc _notificationBloc;
   late final GoRouter _router;
 
   @override
@@ -42,6 +53,10 @@ class _AppState extends State<App> {
     _employerBloc = EmployerBloc()..add(EmployerLoadRequested());
     _verifyBloc = VerifyBloc();
     _employerChatBloc = EmployerChatBloc()..add(EmployerChatLoadConversations());
+    _universityBloc = UniversityBloc()..add(UniversityLoadRequested());
+    _importBloc = ImportBloc();
+    _adminBloc = AdminBloc()..add(AdminLoadRequested());
+    _notificationBloc = NotificationBloc()..add(NotificationLoadRequested());
     _router = createRouter(_authBloc);
   }
 
@@ -53,6 +68,10 @@ class _AppState extends State<App> {
     _employerBloc.close();
     _verifyBloc.close();
     _employerChatBloc.close();
+    _universityBloc.close();
+    _importBloc.close();
+    _adminBloc.close();
+    _notificationBloc.close();
     super.dispose();
   }
 
@@ -66,6 +85,10 @@ class _AppState extends State<App> {
         BlocProvider.value(value: _employerBloc),
         BlocProvider.value(value: _verifyBloc),
         BlocProvider.value(value: _employerChatBloc),
+        BlocProvider.value(value: _universityBloc),
+        BlocProvider.value(value: _importBloc),
+        BlocProvider.value(value: _adminBloc),
+        BlocProvider.value(value: _notificationBloc),
       ],
       child: MaterialApp.router(
         title: 'DiplomaVerify',
