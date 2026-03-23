@@ -1,10 +1,14 @@
+import base64
+import hashlib
 import os
 import uuid
-from datetime import date
+from datetime import date, datetime, timezone
 
 import httpx
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+import rsa
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Response, UploadFile, status
 from loguru import logger
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from database import compute_data_hash, get_db
@@ -22,6 +26,82 @@ from schemas import (
     SearchDiplomaResponse,
     UploadDiplomaResponse,
 )
+
+KEY_DIR = "/keys"
+PRIVATE_KEY_PATH = os.path.join(KEY_DIR, "private.pem")
+PUBLIC_KEY_PATH = os.path.join(KEY_DIR, "public.pem")
+
+BLOCKCHAIN_SERVICE_URL = os.getenv(
+    "BLOCKCHAIN_SERVICE_URL", "http://blockchain-service:8009"
+)
+
+PRIVATE_KEY = None
+PUBLIC_KEY = None
+PUBLIC_KEY_PEM = None
+
+
+def _ensure_keys() -> None:
+    global PRIVATE_KEY, PUBLIC_KEY, PUBLIC_KEY_PEM
+    os.makedirs(KEY_DIR, exist_ok=True)
+    if os.path.exists(PRIVATE_KEY_PATH) and os.path.exists(PUBLIC_KEY_PATH):
+        with open(PRIVATE_KEY_PATH, "rb") as f:
+            PRIVATE_KEY = rsa.PrivateKey.load_pkcs1(f.read())
+        with open(PUBLIC_KEY_PATH, "rb") as f:
+            PUBLIC_KEY_PEM = f.read()
+            PUBLIC_KEY = rsa.PublicKey.load_pkcs1(PUBLIC_KEY_PEM)
+    else:
+        PUBLIC_KEY, PRIVATE_KEY = rsa.newkeys(2048)
+        with open(PRIVATE_KEY_PATH, "wb") as f:
+            f.write(PRIVATE_KEY.save_pkcs1("PEM"))
+        with open(PUBLIC_KEY_PATH, "wb") as f:
+            PUBLIC_KEY_PEM = PUBLIC_KEY.save_pkcs1("PEM")
+            f.write(PUBLIC_KEY_PEM)
+
+
+def sign_diploma(diploma_data: dict, private_key) -> str:
+    message = (
+        f"{diploma_data['diploma_number']}|{diploma_data['full_name']}|{diploma_data['issue_date']}|{diploma_data['university_name']}"
+    )
+    signature = rsa.sign(message.encode(), private_key, "SHA-256")
+    return base64.b64encode(signature).decode()
+
+
+def verify_signature(diploma_data: dict, signature: str, public_key) -> bool:
+    message = (
+        f"{diploma_data['diploma_number']}|{diploma_data['full_name']}|{diploma_data['issue_date']}|{diploma_data['university_name']}"
+    )
+    try:
+        rsa.verify(message.encode(), base64.b64decode(signature), public_key)
+        return True
+    except Exception:
+        return False
+
+
+def generate_timestamp_proof(diploma_id: str, verified_at: datetime) -> str:
+    salt = _secret_salt()
+    data = f"{diploma_id}|{verified_at.isoformat()}|{salt}"
+    return hashlib.sha256(data.encode()).hexdigest()
+
+
+def _sign_and_timestamp_diploma(diploma: Diploma) -> None:
+    if PRIVATE_KEY is None:
+        _ensure_keys()
+    diploma_data = {
+        "diploma_number": diploma.diploma_number,
+        "full_name": diploma.full_name,
+        "issue_date": diploma.issue_date.isoformat(),
+        "university_name": diploma.university_name,
+    }
+    diploma.digital_signature = sign_diploma(diploma_data, PRIVATE_KEY)
+    verified_at = datetime.now(timezone.utc)
+    diploma.signed_at = verified_at
+    diploma.timestamp_hash = generate_timestamp_proof(str(diploma.id), verified_at)
+
+
+def get_public_key() -> Response:
+    if PUBLIC_KEY_PEM is None:
+        _ensure_keys()
+    return Response(content=PUBLIC_KEY_PEM, media_type="text/plain")
 
 router = APIRouter(prefix="/diplomas", tags=["university"])
 internal_router = APIRouter(prefix="/diplomas", tags=["internal"])
@@ -102,6 +182,21 @@ async def _post_certificate_generate(diploma: Diploma) -> None:
         logger.warning(f"Certificate generate unreachable: {e}")
 
 
+async def _write_blockchain_record(diploma: Diploma) -> None:
+    url = f"{BLOCKCHAIN_SERVICE_URL.rstrip('/')}/blockchain/add"
+    payload = {
+        "diploma_id": str(diploma.id),
+        "data_hash": diploma.data_hash,
+    }
+    try:
+        async with httpx.AsyncClient(timeout=HTTP_TIMEOUT) as client:
+            r = await client.post(url, json=payload)
+        if r.status_code not in (200, 201):
+            logger.warning(f"Blockchain add failed: {r.status_code} {r.text}")
+    except httpx.RequestError as e:
+        logger.warning(f"Blockchain service unreachable: {e}")
+
+
 async def _post_certificate_deactivate(diploma_id: uuid.UUID) -> None:
     url = f"{CERTIFICATE_SERVICE_URL.rstrip('/')}/certificates/{diploma_id}/deactivate"
     try:
@@ -123,6 +218,8 @@ def _diploma_to_internal(d: Diploma) -> InternalDiplomaResponse:
         issue_date=d.issue_date,
         university_name=d.university_name,
         data_hash=d.data_hash,
+        digital_signature=d.digital_signature,
+        timestamp_hash=d.timestamp_hash,
         status=d.status,
         student_account_id=str(d.student_account_id) if d.student_account_id else None,
         series=d.series,
@@ -307,8 +404,10 @@ async def verify_manual(
     if d.status == "verified":
         return UploadDiplomaResponse(diploma_id=str(d.id), status="verified")
     d.status = "verified"
+    _sign_and_timestamp_diploma(d)
     db.commit()
     await _post_certificate_generate(d)
+    await _write_blockchain_record(d)
     return UploadDiplomaResponse(diploma_id=str(d.id), status="verified")
 
 
@@ -406,9 +505,11 @@ async def internal_ai_data(
     if payload.confidence > 0.85:
         if d.status == "pending":
             d.status = "verified"
+            _sign_and_timestamp_diploma(d)
             db.commit()
             db.refresh(d)
             await _post_certificate_generate(d)
+            await _write_blockchain_record(d)
             await _notify(
                 d.university_account_id,
                 "diploma_verified",

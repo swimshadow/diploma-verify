@@ -37,6 +37,10 @@
         uri strip_prefix /api
         reverse_proxy ai-integration-service:8007
     }
+    handle /api/blockchain/* {
+        uri replace /api/blockchain /blockchain
+        reverse_proxy blockchain-service:8009
+    }
     handle /api/internal/* {
         uri strip_prefix /api
         reverse_proxy notification-service:8008

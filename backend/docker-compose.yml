@@ -74,6 +74,7 @@ services:
       NOTIFICATION_SERVICE_URL: http://notification-service:8008
       HTTP_CLIENT_TIMEOUT: ${HTTP_CLIENT_TIMEOUT:-10}
       UPLOAD_HTTP_TIMEOUT: ${UPLOAD_HTTP_TIMEOUT:-120}
+      BLOCKCHAIN_SERVICE_URL: http://blockchain-service:8009
     depends_on:
       db-init:
         condition: service_completed_successfully
@@ -114,12 +115,24 @@ services:
       UNIVERSITY_SERVICE_URL: http://university-service:8002
       CERTIFICATE_SERVICE_URL: http://certificate-service:8006
       HTTP_CLIENT_TIMEOUT: ${HTTP_CLIENT_TIMEOUT:-10}
+      BLOCKCHAIN_SERVICE_URL: http://blockchain-service:8009
     depends_on:
       db-init:
         condition: service_completed_successfully
       redis:
         condition: service_started
       university-service:
+        condition: service_started
+    restart: on-failure
+
+  blockchain-service:
+    build: ./blockchain-service
+    ports:
+      - "8009:8009"
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://hack:hack@postgres:5432/diplomadb}
+    depends_on:
+      postgres:
         condition: service_started
     restart: on-failure
 

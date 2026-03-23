@@ -16,6 +16,12 @@ class VerifyPublicResponse(BaseModel):
     specialization: Optional[str] = None
     issue_date: Optional[date] = None
     university_name: Optional[str] = None
+    signature_verified: bool = False
+    blockchain_verified: bool = False
+    blockchain_block: Optional[int] = None
+    chain_intact: bool = False
+    timestamp_proof: Optional[str] = None
+    reason: Optional[str] = None
 
 
 class ManualVerifyRequest(BaseModel):

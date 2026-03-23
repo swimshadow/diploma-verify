@@ -59,6 +59,8 @@ class InternalDiplomaResponse(BaseModel):
     issue_date: date
     university_name: str
     data_hash: str
+    digital_signature: Optional[str] = None
+    timestamp_hash: Optional[str] = None
     status: str
     student_account_id: Optional[str] = None
     series: Optional[str] = None
