@@ -170,6 +170,9 @@ services:
 
   blockchain-service:
     build: ./blockchain-service
+    labels:
+      - "docs.route=/api"
+      - "docs.port=8009"
     ports:
       - "8009:8009"
     environment:
@@ -301,6 +304,9 @@ services:
 
   mail-service:
     build: ./mail-service
+    labels:
+      - "docs.route=/api"
+      - "docs.port=8000"
     ports: ["8011:8000"]
     environment:
       SMTP_HOST: ${SMTP_HOST}
@@ -343,6 +349,9 @@ services:
 
   admin-service:
     build: ./admin-service
+    labels:
+      - "docs.route=/api"
+      - "docs.port=8010"
     ports: ["8010:8010"]
     environment:
       AUTH_DATABASE_URL: postgresql://hack:hack@postgres:5432/authdb
