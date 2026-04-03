@@ -26,7 +26,7 @@ from utils.ecp_utils import (
 
 
 router = APIRouter(
-    prefix="/ecp",
+    prefix="/auth/ecp",
     tags=["ecp"],
 )
 
