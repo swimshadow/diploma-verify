@@ -58,6 +58,10 @@
         uri replace /api/admin /admin
         reverse_proxy admin-service:8010
     }
+    handle /api/mail/* {
+        uri strip_prefix /api/mail
+        reverse_proxy mail-service:8000
+    }
     handle /api/internal/* {
         uri strip_prefix /api
         reverse_proxy notification-service:8008

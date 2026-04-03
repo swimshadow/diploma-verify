@@ -1,7 +1,9 @@
 import uuid
 from datetime import datetime
 from typing import Optional
+from os import getenv
 
+import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from loguru import logger
 from sqlalchemy.exc import SQLAlchemyError
@@ -25,9 +27,44 @@ router = APIRouter(
     dependencies=[Depends(internal_only)],
 )
 
+MAIL_SERVICE_URL = getenv("MAIL_SERVICE_URL", "http://mail-service:8000")
+AUTH_SERVICE_URL = getenv("AUTH_SERVICE_URL", "http://auth-service:8001")
+
+
+async def send_email(recipients: list, subject: str, body: str):
+    """Send email via mail-service"""
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            await client.post(
+                f"{MAIL_SERVICE_URL}/send",
+                json={
+                    "recipients": recipients,
+                    "subject": subject,
+                    "body": body
+                }
+            )
+    except Exception as e:
+        logger.warning(f"Mail send failed: {e}")
+        # Не падаем если почта недоступна
+
+
+async def get_user_email(account_id: str) -> Optional[str]:
+    """Get user email from auth-service"""
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(
+                f"{AUTH_SERVICE_URL}/internal/profile/{account_id}"
+            )
+            if response.status_code == 200:
+                data = response.json()
+                return data.get("email")
+    except Exception as e:
+        logger.warning(f"Failed to get user email: {e}")
+    return None
+
 
 @router.post("/send", status_code=status.HTTP_201_CREATED)
-def send_notification(payload: SendRequest, db: Session = Depends(get_db)):
+async def send_notification(payload: SendRequest, db: Session = Depends(get_db)):
     if payload.type not in ALLOWED_TYPES:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -56,8 +93,17 @@ def send_notification(payload: SendRequest, db: Session = Depends(get_db)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to save notification",
         )
+    
+    # Send email for email-type notifications
+    if payload.type == "email":
+        user_email = await get_user_email(payload.account_id)
+        if user_email:
+            await send_email([user_email], payload.subject, payload.body)
+        else:
+            logger.warning(f"Could not send email for account {payload.account_id}: email not found")
+    
     logger.info(
-        "[notification stub] type={} account_id={} subject={}",
+        "Notification sent: type={} account_id={} subject={}",
         payload.type,
         payload.account_id,
         payload.subject,

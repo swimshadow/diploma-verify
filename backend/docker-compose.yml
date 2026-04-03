@@ -282,6 +282,7 @@ services:
     environment:
       DATABASE_URL: postgresql://hack:hack@postgres:5432/notificationdb
       AUTH_SERVICE_URL: http://auth-service:8001
+      MAIL_SERVICE_URL: http://mail-service:8000
       HTTP_CLIENT_TIMEOUT: ${HTTP_CLIENT_TIMEOUT:-10}
       PAYLOAD_ENCRYPTION_KEY: ${PAYLOAD_ENCRYPTION_KEY:-RGlwbG9tYVZlcmlmeUFFUzI1NlNlY3JldEtleTB4T0s=}
     volumes:
@@ -296,6 +297,18 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    restart: unless-stopped
+
+  mail-service:
+    build: ./mail-service
+    ports: ["8011:8000"]
+    environment:
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      SMTP_USE_TLS: ${SMTP_USE_TLS}
+      DEFAULT_SENDER: ${DEFAULT_SENDER}
     restart: unless-stopped
 
   postgres:
