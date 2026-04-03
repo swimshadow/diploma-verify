@@ -11,6 +11,7 @@ from security import get_jwt_secret
 from routers.auth import router as auth_router
 from routers.health import router as health_router
 from routers.internal import router as internal_router
+from routers.ecp import router as ecp_router
 
 SERVICE_NAME = os.getenv("SERVICE_NAME", "auth-service")
 
@@ -57,6 +58,7 @@ async def security_headers(request: Request, call_next):
 app.include_router(health_router)
 app.include_router(auth_router)
 app.include_router(internal_router)
+app.include_router(ecp_router)
 
 
 @app.on_event("startup")

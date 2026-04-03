@@ -112,3 +112,26 @@ class RefreshToken(Base):
     token_hash = Column(String(128), nullable=False, index=True)
     expires_at = Column(DateTime(timezone=True), nullable=False)
     is_revoked = Column(Boolean, nullable=False, default=False)
+
+
+class ECPKey(Base):
+    __tablename__ = "ecp_keys"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    account_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("accounts.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    key_name = Column(String(200), nullable=False)
+    public_key_pem = Column(Text, nullable=False)
+    algorithm = Column(String(20), nullable=False, default="RS256")
+    fingerprint = Column(String(100), nullable=False, unique=True, index=True)
+    is_active = Column(Boolean, nullable=False, default=True)
+    created_at = Column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=text("NOW()"),
+    )
+    last_used_at = Column(DateTime(timezone=True), nullable=True)
+    expires_at = Column(DateTime(timezone=True), nullable=True)
