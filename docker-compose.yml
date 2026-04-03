@@ -1,0 +1,39 @@
+services:
+  api:
+    build: ./services/api
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://user:password@postgres:5432/diplomas}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      SECRET_SALT: ${SECRET_SALT:-change_me_random_string}
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - "8000:8000"
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: diplomas
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./infra/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+  redis:
+    image: redis:7-alpine
+
+  caddy:
+    image: caddy:2-alpine
+    depends_on:
+      - api
+    ports:
+      - "80:80"
+    volumes:
+      - ./infra/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./services/frontend:/var/www/html:ro
+
+volumes:
+  db-data:
+

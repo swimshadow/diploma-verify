@@ -1,0 +1,13 @@
+:80 {
+  @api path /api/*
+  reverse_proxy @api api:8000
+
+  @health path_regexp ^/health/?$
+  reverse_proxy @health api:8000
+
+  root * /var/www/html
+  file_server {
+    index index.html
+  }
+}
+
