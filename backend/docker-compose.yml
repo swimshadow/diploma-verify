@@ -231,6 +231,22 @@ services:
   redis:
     image: redis:7-alpine
 
+  admin-service:
+    build: ./admin-service
+    ports: ["8010:8010"]
+    environment:
+      AUTH_DATABASE_URL: postgresql://hack:hack@postgres:5432/authdb
+      UNIVERSITY_DATABASE_URL: postgresql://hack:hack@postgres:5432/universitydb
+      VERIFY_DATABASE_URL: postgresql://hack:hack@postgres:5432/verifydb
+      AUTH_SERVICE_URL: http://auth-service:8001
+      ADMIN_SETUP_KEY: ${ADMIN_SETUP_KEY}
+    depends_on:
+      postgres:
+        condition: service_started
+      auth-service:
+        condition: service_started
+    restart: on-failure
+
   caddy:
     image: caddy:2-alpine
     ports:
@@ -248,6 +264,7 @@ services:
       - file-service
       - certificate-service
       - ai-integration-service
+      - admin-service
       - notification-service
 
 volumes:
