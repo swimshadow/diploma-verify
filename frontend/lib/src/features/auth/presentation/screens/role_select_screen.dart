@@ -41,15 +41,6 @@ class RoleSelectScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   _RoleCard(
-                    icon: Icons.person,
-                    title: 'Студент',
-                    description:
-                        'Просмотр своих дипломов, получение ссылок для проверки',
-                    onTap: () =>
-                        context.push('/register?role=student'),
-                  ),
-                  const SizedBox(height: 16),
-                  _RoleCard(
                     icon: Icons.business,
                     title: 'Работодатель',
                     description:

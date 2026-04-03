@@ -1,39 +1,6 @@
 # Бэкенды без publish портов: снаружи только Caddy :80 (/internal недоступен с хоста).
 # Агрегатор OpenAPI (micro-swagga-label/docs_service внутри репо): http://localhost/docs
 services:
-  docs_service:
-    build: ./docs_service
-    expose:
-      - "8000"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    environment:
-      COMPOSE_SERVICE: docs_service
-      CACHE_TTL: ${DOCS_AGGREGATOR_CACHE_TTL:-30}
-    depends_on:
-      auth-service:
-        condition: service_started
-      university-service:
-        condition: service_started
-      diploma-service:
-        condition: service_started
-      verify-service:
-        condition: service_started
-      file-service:
-        condition: service_started
-      certificate-service:
-        condition: service_started
-      ai-integration-service:
-        condition: service_started
-      notification-service:
-        condition: service_started
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/')"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    restart: unless-stopped
-
   # Swagger: http://127.0.0.1:18001–18008/docs (только localhost)
   auth-service:
     build: ./auth-service
@@ -174,7 +141,7 @@ services:
       - "docs.route=/api"
       - "docs.port=8009"
     ports:
-      - "8009:8009"
+      - "127.0.0.1:18009:8009"
     environment:
       DATABASE_URL: ${DATABASE_URL:-postgresql://hack:hack@postgres:5432/diplomadb}
       PAYLOAD_ENCRYPTION_KEY: ${PAYLOAD_ENCRYPTION_KEY:-RGlwbG9tYVZlcmlmeUFFUzI1NlNlY3JldEtleTB4T0s=}
@@ -347,6 +314,28 @@ services:
   redis:
     image: redis:7-alpine
 
+  mail-service:
+    build: ./mail-service
+    labels:
+      - "docs.route=/api/mail"
+      - "docs.port=8000"
+    expose:
+      - "8000"
+    environment:
+      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_USE_TLS: ${SMTP_USE_TLS:-true}
+      DEFAULT_SENDER: ${DEFAULT_SENDER:-noreply@example.com}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    restart: unless-stopped
+
   admin-service:
     build: ./admin-service
     labels:
@@ -378,6 +367,45 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    restart: unless-stopped
+
+  docs_service:
+    build: ./docs_service
+    expose:
+      - "8000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      COMPOSE_SERVICE: docs_service
+      CACHE_TTL: ${DOCS_AGGREGATOR_CACHE_TTL:-30}
+    depends_on:
+      auth-service:
+        condition: service_started
+      university-service:
+        condition: service_started
+      diploma-service:
+        condition: service_started
+      verify-service:
+        condition: service_started
+      file-service:
+        condition: service_started
+      certificate-service:
+        condition: service_started
+      ai-integration-service:
+        condition: service_started
+      notification-service:
+        condition: service_started
+      blockchain-service:
+        condition: service_started
+      admin-service:
+        condition: service_started
+      mail-service:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped
 
   demo-seeder:
@@ -414,6 +442,7 @@ services:
       - admin-service
       - notification-service
       - blockchain-service
+      - mail-service
 
 volumes:
   pgdata:

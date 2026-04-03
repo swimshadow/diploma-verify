@@ -1,12 +1,14 @@
 import uuid
+from datetime import date
+from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session, joinedload
 
 from database import get_db
 from internal_deps import internal_only
-from models import Account
+from models import Account, StudentProfile
 from schemas import InternalProfileResponse, VerifyTokenResponse
 from security import decode_access_token, hash_password
 
@@ -144,6 +146,53 @@ async def create_admin(payload: CreateAdminRequest, db: Session = Depends(get_db
     db.refresh(account)
     
     return CreateAdminResponse(
+        account_id=str(account.id),
+        email=account.email,
+    )
+
+
+class RegisterStudentRequest(BaseModel):
+    email: EmailStr
+    password: str
+    full_name: str
+    date_of_birth: Optional[date] = None
+
+
+class RegisterStudentResponse(BaseModel):
+    account_id: str
+    email: str
+
+
+@router.post("/register-student", response_model=RegisterStudentResponse, status_code=status.HTTP_201_CREATED)
+async def register_student(payload: RegisterStudentRequest, db: Session = Depends(get_db)):
+    existing = db.query(Account).filter(Account.email == payload.email).first()
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Email already registered",
+        )
+
+    account = Account(
+        email=payload.email,
+        password_hash=hash_password(payload.password),
+        role="student",
+        is_verified=True,
+        is_blocked=False,
+    )
+    db.add(account)
+    db.flush()
+
+    dob = payload.date_of_birth if payload.date_of_birth else date(2000, 1, 1)
+    sp = StudentProfile(
+        account_id=account.id,
+        full_name=payload.full_name,
+        date_of_birth=dob,
+    )
+    db.add(sp)
+    db.commit()
+    db.refresh(account)
+
+    return RegisterStudentResponse(
         account_id=str(account.id),
         email=account.email,
     )
