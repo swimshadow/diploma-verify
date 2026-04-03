@@ -1,7 +1,8 @@
 import os
+from typing import Callable
 
 import httpx
-from fastapi import Header, HTTPException, status
+from fastapi import Depends, Header, HTTPException, status
 from loguru import logger
 
 from http_client import HTTP_TIMEOUT
@@ -31,3 +32,15 @@ async def get_current_user(
     if r.status_code != 200:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     return r.json()
+
+
+def require_role(*roles: str) -> Callable:
+    async def _dep(user: dict = Depends(get_current_user)) -> dict:
+        if user.get("role") not in roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Required role: {roles}, your role: {user.get('role')}",
+            )
+        return user
+
+    return _dep

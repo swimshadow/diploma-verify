@@ -6,7 +6,7 @@ import httpx
 from fastapi import APIRouter, Depends, Header, HTTPException, status
 from loguru import logger
 
-from deps import get_current_user
+from deps import require_role
 from http_client import HTTP_TIMEOUT
 from schemas import StudentDiplomaItem, StudentDiplomaListResponse
 
@@ -21,16 +21,10 @@ CERTIFICATE_SERVICE_URL = os.getenv(
 )
 
 
-async def require_student(user: dict = Depends(get_current_user)) -> dict:
-    if user.get("role") != "student":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
-    return user
-
-
 @router.get("", response_model=StudentDiplomaListResponse)
 async def list_my_diplomas(
     authorization: str = Header(..., alias="Authorization"),
-    user: dict = Depends(require_student),
+    user: dict = Depends(require_role("student")),
 ):
     me_url = f"{AUTH_SERVICE_URL.rstrip('/')}/auth/me"
     try:
@@ -132,7 +126,7 @@ async def list_my_diplomas(
 async def get_certificate(
     diploma_id: uuid.UUID,
     authorization: str = Header(..., alias="Authorization"),
-    user: dict = Depends(require_student),
+    user: dict = Depends(require_role("student")),
 ):
     me_url = f"{AUTH_SERVICE_URL.rstrip('/')}/auth/me"
     search_base = f"{UNIVERSITY_SERVICE_URL.rstrip('/')}/internal/diplomas/search"

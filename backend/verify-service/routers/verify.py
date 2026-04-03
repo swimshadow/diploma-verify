@@ -65,6 +65,41 @@ def _rate_limit_headers(response: Response, count: int, ttl: int) -> None:
     response.headers["X-RateLimit-Reset"] = str(int(time.time()) + ttl)
 
 
+router = APIRouter(prefix="/verify", tags=["verify"])
+
+def _secret_salt() -> str:
+    s = os.getenv("SECRET_SALT", "").strip()
+    if not s:
+        raise RuntimeError("SECRET_SALT must be set in the environment")
+    return s
+
+
+CERTIFICATE_SERVICE_URL = os.getenv(
+    "CERTIFICATE_SERVICE_URL", "http://certificate-service:8006"
+)
+NOTIFICATION_SERVICE_URL = os.getenv(
+    "NOTIFICATION_SERVICE_URL", "http://notification-service:8008"
+)
+
+
+def _log(
+    db: Session,
+    diploma_id: Optional[uuid.UUID],
+    method: str,
+    result: bool,
+    checker: Optional[uuid.UUID] = None,
+):
+    db.add(
+        VerificationLog(
+            diploma_id=diploma_id,
+            checker_account_id=checker,
+            check_method=method,
+            result=result,
+        )
+    )
+    db.commit()
+
+
 def _build_success_payload(d: dict[str, Any]) -> dict[str, Any]:
     id_raw = d.get("issue_date")
     if isinstance(id_raw, str):
@@ -101,67 +136,6 @@ def _invalid_payload() -> dict[str, Any]:
         "chain_intact": False,
         "timestamp_proof": None,
         "reason": None,
-    }
-
-router = APIRouter(prefix="/verify", tags=["verify"])
-
-def _secret_salt() -> str:
-    s = os.getenv("SECRET_SALT", "").strip()
-    if not s:
-        raise RuntimeError("SECRET_SALT must be set in the environment")
-    return s
-
-
-UNIVERSITY_SERVICE_URL = os.getenv(
-    "UNIVERSITY_SERVICE_URL", "http://university-service:8002"
-)
-CERTIFICATE_SERVICE_URL = os.getenv(
-    "CERTIFICATE_SERVICE_URL", "http://certificate-service:8006"
-)
-
-
-def _log(
-    db: Session,
-    diploma_id: Optional[uuid.UUID],
-    method: str,
-    result: bool,
-    checker: Optional[uuid.UUID] = None,
-):
-    db.add(
-        VerificationLog(
-            diploma_id=diploma_id,
-            checker_account_id=checker,
-            check_method=method,
-            result=result,
-        )
-    )
-    db.commit()
-
-
-def _build_success_payload(d: dict[str, Any]) -> dict[str, Any]:
-    id_raw = d.get("issue_date")
-    if isinstance(id_raw, str):
-        issue_date = date.fromisoformat(id_raw[:10])
-    else:
-        issue_date = id_raw
-    return {
-        "valid": True,
-        "full_name": d.get("full_name"),
-        "degree": d.get("degree"),
-        "specialization": d.get("specialization"),
-        "issue_date": issue_date.isoformat() if hasattr(issue_date, "isoformat") else str(issue_date),
-        "university_name": d.get("university_name"),
-    }
-
-
-def _invalid_payload() -> dict[str, Any]:
-    return {
-        "valid": False,
-        "full_name": None,
-        "degree": None,
-        "specialization": None,
-        "issue_date": None,
-        "university_name": None,
     }
 
 
@@ -229,7 +203,6 @@ async def _verify_qr_core(qr_token: str, db: Session) -> dict[str, Any]:
         return out
 
     expected_hash = compute_data_hash(
-        str(d.get("series") or ""),
         str(d["diploma_number"]),
         str(d["full_name"]),
         d["issue_date"],
@@ -322,7 +295,6 @@ async def verify_manual(
     _rate_limit_headers(response, count, ttl)
 
     h = compute_data_hash(
-        payload.series or "",
         payload.diploma_number,
         payload.full_name,
         payload.issue_date,

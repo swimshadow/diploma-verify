@@ -6,4 +6,5 @@ redis
 httpx
 python-dotenv
 loguru
+cryptography
 rsa

@@ -1,11 +1,15 @@
 import uuid
+from datetime import datetime
+from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from loguru import logger
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
+from audit_models import AuditLog
 from database import get_db
+from internal_deps import internal_only
 from models import Notification
 from schemas import (
     ALLOWED_TYPES,
@@ -13,8 +17,13 @@ from schemas import (
     NotificationListResponse,
     SendRequest,
 )
+from audit_schemas import AuditIn, AuditItem, AuditListResponse
 
-router = APIRouter(prefix="/internal", tags=["internal"])
+router = APIRouter(
+    prefix="/internal",
+    tags=["internal"],
+    dependencies=[Depends(internal_only)],
+)
 
 
 @router.post("/send", status_code=status.HTTP_201_CREATED)
@@ -84,3 +93,74 @@ def list_notifications(account_id: uuid.UUID, db: Session = Depends(get_db)):
         for r in rows
     ]
     return NotificationListResponse(notifications=items)
+
+
+@router.post("/audit", status_code=status.HTTP_201_CREATED)
+def create_audit(payload: AuditIn, db: Session = Depends(get_db)):
+    row = AuditLog(
+        actor_id=payload.actor_id,
+        actor_role=payload.actor_role,
+        actor_ip=payload.actor_ip,
+        action=payload.action,
+        resource_type=payload.resource_type,
+        resource_id=payload.resource_id,
+        old_value=payload.old_value,
+        new_value=payload.new_value,
+        success=payload.success,
+        error_message=payload.error_message,
+    )
+    try:
+        db.add(row)
+        db.commit()
+        db.refresh(row)
+    except SQLAlchemyError as e:
+        db.rollback()
+        logger.exception(f"Audit persist failed: {e}")
+        raise HTTPException(status_code=500, detail="Failed to save audit")
+    return {"id": str(row.id)}
+
+
+@router.get("/audit", response_model=AuditListResponse)
+def list_audit(
+    actor_id: Optional[uuid.UUID] = Query(None),
+    action: Optional[str] = Query(None),
+    date_from: Optional[datetime] = Query(None),
+    date_to: Optional[datetime] = Query(None),
+    page: int = Query(1, ge=1),
+    limit: int = Query(50, ge=1, le=200),
+    db: Session = Depends(get_db),
+):
+    q = db.query(AuditLog)
+    if actor_id:
+        q = q.filter(AuditLog.actor_id == actor_id)
+    if action:
+        q = q.filter(AuditLog.action == action)
+    if date_from:
+        q = q.filter(AuditLog.timestamp >= date_from)
+    if date_to:
+        q = q.filter(AuditLog.timestamp <= date_to)
+    total = q.count()
+    rows = (
+        q.order_by(AuditLog.timestamp.desc())
+        .offset((page - 1) * limit)
+        .limit(limit)
+        .all()
+    )
+    items = [
+        AuditItem(
+            id=str(r.id),
+            timestamp=r.timestamp,
+            actor_id=str(r.actor_id) if r.actor_id else None,
+            actor_role=r.actor_role,
+            actor_ip=r.actor_ip,
+            action=r.action,
+            resource_type=r.resource_type,
+            resource_id=str(r.resource_id) if r.resource_id else None,
+            old_value=r.old_value,
+            new_value=r.new_value,
+            success=bool(r.success),
+            error_message=r.error_message,
+        )
+        for r in rows
+    ]
+    return AuditListResponse(items=items, total=total, page=page, limit=limit)

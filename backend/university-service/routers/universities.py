@@ -3,16 +3,19 @@ import hashlib
 import os
 import uuid
 from datetime import date, datetime, timezone
+from typing import Optional
 
 import httpx
 import rsa
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Response, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Response, UploadFile, status
 from loguru import logger
-from sqlalchemy import text
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from database import compute_data_hash, get_db
-from deps import get_current_user
+from deps import get_current_user, require_role
+from field_crypto import display_full_name, encrypt_field, make_search_hash
+from internal_deps import internal_only
 from http_client import HTTP_TIMEOUT, UPLOAD_HTTP_TIMEOUT
 from models import Diploma
 from schemas import (
@@ -20,6 +23,7 @@ from schemas import (
     DiplomaListItem,
     DiplomaListResponse,
     DiplomaMetadata,
+    DiplomaStatusPatch,
     InternalDiplomaResponse,
     LinkStudentBody,
     SearchDiplomaItem,
@@ -60,7 +64,8 @@ def _ensure_keys() -> None:
 
 def sign_diploma(diploma_data: dict, private_key) -> str:
     message = (
-        f"{diploma_data['diploma_number']}|{diploma_data['full_name']}|{diploma_data['issue_date']}|{diploma_data['university_name']}"
+        f"{diploma_data['diploma_number']}|{diploma_data['full_name']}|"
+        f"{diploma_data['issue_date']}|{diploma_data['university_name']}"
     )
     signature = rsa.sign(message.encode(), private_key, "SHA-256")
     return base64.b64encode(signature).decode()
@@ -68,7 +73,8 @@ def sign_diploma(diploma_data: dict, private_key) -> str:
 
 def verify_signature(diploma_data: dict, signature: str, public_key) -> bool:
     message = (
-        f"{diploma_data['diploma_number']}|{diploma_data['full_name']}|{diploma_data['issue_date']}|{diploma_data['university_name']}"
+        f"{diploma_data['diploma_number']}|{diploma_data['full_name']}|"
+        f"{diploma_data['issue_date']}|{diploma_data['university_name']}"
     )
     try:
         rsa.verify(message.encode(), base64.b64decode(signature), public_key)
@@ -86,9 +92,10 @@ def generate_timestamp_proof(diploma_id: str, verified_at: datetime) -> str:
 def _sign_and_timestamp_diploma(diploma: Diploma) -> None:
     if PRIVATE_KEY is None:
         _ensure_keys()
+    plain_name = display_full_name(diploma)
     diploma_data = {
         "diploma_number": diploma.diploma_number,
-        "full_name": diploma.full_name,
+        "full_name": plain_name,
         "issue_date": diploma.issue_date.isoformat(),
         "university_name": diploma.university_name,
     }
@@ -104,7 +111,11 @@ def get_public_key() -> Response:
     return Response(content=PUBLIC_KEY_PEM, media_type="text/plain")
 
 router = APIRouter(prefix="/diplomas", tags=["university"])
-internal_router = APIRouter(prefix="/diplomas", tags=["internal"])
+internal_router = APIRouter(
+    prefix="/diplomas",
+    tags=["internal"],
+    dependencies=[Depends(internal_only)],
+)
 
 def _secret_salt() -> str:
     s = os.getenv("SECRET_SALT", "").strip()
@@ -122,12 +133,6 @@ AI_SERVICE_URL = os.getenv("AI_SERVICE_URL", "http://ai-integration-service:8007
 NOTIFICATION_SERVICE_URL = os.getenv(
     "NOTIFICATION_SERVICE_URL", "http://notification-service:8008"
 )
-
-
-async def require_university(user: dict = Depends(get_current_user)) -> dict:
-    if user.get("role") != "university":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
-    return user
 
 
 async def _notify(account_id: uuid.UUID, ntype: str, subject: str, body: str) -> None:
@@ -166,7 +171,7 @@ async def _post_certificate_generate(diploma: Diploma) -> None:
     payload = {
         "diploma_id": str(diploma.id),
         "diploma_data": {
-            "full_name": diploma.full_name,
+            "full_name": display_full_name(diploma),
             "degree": diploma.degree,
             "specialization": diploma.specialization,
             "issue_date": diploma.issue_date.isoformat(),
@@ -182,7 +187,7 @@ async def _post_certificate_generate(diploma: Diploma) -> None:
         logger.warning(f"Certificate generate unreachable: {e}")
 
 
-async def _write_blockchain_record(diploma: Diploma) -> None:
+async def _write_blockchain_record(diploma: Diploma, db: Session) -> None:
     url = f"{BLOCKCHAIN_SERVICE_URL.rstrip('/')}/blockchain/add"
     payload = {
         "diploma_id": str(diploma.id),
@@ -193,8 +198,60 @@ async def _write_blockchain_record(diploma: Diploma) -> None:
             r = await client.post(url, json=payload)
         if r.status_code not in (200, 201):
             logger.warning(f"Blockchain add failed: {r.status_code} {r.text}")
+            return
+        data = r.json()
+        idx = data.get("block_index")
+        if idx is not None:
+            diploma.blockchain_block_index = int(idx)
+            db.commit()
+            db.refresh(diploma)
+        await _send_audit(
+            actor_id=None,
+            actor_role=None,
+            actor_ip=None,
+            action="BLOCKCHAIN_RECORD_ADDED",
+            resource_type="diploma",
+            resource_id=diploma.id,
+            old_value=None,
+            new_value={"block_index": idx},
+            success=True,
+            error_message=None,
+        )
     except httpx.RequestError as e:
         logger.warning(f"Blockchain service unreachable: {e}")
+
+
+async def _send_audit(
+    *,
+    actor_id: uuid.UUID | None,
+    actor_role: str | None,
+    actor_ip: str | None,
+    action: str,
+    resource_type: str | None,
+    resource_id: uuid.UUID | None,
+    old_value: dict | None,
+    new_value: dict | None,
+    success: bool = True,
+    error_message: str | None = None,
+) -> None:
+    url = f"{NOTIFICATION_SERVICE_URL.rstrip('/')}/internal/audit"
+    body = {
+        "actor_id": str(actor_id) if actor_id else None,
+        "actor_role": actor_role,
+        "actor_ip": actor_ip,
+        "action": action,
+        "resource_type": resource_type,
+        "resource_id": str(resource_id) if resource_id else None,
+        "old_value": old_value,
+        "new_value": new_value,
+        "success": success,
+        "error_message": error_message,
+    }
+    try:
+        async with httpx.AsyncClient(timeout=HTTP_TIMEOUT) as client:
+            await client.post(url, json=body)
+    except httpx.RequestError as e:
+        logger.warning(f"Audit log failed: {e}")
 
 
 async def _post_certificate_deactivate(diploma_id: uuid.UUID) -> None:
@@ -211,7 +268,7 @@ async def _post_certificate_deactivate(diploma_id: uuid.UUID) -> None:
 def _diploma_to_internal(d: Diploma) -> InternalDiplomaResponse:
     return InternalDiplomaResponse(
         id=str(d.id),
-        full_name=d.full_name,
+        full_name=display_full_name(d),
         diploma_number=d.diploma_number,
         degree=d.degree,
         specialization=d.specialization,
@@ -231,7 +288,7 @@ async def upload_diploma(
     file: UploadFile = File(...),
     metadata: str = Form(...),
     db: Session = Depends(get_db),
-    user: dict = Depends(require_university),
+    user: dict = Depends(require_role("university")),
 ):
     try:
         meta = DiplomaMetadata.model_validate_json(metadata)
@@ -249,10 +306,10 @@ async def upload_diploma(
         )
     uni_account = uuid.UUID(user["account_id"])
     uni_name = await _university_display_name(uni_account)
+    plain_name = meta.full_name
     dh = compute_data_hash(
-        meta.series or "",
         meta.diploma_number,
-        meta.full_name,
+        plain_name,
         meta.issue_date,
         _secret_salt(),
     )
@@ -281,20 +338,41 @@ async def upload_diploma(
             detail=f"File service: {ur.text}",
         )
     file_id = uuid.UUID(ur.json()["file_id"])
-    diploma = Diploma(
-        university_account_id=uni_account,
-        file_id=file_id,
-        status="pending",
-        full_name=meta.full_name,
-        diploma_number=meta.diploma_number,
-        series=meta.series or None,
-        degree=meta.degree,
-        specialization=meta.specialization,
-        issue_date=meta.issue_date,
-        date_of_birth=meta.date_of_birth,
-        university_name=uni_name,
-        data_hash=dh,
-    )
+    enc_key = os.getenv("ENCRYPTION_KEY", "").strip()
+    if enc_key:
+        diploma = Diploma(
+            university_account_id=uni_account,
+            file_id=file_id,
+            status="pending",
+            full_name=None,
+            full_name_encrypted=encrypt_field(plain_name),
+            full_name_hash=make_search_hash(plain_name),
+            diploma_number=meta.diploma_number,
+            series=meta.series or None,
+            degree=meta.degree,
+            specialization=meta.specialization,
+            issue_date=meta.issue_date,
+            date_of_birth=meta.date_of_birth,
+            university_name=uni_name,
+            data_hash=dh,
+        )
+    else:
+        diploma = Diploma(
+            university_account_id=uni_account,
+            file_id=file_id,
+            status="pending",
+            full_name=plain_name,
+            full_name_encrypted=None,
+            full_name_hash=None,
+            diploma_number=meta.diploma_number,
+            series=meta.series or None,
+            degree=meta.degree,
+            specialization=meta.specialization,
+            issue_date=meta.issue_date,
+            date_of_birth=meta.date_of_birth,
+            university_name=uni_name,
+            data_hash=dh,
+        )
     db.add(diploma)
     db.commit()
     db.refresh(diploma)
@@ -315,25 +393,36 @@ async def upload_diploma(
         "Диплом загружен",
         f"Диплом {meta.diploma_number} отправлен на обработку",
     )
+    await _send_audit(
+        actor_id=uni_account,
+        actor_role="university",
+        actor_ip=None,
+        action="DIPLOMA_UPLOADED",
+        resource_type="diploma",
+        resource_id=diploma.id,
+        old_value=None,
+        new_value={"status": "pending"},
+        success=True,
+        error_message=None,
+    )
     return UploadDiplomaResponse(diploma_id=str(diploma.id), status="pending")
 
 
 @router.get("", response_model=DiplomaListResponse)
 async def list_diplomas(
     db: Session = Depends(get_db),
-    user: dict = Depends(require_university),
+    user: dict = Depends(require_role("university")),
+    status: Optional[str] = Query(None),
 ):
     uid = uuid.UUID(user["account_id"])
-    rows = (
-        db.query(Diploma)
-        .filter(Diploma.university_account_id == uid)
-        .order_by(Diploma.created_at.desc())
-        .all()
-    )
+    q = db.query(Diploma).filter(Diploma.university_account_id == uid)
+    if status:
+        q = q.filter(Diploma.status == status)
+    rows = q.order_by(Diploma.created_at.desc()).all()
     items = [
         DiplomaListItem(
             id=str(d.id),
-            full_name=d.full_name,
+            full_name=display_full_name(d),
             diploma_number=d.diploma_number,
             series=d.series,
             degree=d.degree,
@@ -352,7 +441,7 @@ async def list_diplomas(
 async def get_diploma(
     diploma_id: uuid.UUID,
     db: Session = Depends(get_db),
-    user: dict = Depends(require_university),
+    user: dict = Depends(require_role("university")),
 ):
     uid = uuid.UUID(user["account_id"])
     d = (
@@ -367,7 +456,7 @@ async def get_diploma(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
     return DiplomaListItem(
         id=str(d.id),
-        full_name=d.full_name,
+        full_name=display_full_name(d),
         diploma_number=d.diploma_number,
         series=d.series,
         degree=d.degree,
@@ -383,7 +472,7 @@ async def get_diploma(
 async def verify_manual(
     diploma_id: uuid.UUID,
     db: Session = Depends(get_db),
-    user: dict = Depends(require_university),
+    user: dict = Depends(require_role("university")),
 ):
     uid = uuid.UUID(user["account_id"])
     d = (
@@ -407,7 +496,19 @@ async def verify_manual(
     _sign_and_timestamp_diploma(d)
     db.commit()
     await _post_certificate_generate(d)
-    await _write_blockchain_record(d)
+    await _write_blockchain_record(d, db)
+    await _send_audit(
+        actor_id=uid,
+        actor_role="university",
+        actor_ip=None,
+        action="DIPLOMA_VERIFIED",
+        resource_type="diploma",
+        resource_id=d.id,
+        old_value={"status": "pending"},
+        new_value={"status": "verified"},
+        success=True,
+        error_message=None,
+    )
     return UploadDiplomaResponse(diploma_id=str(d.id), status="verified")
 
 
@@ -415,7 +516,7 @@ async def verify_manual(
 async def revoke_diploma(
     diploma_id: uuid.UUID,
     db: Session = Depends(get_db),
-    user: dict = Depends(require_university),
+    user: dict = Depends(require_role("university")),
 ):
     uid = uuid.UUID(user["account_id"])
     d = (
@@ -430,6 +531,7 @@ async def revoke_diploma(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
     if d.status == "revoked":
         return UploadDiplomaResponse(diploma_id=str(d.id), status="revoked")
+    prev_status = d.status
     d.status = "revoked"
     db.commit()
     await _post_certificate_deactivate(diploma_id)
@@ -438,6 +540,18 @@ async def revoke_diploma(
         "diploma_revoked",
         "Диплом отозван",
         f"Диплом {d.diploma_number} отозван",
+    )
+    await _send_audit(
+        actor_id=uid,
+        actor_role="university",
+        actor_ip=None,
+        action="DIPLOMA_REVOKED",
+        resource_type="diploma",
+        resource_id=d.id,
+        old_value={"status": prev_status},
+        new_value={"status": "revoked"},
+        success=True,
+        error_message=None,
     )
     return UploadDiplomaResponse(diploma_id=str(d.id), status="revoked")
 
@@ -448,18 +562,19 @@ def internal_search(
     date_of_birth: date,
     db: Session = Depends(get_db),
 ):
-    rows = (
-        db.query(Diploma)
-        .filter(
-            Diploma.full_name == full_name,
-            Diploma.date_of_birth == date_of_birth,
+    q = db.query(Diploma).filter(Diploma.date_of_birth == date_of_birth)
+    if os.getenv("ENCRYPTION_KEY", "").strip():
+        h = make_search_hash(full_name)
+        q = q.filter(
+            or_(Diploma.full_name_hash == h, Diploma.full_name == full_name)
         )
-        .all()
-    )
+    else:
+        q = q.filter(Diploma.full_name == full_name)
+    rows = q.all()
     items = [
         SearchDiplomaItem(
             id=str(r.id),
-            full_name=r.full_name,
+            full_name=display_full_name(r),
             diploma_number=r.diploma_number,
             issue_date=r.issue_date,
             status=r.status,
@@ -475,6 +590,50 @@ def internal_by_hash(data_hash: str, db: Session = Depends(get_db)):
     d = db.query(Diploma).filter(Diploma.data_hash == data_hash).first()
     if d is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+    return _diploma_to_internal(d)
+
+
+@internal_router.patch("/{diploma_id}/status", response_model=InternalDiplomaResponse)
+async def internal_patch_status(
+    diploma_id: uuid.UUID,
+    payload: DiplomaStatusPatch,
+    db: Session = Depends(get_db),
+):
+    d = db.query(Diploma).filter(Diploma.id == diploma_id).first()
+    if d is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+    if payload.status not in ("verified", "revoked"):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="status must be verified or revoked",
+        )
+    if payload.moderator_note is not None:
+        d.moderator_note = payload.moderator_note
+    if payload.status == "verified":
+        if d.status == "revoked":
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Cannot verify a revoked diploma",
+            )
+        if d.status != "verified":
+            d.status = "verified"
+            _sign_and_timestamp_diploma(d)
+            db.commit()
+            db.refresh(d)
+            await _post_certificate_generate(d)
+            await _write_blockchain_record(d, db)
+        else:
+            db.commit()
+            db.refresh(d)
+    else:
+        if d.status == "revoked":
+            db.commit()
+            db.refresh(d)
+            return _diploma_to_internal(d)
+        d.status = "revoked"
+        db.commit()
+        db.refresh(d)
+        await _post_certificate_deactivate(diploma_id)
     return _diploma_to_internal(d)
 
 
@@ -509,7 +668,7 @@ async def internal_ai_data(
             db.commit()
             db.refresh(d)
             await _post_certificate_generate(d)
-            await _write_blockchain_record(d)
+            await _write_blockchain_record(d, db)
             await _notify(
                 d.university_account_id,
                 "diploma_verified",

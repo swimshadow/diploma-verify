@@ -131,9 +131,11 @@ class Diploma(Base):
     digital_signature = Column(Text, nullable=True)
     signed_at = Column(DateTime, nullable=True)
     timestamp_hash = Column(Text, nullable=True)
+    signed_at = Column(DateTime, nullable=True)
     student_account_id = Column(UUID(as_uuid=True), nullable=True)
     ai_extracted_data = Column(JSONB, nullable=True)
     ai_confidence = Column(Float, nullable=True)
+    moderator_note = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

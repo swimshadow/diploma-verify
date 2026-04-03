@@ -30,6 +30,7 @@ class GenerateResponse(BaseModel):
 
 class CertificateOut(BaseModel):
     certificate_id: str
+    certificate_number: str | None = None
     diploma_id: str
     qr_token: str
     qr_code_base64: str

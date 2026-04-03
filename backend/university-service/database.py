@@ -27,16 +27,15 @@ def get_db() -> Generator:
 
 
 def compute_data_hash(
-    series: str,
     diploma_number: str,
     full_name: str,
     issue_date: date | str,
     secret_salt: str,
 ) -> str:
+    """SHA-256(diploma_number|full_name|issue_date|SECRET_SALT)."""
     if hasattr(issue_date, "isoformat"):
         id_str = issue_date.isoformat()
     else:
         id_str = str(issue_date)
-    ser = series or ""
-    raw = f"{ser}{diploma_number}{full_name}{id_str}{secret_salt}"
+    raw = f"{diploma_number}|{full_name}|{id_str}|{secret_salt}"
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()

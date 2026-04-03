@@ -1,0 +1,3 @@
+httpx
+reportlab
+python-dotenv

@@ -77,3 +77,8 @@ class SearchDiplomaItem(BaseModel):
 
 class SearchDiplomaResponse(BaseModel):
     diplomas: List[SearchDiplomaItem]
+
+
+class DiplomaStatusPatch(BaseModel):
+    status: str
+    moderator_note: str | None = None

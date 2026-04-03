@@ -1,15 +1,58 @@
+import os
 import uuid
 from datetime import date, datetime, timedelta
 from typing import Optional
 
+import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query
+from loguru import logger
 from sqlalchemy.orm import Session
 
 from database import get_auth_db, get_university_db, Diploma, Account
 from routers.accounts import get_admin_user
-from schemas import DiplomaDetailResponse, DiplomaItem, DiplomaListResponse, DiplomasStatsResponse
+from schemas import (
+    DiplomaDetailResponse,
+    DiplomaItem,
+    DiplomaListResponse,
+    DiplomasStatsResponse,
+    ForceModerationBody,
+)
 
 router = APIRouter(prefix="/admin", tags=["admin"])
+
+UNIVERSITY_SERVICE_URL = os.getenv(
+    "UNIVERSITY_SERVICE_URL", "http://university-service:8002"
+)
+NOTIFICATION_SERVICE_URL = os.getenv(
+    "NOTIFICATION_SERVICE_URL", "http://notification-service:8008"
+)
+
+
+async def _post_audit(
+    *,
+    actor_id: uuid.UUID,
+    action: str,
+    resource_id: uuid.UUID,
+    new_value: dict,
+) -> None:
+    url = f"{NOTIFICATION_SERVICE_URL.rstrip('/')}/internal/audit"
+    body = {
+        "actor_id": str(actor_id),
+        "actor_role": "admin",
+        "actor_ip": None,
+        "action": action,
+        "resource_type": "diploma",
+        "resource_id": str(resource_id),
+        "old_value": None,
+        "new_value": new_value,
+        "success": True,
+        "error_message": None,
+    }
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            await client.post(url, json=body)
+    except httpx.RequestError as e:
+        logger.warning(f"Audit post failed: {e}")
 
 
 def _get_university_name(university_account_id: uuid.UUID, auth_db: Session) -> str:
@@ -51,12 +94,13 @@ async def list_diplomas(
             id=d.id,
             diploma_number=d.diploma_number,
             series=d.series,
-            full_name=d.full_name,
+            full_name=d.full_name or "",
             degree=d.degree,
             specialization=d.specialization,
             issue_date=d.issue_date,
             status=d.status,
             created_at=d.created_at,
+            verified_at=getattr(d, "signed_at", None),
             university_name=university_name,
             student_account_id=d.student_account_id
         ))
@@ -81,16 +125,73 @@ async def get_diploma(
         id=d.id,
         diploma_number=d.diploma_number,
         series=d.series,
-        full_name=d.full_name,
+        full_name=d.full_name or "",
         degree=d.degree,
         specialization=d.specialization,
         issue_date=d.issue_date,
         status=d.status,
         created_at=d.created_at,
+        verified_at=getattr(d, "signed_at", None),
         university_name=university_name,
         student_account_id=d.student_account_id,
         ai_extracted_data=d.ai_extracted_data
     )
+
+
+@router.post("/diplomas/{diploma_id}/force-verify")
+async def force_verify(
+    diploma_id: uuid.UUID,
+    body: ForceModerationBody,
+    admin: dict = Depends(get_admin_user),
+):
+    url = f"{UNIVERSITY_SERVICE_URL.rstrip('/')}/internal/diplomas/{diploma_id}/status"
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            r = await client.patch(
+                url,
+                json={"status": "verified", "moderator_note": body.reason},
+            )
+    except httpx.RequestError as e:
+        logger.error(f"University PATCH failed: {e}")
+        raise HTTPException(503, "University service unavailable")
+    if r.status_code >= 400:
+        raise HTTPException(r.status_code, r.text)
+    aid = uuid.UUID(admin["account_id"])
+    await _post_audit(
+        actor_id=aid,
+        action="DIPLOMA_FORCE_VERIFIED",
+        resource_id=diploma_id,
+        new_value={"status": "verified", "moderator_note": body.reason},
+    )
+    return {"ok": True, "diploma_id": str(diploma_id)}
+
+
+@router.post("/diplomas/{diploma_id}/force-revoke")
+async def force_revoke(
+    diploma_id: uuid.UUID,
+    body: ForceModerationBody,
+    admin: dict = Depends(get_admin_user),
+):
+    url = f"{UNIVERSITY_SERVICE_URL.rstrip('/')}/internal/diplomas/{diploma_id}/status"
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            r = await client.patch(
+                url,
+                json={"status": "revoked", "moderator_note": body.reason},
+            )
+    except httpx.RequestError as e:
+        logger.error(f"University PATCH failed: {e}")
+        raise HTTPException(503, "University service unavailable")
+    if r.status_code >= 400:
+        raise HTTPException(r.status_code, r.text)
+    aid = uuid.UUID(admin["account_id"])
+    await _post_audit(
+        actor_id=aid,
+        action="DIPLOMA_FORCE_REVOKED",
+        resource_id=diploma_id,
+        new_value={"status": "revoked", "moderator_note": body.reason},
+    )
+    return {"ok": True, "diploma_id": str(diploma_id)}
 
 
 @router.get("/diplomas/stats", response_model=DiplomasStatsResponse)

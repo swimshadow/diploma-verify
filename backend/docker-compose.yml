@@ -32,7 +32,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    restart: on-failure
+    restart: unless-stopped
 
   # Swagger: http://127.0.0.1:18001–18008/docs (только localhost)
   auth-service:
@@ -50,12 +50,21 @@ services:
       ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-15}
       REFRESH_TOKEN_EXPIRE_DAYS: ${REFRESH_TOKEN_EXPIRE_DAYS:-30}
       NOTIFICATION_SERVICE_URL: http://notification-service:8008
+      DEMO_MODE: ${DEMO_MODE:-true}
+    volumes:
+      - ./logs:/logs
     depends_on:
       db-init:
         condition: service_completed_successfully
       redis:
         condition: service_started
-    restart: on-failure
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
 
   university-service:
     build: ./university-service
@@ -75,12 +84,21 @@ services:
       HTTP_CLIENT_TIMEOUT: ${HTTP_CLIENT_TIMEOUT:-10}
       UPLOAD_HTTP_TIMEOUT: ${UPLOAD_HTTP_TIMEOUT:-120}
       BLOCKCHAIN_SERVICE_URL: http://blockchain-service:8009
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-}
+    volumes:
+      - ./logs:/logs
     depends_on:
       db-init:
         condition: service_completed_successfully
       auth-service:
         condition: service_started
-    restart: on-failure
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
 
   diploma-service:
     build: ./diploma-service
@@ -94,12 +112,20 @@ services:
       UNIVERSITY_SERVICE_URL: http://university-service:8002
       CERTIFICATE_SERVICE_URL: http://certificate-service:8006
       HTTP_CLIENT_TIMEOUT: ${HTTP_CLIENT_TIMEOUT:-10}
+    volumes:
+      - ./logs:/logs
     depends_on:
       auth-service:
         condition: service_started
       university-service:
         condition: service_started
-    restart: on-failure
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8003/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
 
   verify-service:
     build: ./verify-service
@@ -116,6 +142,9 @@ services:
       CERTIFICATE_SERVICE_URL: http://certificate-service:8006
       HTTP_CLIENT_TIMEOUT: ${HTTP_CLIENT_TIMEOUT:-10}
       BLOCKCHAIN_SERVICE_URL: http://blockchain-service:8009
+      NOTIFICATION_SERVICE_URL: http://notification-service:8008
+    volumes:
+      - ./logs:/logs
     depends_on:
       db-init:
         condition: service_completed_successfully
@@ -123,7 +152,13 @@ services:
         condition: service_started
       university-service:
         condition: service_started
-    restart: on-failure
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8004/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
 
   blockchain-service:
     build: ./blockchain-service
@@ -131,10 +166,18 @@ services:
       - "8009:8009"
     environment:
       DATABASE_URL: ${DATABASE_URL:-postgresql://hack:hack@postgres:5432/diplomadb}
+    volumes:
+      - ./logs:/logs
     depends_on:
       postgres:
         condition: service_started
-    restart: on-failure
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8009/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
 
   file-service:
     build: ./file-service
@@ -148,10 +191,17 @@ services:
       FILE_INTERNAL_DELETE_TOKEN: ${FILE_INTERNAL_DELETE_TOKEN:-}
     volumes:
       - diploma_uploads:/uploads
+      - ./logs:/logs
     depends_on:
       db-init:
         condition: service_completed_successfully
-    restart: on-failure
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8005/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
 
   certificate-service:
     build: ./certificate-service
@@ -163,10 +213,18 @@ services:
     environment:
       DATABASE_URL: postgresql://hack:hack@postgres:5432/certdb
       VERIFY_PUBLIC_BASE_URL: ${VERIFY_PUBLIC_BASE_URL:-http://localhost:8000}
+    volumes:
+      - ./logs:/logs
     depends_on:
       db-init:
         condition: service_completed_successfully
-    restart: on-failure
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8006/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
 
   ai-integration-service:
     build: ./ai-integration-service
@@ -176,16 +234,27 @@ services:
     ports:
       - "127.0.0.1:18007:8007"
     environment:
+      DATABASE_URL: postgresql://hack:hack@postgres:5432/aidb
       FILE_SERVICE_URL: http://file-service:8005
       UNIVERSITY_SERVICE_URL: http://university-service:8002
       HTTP_CLIENT_TIMEOUT: ${HTTP_CLIENT_TIMEOUT:-10}
       AI_FILE_FETCH_TIMEOUT: ${AI_FILE_FETCH_TIMEOUT:-120}
+    volumes:
+      - ./logs:/logs
     depends_on:
+      db-init:
+        condition: service_completed_successfully
       file-service:
         condition: service_started
       university-service:
         condition: service_started
-    restart: on-failure
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8007/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
 
   notification-service:
     build: ./notification-service
@@ -196,10 +265,18 @@ services:
       - "127.0.0.1:18008:8008"
     environment:
       DATABASE_URL: postgresql://hack:hack@postgres:5432/notificationdb
+    volumes:
+      - ./logs:/logs
     depends_on:
       db-init:
         condition: service_completed_successfully
-    restart: on-failure
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8008/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
 
   postgres:
     image: postgres:16-alpine
@@ -240,12 +317,38 @@ services:
       VERIFY_DATABASE_URL: postgresql://hack:hack@postgres:5432/verifydb
       AUTH_SERVICE_URL: http://auth-service:8001
       ADMIN_SETUP_KEY: ${ADMIN_SETUP_KEY}
+      NOTIFICATION_SERVICE_URL: http://notification-service:8008
+      UNIVERSITY_SERVICE_URL: http://university-service:8002
+    volumes:
+      - ./logs:/logs
     depends_on:
       postgres:
         condition: service_started
       auth-service:
         condition: service_started
-    restart: on-failure
+      notification-service:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8010/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+  demo-seeder:
+    build: ./demo
+    environment:
+      API_BASE_URL: http://caddy:80
+    depends_on:
+      auth-service:
+        condition: service_started
+      university-service:
+        condition: service_started
+      file-service:
+        condition: service_started
+    profiles:
+      - demo
 
   caddy:
     image: caddy:2-alpine
@@ -266,10 +369,12 @@ services:
       - ai-integration-service
       - admin-service
       - notification-service
+      - blockchain-service
 
 volumes:
   pgdata:
   diploma_uploads:
+  service_logs:
 
 networks:
   default:

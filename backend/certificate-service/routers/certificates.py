@@ -1,7 +1,9 @@
 import base64
+import hashlib
 import io
 import os
 import uuid
+from datetime import datetime, timezone
 
 import qrcode
 from fastapi import APIRouter, Depends, HTTPException, Response, status
@@ -18,6 +20,14 @@ router = APIRouter(prefix="/certificates", tags=["certificates"])
 VERIFY_PUBLIC_BASE_URL = os.getenv(
     "VERIFY_PUBLIC_BASE_URL", "http://localhost"
 ).rstrip("/")
+
+
+def generate_certificate_id(diploma_id: str, issued_at: datetime) -> str:
+    hash_part = hashlib.sha256(
+        f"{diploma_id}{issued_at.isoformat()}".encode()
+    ).hexdigest()[:6].upper()
+    year = issued_at.year
+    return f"CERT-{year}-{hash_part}"
 
 
 def _build_qr_base64(qr_token: uuid.UUID) -> str:
@@ -54,11 +64,14 @@ def generate_certificate(payload: GenerateRequest, db: Session = Depends(get_db)
         )
     qr_token = uuid.uuid4()
     b64 = _build_qr_base64(qr_token)
+    now = datetime.now(timezone.utc)
+    cert_num = generate_certificate_id(str(did), now)
     cert = Certificate(
         diploma_id=did,
         qr_token=qr_token,
         qr_code_base64=b64,
         is_active=True,
+        certificate_number=cert_num,
     )
     db.add(cert)
     try:
@@ -81,6 +94,7 @@ def generate_certificate(payload: GenerateRequest, db: Session = Depends(get_db)
 def _to_out(c: Certificate) -> CertificateOut:
     return CertificateOut(
         certificate_id=str(c.id),
+        certificate_number=c.certificate_number,
         diploma_id=str(c.diploma_id),
         qr_token=str(c.qr_token),
         qr_code_base64=c.qr_code_base64,
