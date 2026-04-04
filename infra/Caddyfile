@@ -1,13 +1,30 @@
 :80 {
-  @api path /api/*
-  reverse_proxy @api api:8000
-
-  @health path_regexp ^/health/?$
-  reverse_proxy @health api:8000
-
-  root * /var/www/html
-  file_server {
-    index index.html
-  }
+    handle /api/auth/* {
+        uri strip_prefix /api
+        reverse_proxy auth-service:8001
+    }
+    handle /api/university/* {
+        uri strip_prefix /api
+        reverse_proxy university-service:8002
+    }
+    handle /api/student/* {
+        uri strip_prefix /api
+        reverse_proxy diploma-service:8003
+    }
+    handle /api/employer/* {
+        uri strip_prefix /api
+        reverse_proxy diploma-service:8003
+    }
+    handle /api/verify/* {
+        uri strip_prefix /api
+        reverse_proxy verify-service:8004
+    }
+    # file-service и certificate-service только внутри Docker-сети (без публичного /api)
+    handle /verify/* {
+        reverse_proxy verify-service:8004
+    }
+    handle {
+        root * /srv
+        file_server
+    }
 }
-

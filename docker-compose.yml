@@ -1,39 +1,175 @@
+# Бэкенды без publish портов: снаружи только Caddy :80 (/internal недоступен с хоста).
 services:
-  api:
-    build: ./services/api
-    environment:
-      DATABASE_URL: ${DATABASE_URL:-postgresql://user:password@postgres:5432/diplomas}
-      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
-      SECRET_SALT: ${SECRET_SALT:-change_me_random_string}
-    depends_on:
-      - postgres
-      - redis
+  # Swagger: http://127.0.0.1:18001–18008/docs (только localhost)
+  auth-service:
+    build: ./backend/auth-service
     ports:
-      - "8000:8000"
+      - "127.0.0.1:18001:8001"
+    environment:
+      DATABASE_URL: postgresql://hack:hack@postgres:5432/authdb
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-15}
+      REFRESH_TOKEN_EXPIRE_DAYS: ${REFRESH_TOKEN_EXPIRE_DAYS:-30}
+      NOTIFICATION_SERVICE_URL: http://notification-service:8008
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: on-failure
+
+  university-service:
+    build: ./backend/university-service
+    ports:
+      - "127.0.0.1:18002:8002"
+    environment:
+      DATABASE_URL: postgresql://hack:hack@postgres:5432/universitydb
+      SECRET_SALT: ${SECRET_SALT}
+      AUTH_SERVICE_URL: http://auth-service:8001
+      FILE_SERVICE_URL: http://file-service:8005
+      CERTIFICATE_SERVICE_URL: http://certificate-service:8006
+      AI_SERVICE_URL: http://ai-integration-service:8007
+      NOTIFICATION_SERVICE_URL: http://notification-service:8008
+      HTTP_CLIENT_TIMEOUT: ${HTTP_CLIENT_TIMEOUT:-10}
+      UPLOAD_HTTP_TIMEOUT: ${UPLOAD_HTTP_TIMEOUT:-120}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+    restart: on-failure
+
+  diploma-service:
+    build: ./backend/diploma-service
+    ports:
+      - "127.0.0.1:18003:8003"
+    environment:
+      AUTH_SERVICE_URL: http://auth-service:8001
+      UNIVERSITY_SERVICE_URL: http://university-service:8002
+      CERTIFICATE_SERVICE_URL: http://certificate-service:8006
+      HTTP_CLIENT_TIMEOUT: ${HTTP_CLIENT_TIMEOUT:-10}
+    depends_on:
+      auth-service:
+        condition: service_started
+      university-service:
+        condition: service_started
+    restart: on-failure
+
+  verify-service:
+    build: ./backend/verify-service
+    ports:
+      - "127.0.0.1:18004:8004"
+    environment:
+      DATABASE_URL: postgresql://hack:hack@postgres:5432/verifydb
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      SECRET_SALT: ${SECRET_SALT}
+      UNIVERSITY_SERVICE_URL: http://university-service:8002
+      CERTIFICATE_SERVICE_URL: http://certificate-service:8006
+      HTTP_CLIENT_TIMEOUT: ${HTTP_CLIENT_TIMEOUT:-10}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      university-service:
+        condition: service_started
+    restart: on-failure
+
+  file-service:
+    build: ./backend/file-service
+    ports:
+      - "127.0.0.1:18005:8005"
+    environment:
+      DATABASE_URL: postgresql://hack:hack@postgres:5432/filedb
+      FILE_INTERNAL_DELETE_TOKEN: ${FILE_INTERNAL_DELETE_TOKEN:-}
+    volumes:
+      - diploma_uploads:/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: on-failure
+
+  certificate-service:
+    build: ./backend/certificate-service
+    ports:
+      - "127.0.0.1:18006:8006"
+    environment:
+      DATABASE_URL: postgresql://hack:hack@postgres:5432/certdb
+      VERIFY_PUBLIC_BASE_URL: ${VERIFY_PUBLIC_BASE_URL:-http://localhost}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: on-failure
+
+  ai-integration-service:
+    build: ./backend/ai-integration-service
+    ports:
+      - "127.0.0.1:18007:8007"
+    environment:
+      FILE_SERVICE_URL: http://file-service:8005
+      UNIVERSITY_SERVICE_URL: http://university-service:8002
+      HTTP_CLIENT_TIMEOUT: ${HTTP_CLIENT_TIMEOUT:-10}
+      AI_FILE_FETCH_TIMEOUT: ${AI_FILE_FETCH_TIMEOUT:-120}
+    depends_on:
+      file-service:
+        condition: service_started
+      university-service:
+        condition: service_started
+    restart: on-failure
+
+  notification-service:
+    build: ./backend/notification-service
+    ports:
+      - "127.0.0.1:18008:8008"
+    environment:
+      DATABASE_URL: postgresql://hack:hack@postgres:5432/notificationdb
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: on-failure
 
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: diplomas
+      POSTGRES_USER: hack
+      POSTGRES_PASSWORD: hack
+      POSTGRES_DB: diplomadb
     volumes:
-      - db-data:/var/lib/postgresql/data
-      - ./infra/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - pgdata:/var/lib/postgresql/data
+      - ./infra/postgres-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hack -d diplomadb"]
+      interval: 3s
+      timeout: 5s
+      retries: 15
 
   redis:
     image: redis:7-alpine
 
   caddy:
     image: caddy:2-alpine
-    depends_on:
-      - api
     ports:
       - "80:80"
     volumes:
-      - ./infra/Caddyfile:/etc/caddy/Caddyfile:ro
-      - ./services/frontend:/var/www/html:ro
+      - ./infra/Caddyfile:/etc/caddy/Caddyfile
+      - ./frontend:/srv
+      - diploma_uploads:/uploads
+    depends_on:
+      - auth-service
+      - university-service
+      - diploma-service
+      - verify-service
+      - file-service
+      - certificate-service
+      - ai-integration-service
+      - notification-service
 
 volumes:
-  db-data:
+  pgdata:
+  diploma_uploads:
 
+networks:
+  default:
+    name: diploma-network
