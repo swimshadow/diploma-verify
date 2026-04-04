@@ -1,47 +1,80 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 
 import '../../bloc/employer_chat_bloc.dart';
-import '../../bloc/employer_chat_state.dart';
 import '../../bloc/employer_chat_event.dart';
+import '../../bloc/employer_chat_state.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
+import '../../../../shared/widgets/adaptive_chat_layout.dart';
 
+/// Employer chat — responsive:
+/// Wide (>=720px): two-column master-detail
+/// Narrow (<720px): list; tap navigates to conversation screen
 class EmployerChatListScreen extends StatelessWidget {
   const EmployerChatListScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final isWide = MediaQuery.sizeOf(context).width >= 720;
+
     return DashboardScaffold(
       title: 'Сообщения',
       body: BlocBuilder<EmployerChatBloc, EmployerChatState>(
         builder: (context, state) {
+          List conversations = [];
+          String? selectedId;
+          List messages = [];
+          String? title;
+          String? subtitle;
+
           if (state is EmployerChatConversationsLoaded) {
-            return _ChatList(conversations: state.conversations);
+            conversations = state.conversations;
+          } else if (state is EmployerChatMessagesLoaded) {
+            selectedId = state.conversationId;
+            messages = state.messages;
+            title = state.conversation.participantName;
+            subtitle = state.conversation.diplomaTitle;
           }
-          if (state is EmployerChatMessagesLoaded) {
-            // Re-load conversations when navigating back
-            context
-                .read<EmployerChatBloc>()
-                .add(EmployerChatLoadConversations());
-            return const Center(child: CircularProgressIndicator());
+
+          if (!isWide) {
+            if (conversations.isEmpty &&
+                state is! EmployerChatConversationsLoaded) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            return _NarrowList(conversations: conversations);
           }
-          return const Center(child: CircularProgressIndicator());
+
+          return AdaptiveChatLayout(
+            conversations: conversations.cast(),
+            selectedConversationId: selectedId,
+            messages: messages.cast(),
+            currentConversationTitle: title,
+            currentConversationSubtitle: subtitle,
+            onSelectConversation: (id) {
+              context
+                  .read<EmployerChatBloc>()
+                  .add(EmployerChatLoadMessages(id));
+            },
+            onSendMessage: (id, text) {
+              context.read<EmployerChatBloc>().add(
+                    EmployerChatSendMessage(conversationId: id, text: text),
+                  );
+            },
+          );
         },
       ),
     );
   }
 }
 
-class _ChatList extends StatelessWidget {
+class _NarrowList extends StatelessWidget {
   final List conversations;
-  const _ChatList({required this.conversations});
+  const _NarrowList({required this.conversations});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final timeFormat = DateFormat('HH:mm');
 
     if (conversations.isEmpty) {
       return Center(
@@ -78,19 +111,8 @@ class _ChatList extends StatelessWidget {
                   fontWeight: FontWeight.bold),
             ),
           ),
-          title: Row(
-            children: [
-              Expanded(
-                child: Text(c.participantName,
-                    style: const TextStyle(fontWeight: FontWeight.w600)),
-              ),
-              Text(
-                timeFormat.format(c.lastMessageAt),
-                style: theme.textTheme.bodySmall
-                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-              ),
-            ],
-          ),
+          title: Text(c.participantName,
+              style: const TextStyle(fontWeight: FontWeight.w600)),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -100,23 +122,19 @@ class _ChatList extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.primary
-                        .withValues(alpha: 0.08),
+                    color:
+                        theme.colorScheme.primary.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(4),
                   ),
-                  child: Text(
-                    c.diplomaTitle!,
-                    style: TextStyle(
-                        fontSize: 11, color: theme.colorScheme.primary),
-                  ),
+                  child: Text(c.diplomaTitle!,
+                      style: TextStyle(
+                          fontSize: 11, color: theme.colorScheme.primary)),
                 ),
-              Text(
-                c.lastMessage,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant),
-              ),
+              Text(c.lastMessage,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant)),
             ],
           ),
           trailing: c.unreadCount > 0

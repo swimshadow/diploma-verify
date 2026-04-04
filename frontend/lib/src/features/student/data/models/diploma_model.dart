@@ -58,6 +58,9 @@ class Diploma extends Equatable {
   final String? fileUrl;
   final List<VerificationStep> timeline;
   final DateTime createdAt;
+  final double antifraudScore;
+  final String antifraudVerdict;
+  final List<String> antifraudWarnings;
 
   const Diploma({
     required this.id,
@@ -72,8 +75,11 @@ class Diploma extends Equatable {
     this.fileUrl,
     required this.timeline,
     required this.createdAt,
+    this.antifraudScore = 0.0,
+    this.antifraudVerdict = '',
+    this.antifraudWarnings = const [],
   });
 
   @override
-  List<Object?> get props => [id, status, trustScore];
+  List<Object?> get props => [id, status, trustScore, antifraudScore];
 }

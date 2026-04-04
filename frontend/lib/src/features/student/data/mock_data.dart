@@ -35,6 +35,9 @@ final List<Diploma> mockDiplomas = [
         completedAt: DateTime(2024, 7, 2, 14, 30),
       ),
     ],
+    antifraudScore: 0.95,
+    antifraudVerdict: 'Подлинный документ',
+    antifraudWarnings: [],
   ),
   Diploma(
     id: 'dip-002',
@@ -63,6 +66,9 @@ final List<Diploma> mockDiplomas = [
       ),
       const VerificationStep(title: 'Подтверждение университетом'),
     ],
+    antifraudScore: 0.55,
+    antifraudVerdict: 'Требуется дополнительная проверка',
+    antifraudWarnings: ['Низкий Trust Score', 'Диплом ещё на проверке'],
   ),
   Diploma(
     id: 'dip-003',
@@ -94,6 +100,9 @@ final List<Diploma> mockDiplomas = [
         completedAt: DateTime(2024, 1, 16, 10, 0),
       ),
     ],
+    antifraudScore: 0.15,
+    antifraudVerdict: 'Подозрение на подделку',
+    antifraudWarnings: ['Номер диплома не найден в реестре', 'Несоответствие даты выдачи', 'Формат бланка не соответствует стандарту'],
   ),
 ];
 

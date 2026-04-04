@@ -8,6 +8,7 @@ import '../../bloc/diploma_bloc.dart';
 import '../../bloc/diploma_state.dart';
 import '../../data/models/diploma_model.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
+import '../../../../shared/widgets/anti_fraud_badge.dart';
 
 class DiplomaDetailScreen extends StatelessWidget {
   final String diplomaId;
@@ -157,6 +158,16 @@ class _DetailView extends StatelessWidget {
                     ),
                   ),
                 ),
+
+                const SizedBox(height: 20),
+
+                // Anti-fraud indicator
+                if (diploma.antifraudVerdict.isNotEmpty)
+                  AntiFraudBadge(
+                    score: diploma.antifraudScore,
+                    verdict: diploma.antifraudVerdict,
+                    warnings: diploma.antifraudWarnings,
+                  ),
 
                 const SizedBox(height: 20),
 
