@@ -1,4 +1,16 @@
 :80 {
+    header {
+        Access-Control-Allow-Origin *
+        Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        Access-Control-Allow-Headers "Authorization, Content-Type, Accept"
+        Access-Control-Max-Age 3600
+    }
+
+    @options method OPTIONS
+    handle @options {
+        respond 204
+    }
+
     @docs path /docs /docs/*
     handle @docs {
         uri strip_prefix /docs

@@ -76,8 +76,8 @@ GoRouter createRouter(AuthBloc authBloc) {
         return null;
       }
 
-      // Unauthenticated
-      if (!isOnPublic) return '/';
+      // Unauthenticated — redirect splash and protected routes to home
+      if (state.matchedLocation == '/splash' || !isOnPublic) return '/';
       return null;
     },
     routes: [

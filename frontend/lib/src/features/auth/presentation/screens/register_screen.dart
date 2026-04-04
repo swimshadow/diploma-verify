@@ -21,6 +21,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passwordCtrl = TextEditingController();
   final _confirmPasswordCtrl = TextEditingController();
   bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   // University fields
   final _uniNameCtrl = TextEditingController();
@@ -194,11 +195,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       // Confirm password
                       TextFormField(
                         controller: _confirmPasswordCtrl,
-                        obscureText: true,
+                        obscureText: _obscureConfirmPassword,
                         textInputAction: TextInputAction.next,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: 'Подтвердите пароль',
-                          prefixIcon: Icon(Icons.lock_outlined),
+                          prefixIcon: const Icon(Icons.lock_outlined),
+                          suffixIcon: IconButton(
+                            icon: Icon(_obscureConfirmPassword
+                                ? Icons.visibility_off
+                                : Icons.visibility),
+                            onPressed: () => setState(
+                                () => _obscureConfirmPassword = !_obscureConfirmPassword),
+                          ),
                         ),
                         validator: (v) {
                           if (v != _passwordCtrl.text) {

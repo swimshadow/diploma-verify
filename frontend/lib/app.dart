@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +8,7 @@ import 'src/core/di/service_locator.dart';
 import 'src/core/router/app_router.dart';
 import 'src/core/theme/app_theme.dart';
 import 'src/features/auth/bloc/auth_bloc.dart';
+import 'src/features/auth/bloc/auth_state.dart';
 import 'src/features/auth/data/auth_repository.dart';
 import 'src/features/student/bloc/chat_bloc.dart';
 import 'src/features/student/bloc/chat_event.dart';
@@ -47,31 +50,46 @@ class _AppState extends State<App> {
   late final AdminBloc _adminBloc;
   late final NotificationBloc _notificationBloc;
   late final GoRouter _router;
+  late final StreamSubscription<AuthState> _authSub;
 
   @override
   void initState() {
     super.initState();
     _authBloc = AuthBloc(repository: getIt<AuthRepository>());
-    _diplomaBloc = DiplomaBloc(repository: getIt<DiplomaRepository>())
-      ..add(DiplomaLoadRequested());
-    _chatBloc = ChatBloc()..add(ChatLoadConversations());
-    _employerBloc = EmployerBloc()..add(EmployerLoadRequested());
+    _diplomaBloc = DiplomaBloc(repository: getIt<DiplomaRepository>());
+    _chatBloc = ChatBloc();
+    _employerBloc = EmployerBloc();
     _verifyBloc = VerifyBloc(repository: getIt<VerifyRepository>());
-    _employerChatBloc = EmployerChatBloc()
-      ..add(EmployerChatLoadConversations());
+    _employerChatBloc = EmployerChatBloc();
     _universityBloc =
-        UniversityBloc(repository: getIt<UniversityRepository>())
-          ..add(UniversityLoadRequested());
+        UniversityBloc(repository: getIt<UniversityRepository>());
     _importBloc = ImportBloc();
-    _adminBloc = AdminBloc()..add(AdminLoadRequested());
+    _adminBloc = AdminBloc();
     _notificationBloc =
-        NotificationBloc(repository: getIt<NotificationRepository>())
-          ..add(NotificationLoadRequested());
+        NotificationBloc(repository: getIt<NotificationRepository>());
     _router = createRouter(_authBloc);
+
+    // Load data for all BLoCs once user is authenticated
+    _authSub = _authBloc.stream.listen((state) {
+      if (state is AuthAuthenticated) {
+        _loadAllData();
+      }
+    });
+  }
+
+  void _loadAllData() {
+    _diplomaBloc.add(DiplomaLoadRequested());
+    _chatBloc.add(ChatLoadConversations());
+    _employerBloc.add(EmployerLoadRequested());
+    _employerChatBloc.add(EmployerChatLoadConversations());
+    _universityBloc.add(UniversityLoadRequested());
+    _adminBloc.add(AdminLoadRequested());
+    _notificationBloc.add(NotificationLoadRequested());
   }
 
   @override
   void dispose() {
+    _authSub.cancel();
     _authBloc.close();
     _diplomaBloc.close();
     _chatBloc.close();

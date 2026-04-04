@@ -17,7 +17,8 @@ class _AdminCreateAdminScreenState
   final _fullNameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  bool _obscure = true;
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
   bool _loading = false;
 
   @override
@@ -120,17 +121,17 @@ class _AdminCreateAdminScreenState
                   // ── Password ──
                   TextFormField(
                     controller: _passwordController,
-                    obscureText: _obscure,
+                    obscureText: _obscurePassword,
                     decoration: InputDecoration(
                       labelText: 'Пароль',
                       prefixIcon: const Icon(Icons.lock),
                       border: const OutlineInputBorder(),
                       suffixIcon: IconButton(
-                        icon: Icon(_obscure
+                        icon: Icon(_obscurePassword
                             ? Icons.visibility_off
                             : Icons.visibility),
                         onPressed: () =>
-                            setState(() => _obscure = !_obscure),
+                            setState(() => _obscurePassword = !_obscurePassword),
                       ),
                     ),
                     validator: (v) {
@@ -145,11 +146,18 @@ class _AdminCreateAdminScreenState
                   // ── Confirm password ──
                   TextFormField(
                     controller: _confirmPasswordController,
-                    obscureText: _obscure,
-                    decoration: const InputDecoration(
+                    obscureText: _obscureConfirmPassword,
+                    decoration: InputDecoration(
                       labelText: 'Подтверждение пароля',
-                      prefixIcon: Icon(Icons.lock_outline),
-                      border: OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.lock_outline),
+                      border: const OutlineInputBorder(),
+                      suffixIcon: IconButton(
+                        icon: Icon(_obscureConfirmPassword
+                            ? Icons.visibility_off
+                            : Icons.visibility),
+                        onPressed: () =>
+                            setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                      ),
                     ),
                     validator: (v) {
                       if (v != _passwordController.text) {
