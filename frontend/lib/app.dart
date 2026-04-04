@@ -11,6 +11,11 @@ import 'src/features/student/bloc/chat_bloc.dart';
 import 'src/features/student/bloc/chat_event.dart';
 import 'src/features/student/bloc/diploma_bloc.dart';
 import 'src/features/student/bloc/diploma_event.dart';
+import 'src/features/employer/bloc/employer_bloc.dart';
+import 'src/features/employer/bloc/employer_event.dart';
+import 'src/features/employer/bloc/verify_bloc.dart';
+import 'src/features/employer/bloc/employer_chat_bloc.dart';
+import 'src/features/employer/bloc/employer_chat_event.dart';
 
 class App extends StatefulWidget {
   const App({super.key});
@@ -23,6 +28,9 @@ class _AppState extends State<App> {
   late final AuthBloc _authBloc;
   late final DiplomaBloc _diplomaBloc;
   late final ChatBloc _chatBloc;
+  late final EmployerBloc _employerBloc;
+  late final VerifyBloc _verifyBloc;
+  late final EmployerChatBloc _employerChatBloc;
   late final GoRouter _router;
 
   @override
@@ -31,6 +39,9 @@ class _AppState extends State<App> {
     _authBloc = AuthBloc(repository: getIt<AuthRepository>());
     _diplomaBloc = DiplomaBloc()..add(DiplomaLoadRequested());
     _chatBloc = ChatBloc()..add(ChatLoadConversations());
+    _employerBloc = EmployerBloc()..add(EmployerLoadRequested());
+    _verifyBloc = VerifyBloc();
+    _employerChatBloc = EmployerChatBloc()..add(EmployerChatLoadConversations());
     _router = createRouter(_authBloc);
   }
 
@@ -39,6 +50,9 @@ class _AppState extends State<App> {
     _authBloc.close();
     _diplomaBloc.close();
     _chatBloc.close();
+    _employerBloc.close();
+    _verifyBloc.close();
+    _employerChatBloc.close();
     super.dispose();
   }
 
@@ -49,6 +63,9 @@ class _AppState extends State<App> {
         BlocProvider.value(value: _authBloc),
         BlocProvider.value(value: _diplomaBloc),
         BlocProvider.value(value: _chatBloc),
+        BlocProvider.value(value: _employerBloc),
+        BlocProvider.value(value: _verifyBloc),
+        BlocProvider.value(value: _employerChatBloc),
       ],
       child: MaterialApp.router(
         title: 'DiplomaVerify',

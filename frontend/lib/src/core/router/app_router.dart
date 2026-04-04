@@ -22,6 +22,15 @@ import '../../features/student/presentation/screens/diploma_detail_screen.dart';
 import '../../features/student/presentation/screens/diploma_list_screen.dart';
 import '../../features/student/presentation/screens/diploma_upload_screen.dart';
 import '../../features/student/presentation/screens/student_profile_screen.dart';
+import '../../features/employer/presentation/screens/verify_diploma_screen.dart';
+import '../../features/employer/presentation/screens/verify_result_screen.dart';
+import '../../features/employer/presentation/screens/employee_list_screen.dart';
+import '../../features/employer/presentation/screens/employee_card_screen.dart';
+import '../../features/employer/presentation/screens/verification_history_screen.dart';
+import '../../features/employer/presentation/screens/employer_chat_list_screen.dart';
+import '../../features/employer/presentation/screens/employer_chat_conversation_screen.dart';
+import '../../features/employer/presentation/screens/api_integration_screen.dart';
+import '../../features/employer/presentation/screens/employer_profile_screen.dart';
 import 'route_names.dart';
 
 GoRouter createRouter(AuthBloc authBloc) {
@@ -151,6 +160,55 @@ GoRouter createRouter(AuthBloc authBloc) {
         path: '/student/profile',
         name: RouteNames.studentProfile,
         builder: (_, _) => const StudentProfileScreen(),
+      ),
+      // Employer routes
+      GoRoute(
+        path: '/employer/verify',
+        name: RouteNames.employerVerify,
+        builder: (_, _) => const VerifyDiplomaScreen(),
+      ),
+      GoRoute(
+        path: '/employer/verify-result/:resultId',
+        name: RouteNames.employerVerifyResult,
+        builder: (_, state) =>
+            VerifyResultScreen(resultId: state.pathParameters['resultId']!),
+      ),
+      GoRoute(
+        path: '/employer/employees',
+        name: RouteNames.employerEmployees,
+        builder: (_, _) => const EmployeeListScreen(),
+      ),
+      GoRoute(
+        path: '/employer/employee/:id',
+        name: RouteNames.employerEmployeeCard,
+        builder: (_, state) =>
+            EmployeeCardScreen(employeeId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/employer/history',
+        name: RouteNames.employerHistory,
+        builder: (_, _) => const VerificationHistoryScreen(),
+      ),
+      GoRoute(
+        path: '/employer/chats',
+        name: RouteNames.employerChats,
+        builder: (_, _) => const EmployerChatListScreen(),
+      ),
+      GoRoute(
+        path: '/employer/chat/:chatId',
+        name: RouteNames.employerChatConversation,
+        builder: (_, state) => EmployerChatConversationScreen(
+            conversationId: state.pathParameters['chatId']!),
+      ),
+      GoRoute(
+        path: '/employer/api',
+        name: RouteNames.employerApi,
+        builder: (_, _) => const ApiIntegrationScreen(),
+      ),
+      GoRoute(
+        path: '/employer/profile',
+        name: RouteNames.employerProfile,
+        builder: (_, _) => const EmployerProfileScreen(),
       ),
     ],
   );

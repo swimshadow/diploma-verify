@@ -20,4 +20,15 @@ class RouteNames {
   static const String studentChats = 'student-chats';
   static const String studentChatConversation = 'student-chat-conversation';
   static const String studentProfile = 'student-profile';
+
+  // Employer
+  static const String employerVerify = 'employer-verify';
+  static const String employerVerifyResult = 'employer-verify-result';
+  static const String employerEmployees = 'employer-employees';
+  static const String employerEmployeeCard = 'employer-employee-card';
+  static const String employerHistory = 'employer-history';
+  static const String employerChats = 'employer-chats';
+  static const String employerChatConversation = 'employer-chat-conversation';
+  static const String employerApi = 'employer-api';
+  static const String employerProfile = 'employer-profile';
 }
