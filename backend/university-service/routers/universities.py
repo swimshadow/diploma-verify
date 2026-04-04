@@ -1,0 +1,453 @@
+import os
+import uuid
+from datetime import date
+
+import httpx
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from loguru import logger
+from sqlalchemy.orm import Session
+
+from database import compute_data_hash, get_db
+from deps import get_current_user
+from http_client import HTTP_TIMEOUT, UPLOAD_HTTP_TIMEOUT
+from models import Diploma
+from schemas import (
+    AiDataPatch,
+    DiplomaListItem,
+    DiplomaListResponse,
+    DiplomaMetadata,
+    InternalDiplomaResponse,
+    LinkStudentBody,
+    SearchDiplomaItem,
+    SearchDiplomaResponse,
+    UploadDiplomaResponse,
+)
+
+router = APIRouter(prefix="/diplomas", tags=["university"])
+internal_router = APIRouter(prefix="/diplomas", tags=["internal"])
+
+def _secret_salt() -> str:
+    s = os.getenv("SECRET_SALT", "").strip()
+    if not s:
+        raise RuntimeError("SECRET_SALT must be set in the environment")
+    return s
+
+
+AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://auth-service:8001")
+FILE_SERVICE_URL = os.getenv("FILE_SERVICE_URL", "http://file-service:8005")
+CERTIFICATE_SERVICE_URL = os.getenv(
+    "CERTIFICATE_SERVICE_URL", "http://certificate-service:8006"
+)
+AI_SERVICE_URL = os.getenv("AI_SERVICE_URL", "http://ai-integration-service:8007")
+NOTIFICATION_SERVICE_URL = os.getenv(
+    "NOTIFICATION_SERVICE_URL", "http://notification-service:8008"
+)
+
+
+async def require_university(user: dict = Depends(get_current_user)) -> dict:
+    if user.get("role") != "university":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+    return user
+
+
+async def _notify(account_id: uuid.UUID, ntype: str, subject: str, body: str) -> None:
+    url = f"{NOTIFICATION_SERVICE_URL.rstrip('/')}/internal/send"
+    try:
+        async with httpx.AsyncClient(timeout=HTTP_TIMEOUT) as client:
+            await client.post(
+                url,
+                json={
+                    "account_id": str(account_id),
+                    "type": ntype,
+                    "subject": subject,
+                    "body": body,
+                },
+            )
+    except httpx.RequestError as e:
+        logger.warning(f"Notification failed: {e}")
+
+
+async def _university_display_name(account_id: uuid.UUID) -> str:
+    url = f"{AUTH_SERVICE_URL.rstrip('/')}/internal/profile/{account_id}"
+    try:
+        async with httpx.AsyncClient(timeout=HTTP_TIMEOUT) as client:
+            r = await client.get(url)
+        if r.status_code == 200:
+            data = r.json()
+            prof = data.get("profile") or {}
+            return str(prof.get("name") or "ВУЗ")
+    except httpx.RequestError as e:
+        logger.warning(f"Auth profile fetch failed: {e}")
+    return "ВУЗ"
+
+
+async def _post_certificate_generate(diploma: Diploma) -> None:
+    url = f"{CERTIFICATE_SERVICE_URL.rstrip('/')}/certificates/generate"
+    payload = {
+        "diploma_id": str(diploma.id),
+        "diploma_data": {
+            "full_name": diploma.full_name,
+            "degree": diploma.degree,
+            "specialization": diploma.specialization,
+            "issue_date": diploma.issue_date.isoformat(),
+            "university_name": diploma.university_name,
+        },
+    }
+    try:
+        async with httpx.AsyncClient(timeout=HTTP_TIMEOUT) as client:
+            r = await client.post(url, json=payload)
+        if r.status_code not in (200, 201):
+            logger.warning(f"Certificate generate failed: {r.status_code} {r.text}")
+    except httpx.RequestError as e:
+        logger.warning(f"Certificate generate unreachable: {e}")
+
+
+async def _post_certificate_deactivate(diploma_id: uuid.UUID) -> None:
+    url = f"{CERTIFICATE_SERVICE_URL.rstrip('/')}/certificates/{diploma_id}/deactivate"
+    try:
+        async with httpx.AsyncClient(timeout=HTTP_TIMEOUT) as client:
+            r = await client.post(url)
+        if r.status_code not in (200, 204):
+            logger.warning(f"Certificate deactivate failed: {r.status_code} {r.text}")
+    except httpx.RequestError as e:
+        logger.warning(f"Certificate deactivate unreachable: {e}")
+
+
+def _diploma_to_internal(d: Diploma) -> InternalDiplomaResponse:
+    return InternalDiplomaResponse(
+        id=str(d.id),
+        full_name=d.full_name,
+        diploma_number=d.diploma_number,
+        degree=d.degree,
+        specialization=d.specialization,
+        issue_date=d.issue_date,
+        university_name=d.university_name,
+        data_hash=d.data_hash,
+        status=d.status,
+        student_account_id=str(d.student_account_id) if d.student_account_id else None,
+        series=d.series,
+    )
+
+
+@router.post("/upload", response_model=UploadDiplomaResponse)
+async def upload_diploma(
+    file: UploadFile = File(...),
+    metadata: str = Form(...),
+    db: Session = Depends(get_db),
+    user: dict = Depends(require_university),
+):
+    try:
+        meta = DiplomaMetadata.model_validate_json(metadata)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Invalid metadata: {e}",
+        )
+    fname = (file.filename or "").lower()
+    ct = (file.content_type or "").lower()
+    if not (fname.endswith(".pdf") or ct == "application/pdf" or ct.endswith("/pdf")):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Only PDF files are allowed (use .pdf or application/pdf)",
+        )
+    uni_account = uuid.UUID(user["account_id"])
+    uni_name = await _university_display_name(uni_account)
+    dh = compute_data_hash(
+        meta.series or "",
+        meta.diploma_number,
+        meta.full_name,
+        meta.issue_date,
+        _secret_salt(),
+    )
+    file_bytes = await file.read()
+    upload_url = f"{FILE_SERVICE_URL.rstrip('/')}/files/upload"
+    try:
+        async with httpx.AsyncClient(timeout=UPLOAD_HTTP_TIMEOUT) as client:
+            files = {
+                "file": (
+                    file.filename or "upload.bin",
+                    file_bytes,
+                    file.content_type or "application/octet-stream",
+                )
+            }
+            data = {"uploader_account_id": str(uni_account)}
+            ur = await client.post(upload_url, files=files, data=data)
+    except httpx.RequestError as e:
+        logger.exception(f"File upload failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="File service unavailable",
+        )
+    if ur.status_code not in (200, 201):
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"File service: {ur.text}",
+        )
+    file_id = uuid.UUID(ur.json()["file_id"])
+    diploma = Diploma(
+        university_account_id=uni_account,
+        file_id=file_id,
+        status="pending",
+        full_name=meta.full_name,
+        diploma_number=meta.diploma_number,
+        series=meta.series or None,
+        degree=meta.degree,
+        specialization=meta.specialization,
+        issue_date=meta.issue_date,
+        date_of_birth=meta.date_of_birth,
+        university_name=uni_name,
+        data_hash=dh,
+    )
+    db.add(diploma)
+    db.commit()
+    db.refresh(diploma)
+
+    ai_url = f"{AI_SERVICE_URL.rstrip('/')}/ai/extract"
+    try:
+        async with httpx.AsyncClient(timeout=HTTP_TIMEOUT) as client:
+            await client.post(
+                ai_url,
+                json={"file_id": str(file_id), "diploma_id": str(diploma.id)},
+            )
+    except httpx.RequestError as e:
+        logger.warning(f"AI extract trigger failed: {e}")
+
+    await _notify(
+        uni_account,
+        "diploma_uploaded",
+        "Диплом загружен",
+        f"Диплом {meta.diploma_number} отправлен на обработку",
+    )
+    return UploadDiplomaResponse(diploma_id=str(diploma.id), status="pending")
+
+
+@router.get("", response_model=DiplomaListResponse)
+async def list_diplomas(
+    db: Session = Depends(get_db),
+    user: dict = Depends(require_university),
+):
+    uid = uuid.UUID(user["account_id"])
+    rows = (
+        db.query(Diploma)
+        .filter(Diploma.university_account_id == uid)
+        .order_by(Diploma.created_at.desc())
+        .all()
+    )
+    items = [
+        DiplomaListItem(
+            id=str(d.id),
+            full_name=d.full_name,
+            diploma_number=d.diploma_number,
+            series=d.series,
+            degree=d.degree,
+            specialization=d.specialization,
+            issue_date=d.issue_date,
+            status=d.status,
+            file_id=str(d.file_id) if d.file_id else None,
+            student_account_id=str(d.student_account_id) if d.student_account_id else None,
+        )
+        for d in rows
+    ]
+    return DiplomaListResponse(diplomas=items)
+
+
+@router.get("/{diploma_id}", response_model=DiplomaListItem)
+async def get_diploma(
+    diploma_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    user: dict = Depends(require_university),
+):
+    uid = uuid.UUID(user["account_id"])
+    d = (
+        db.query(Diploma)
+        .filter(
+            Diploma.id == diploma_id,
+            Diploma.university_account_id == uid,
+        )
+        .first()
+    )
+    if d is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+    return DiplomaListItem(
+        id=str(d.id),
+        full_name=d.full_name,
+        diploma_number=d.diploma_number,
+        series=d.series,
+        degree=d.degree,
+        specialization=d.specialization,
+        issue_date=d.issue_date,
+        status=d.status,
+        file_id=str(d.file_id) if d.file_id else None,
+        student_account_id=str(d.student_account_id) if d.student_account_id else None,
+    )
+
+
+@router.post("/{diploma_id}/verify", response_model=UploadDiplomaResponse)
+async def verify_manual(
+    diploma_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    user: dict = Depends(require_university),
+):
+    uid = uuid.UUID(user["account_id"])
+    d = (
+        db.query(Diploma)
+        .filter(
+            Diploma.id == diploma_id,
+            Diploma.university_account_id == uid,
+        )
+        .first()
+    )
+    if d is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+    if d.status == "revoked":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Cannot verify a revoked diploma",
+        )
+    if d.status == "verified":
+        return UploadDiplomaResponse(diploma_id=str(d.id), status="verified")
+    d.status = "verified"
+    db.commit()
+    await _post_certificate_generate(d)
+    return UploadDiplomaResponse(diploma_id=str(d.id), status="verified")
+
+
+@router.post("/{diploma_id}/revoke", response_model=UploadDiplomaResponse)
+async def revoke_diploma(
+    diploma_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    user: dict = Depends(require_university),
+):
+    uid = uuid.UUID(user["account_id"])
+    d = (
+        db.query(Diploma)
+        .filter(
+            Diploma.id == diploma_id,
+            Diploma.university_account_id == uid,
+        )
+        .first()
+    )
+    if d is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+    if d.status == "revoked":
+        return UploadDiplomaResponse(diploma_id=str(d.id), status="revoked")
+    d.status = "revoked"
+    db.commit()
+    await _post_certificate_deactivate(diploma_id)
+    await _notify(
+        uid,
+        "diploma_revoked",
+        "Диплом отозван",
+        f"Диплом {d.diploma_number} отозван",
+    )
+    return UploadDiplomaResponse(diploma_id=str(d.id), status="revoked")
+
+
+@internal_router.get("/search", response_model=SearchDiplomaResponse)
+def internal_search(
+    full_name: str,
+    date_of_birth: date,
+    db: Session = Depends(get_db),
+):
+    rows = (
+        db.query(Diploma)
+        .filter(
+            Diploma.full_name == full_name,
+            Diploma.date_of_birth == date_of_birth,
+        )
+        .all()
+    )
+    items = [
+        SearchDiplomaItem(
+            id=str(r.id),
+            full_name=r.full_name,
+            diploma_number=r.diploma_number,
+            issue_date=r.issue_date,
+            status=r.status,
+            student_account_id=str(r.student_account_id) if r.student_account_id else None,
+        )
+        for r in rows
+    ]
+    return SearchDiplomaResponse(diplomas=items)
+
+
+@internal_router.get("/by-hash/{data_hash}", response_model=InternalDiplomaResponse)
+def internal_by_hash(data_hash: str, db: Session = Depends(get_db)):
+    d = db.query(Diploma).filter(Diploma.data_hash == data_hash).first()
+    if d is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+    return _diploma_to_internal(d)
+
+
+@internal_router.get("/{diploma_id}", response_model=InternalDiplomaResponse)
+def internal_get_diploma(diploma_id: uuid.UUID, db: Session = Depends(get_db)):
+    d = db.query(Diploma).filter(Diploma.id == diploma_id).first()
+    if d is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+    return _diploma_to_internal(d)
+
+
+@internal_router.patch("/{diploma_id}/ai-data", response_model=InternalDiplomaResponse)
+async def internal_ai_data(
+    diploma_id: uuid.UUID,
+    payload: AiDataPatch,
+    db: Session = Depends(get_db),
+):
+    d = db.query(Diploma).filter(Diploma.id == diploma_id).first()
+    if d is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+    if d.status == "revoked":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Diploma is revoked",
+        )
+    d.ai_extracted_data = payload.ai_extracted_data
+    d.ai_confidence = payload.confidence
+    if payload.confidence > 0.85:
+        if d.status == "pending":
+            d.status = "verified"
+            db.commit()
+            db.refresh(d)
+            await _post_certificate_generate(d)
+            await _notify(
+                d.university_account_id,
+                "diploma_verified",
+                "Диплом проверен",
+                f"Диплом {d.diploma_number} подтверждён автоматически",
+            )
+        else:
+            db.commit()
+            db.refresh(d)
+    else:
+        db.commit()
+        db.refresh(d)
+    return _diploma_to_internal(d)
+
+
+@internal_router.patch("/{diploma_id}/link-student", response_model=InternalDiplomaResponse)
+def internal_link_student(
+    diploma_id: uuid.UUID,
+    body: LinkStudentBody,
+    db: Session = Depends(get_db),
+):
+    d = db.query(Diploma).filter(Diploma.id == diploma_id).first()
+    if d is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+    if d.status == "revoked":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Cannot link student to a revoked diploma",
+        )
+    try:
+        sid = uuid.UUID(body.student_account_id)
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid UUID")
+    if d.student_account_id is not None and d.student_account_id != sid:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Diploma already linked to another student",
+        )
+    d.student_account_id = sid
+    db.commit()
+    db.refresh(d)
+    return _diploma_to_internal(d)
