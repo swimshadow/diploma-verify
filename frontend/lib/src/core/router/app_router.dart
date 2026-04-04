@@ -15,6 +15,13 @@ import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/splash/presentation/screens/splash_screen.dart';
+import '../../features/student/presentation/screens/certificate_screen.dart';
+import '../../features/student/presentation/screens/chat_conversation_screen.dart';
+import '../../features/student/presentation/screens/chat_list_screen.dart';
+import '../../features/student/presentation/screens/diploma_detail_screen.dart';
+import '../../features/student/presentation/screens/diploma_list_screen.dart';
+import '../../features/student/presentation/screens/diploma_upload_screen.dart';
+import '../../features/student/presentation/screens/student_profile_screen.dart';
 import 'route_names.dart';
 
 GoRouter createRouter(AuthBloc authBloc) {
@@ -105,6 +112,45 @@ GoRouter createRouter(AuthBloc authBloc) {
         path: '/notifications',
         name: RouteNames.notifications,
         builder: (_, _) => const NotificationsScreen(),
+      ),
+      // Student routes
+      GoRoute(
+        path: '/student/diplomas',
+        name: RouteNames.studentDiplomas,
+        builder: (_, _) => const DiplomaListScreen(),
+      ),
+      GoRoute(
+        path: '/student/diploma/:id',
+        name: RouteNames.studentDiplomaDetail,
+        builder: (_, state) =>
+            DiplomaDetailScreen(diplomaId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/student/upload',
+        name: RouteNames.studentUpload,
+        builder: (_, _) => const DiplomaUploadScreen(),
+      ),
+      GoRoute(
+        path: '/student/certificate/:certId',
+        name: RouteNames.studentCertificate,
+        builder: (_, state) =>
+            CertificateScreen(certificateId: state.pathParameters['certId']!),
+      ),
+      GoRoute(
+        path: '/student/chats',
+        name: RouteNames.studentChats,
+        builder: (_, _) => const ChatListScreen(),
+      ),
+      GoRoute(
+        path: '/student/chat/:chatId',
+        name: RouteNames.studentChatConversation,
+        builder: (_, state) => ChatConversationScreen(
+            conversationId: state.pathParameters['chatId']!),
+      ),
+      GoRoute(
+        path: '/student/profile',
+        name: RouteNames.studentProfile,
+        builder: (_, _) => const StudentProfileScreen(),
       ),
     ],
   );

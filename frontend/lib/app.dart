@@ -7,6 +7,10 @@ import 'src/core/router/app_router.dart';
 import 'src/core/theme/app_theme.dart';
 import 'src/features/auth/bloc/auth_bloc.dart';
 import 'src/features/auth/data/auth_repository.dart';
+import 'src/features/student/bloc/chat_bloc.dart';
+import 'src/features/student/bloc/chat_event.dart';
+import 'src/features/student/bloc/diploma_bloc.dart';
+import 'src/features/student/bloc/diploma_event.dart';
 
 class App extends StatefulWidget {
   const App({super.key});
@@ -17,25 +21,35 @@ class App extends StatefulWidget {
 
 class _AppState extends State<App> {
   late final AuthBloc _authBloc;
+  late final DiplomaBloc _diplomaBloc;
+  late final ChatBloc _chatBloc;
   late final GoRouter _router;
 
   @override
   void initState() {
     super.initState();
     _authBloc = AuthBloc(repository: getIt<AuthRepository>());
+    _diplomaBloc = DiplomaBloc()..add(DiplomaLoadRequested());
+    _chatBloc = ChatBloc()..add(ChatLoadConversations());
     _router = createRouter(_authBloc);
   }
 
   @override
   void dispose() {
     _authBloc.close();
+    _diplomaBloc.close();
+    _chatBloc.close();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: _authBloc,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: _authBloc),
+        BlocProvider.value(value: _diplomaBloc),
+        BlocProvider.value(value: _chatBloc),
+      ],
       child: MaterialApp.router(
         title: 'DiplomaVerify',
         debugShowCheckedModeBanner: false,

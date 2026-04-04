@@ -1,0 +1,205 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:file_picker/file_picker.dart';
+
+import '../../bloc/diploma_bloc.dart';
+import '../../bloc/diploma_event.dart';
+import '../../bloc/diploma_state.dart';
+import '../../../../shared/widgets/dashboard_scaffold.dart';
+
+class DiplomaUploadScreen extends StatefulWidget {
+  const DiplomaUploadScreen({super.key});
+
+  @override
+  State<DiplomaUploadScreen> createState() => _DiplomaUploadScreenState();
+}
+
+class _DiplomaUploadScreenState extends State<DiplomaUploadScreen> {
+  String? _selectedFileName;
+  String? _selectedFilePath;
+
+  Future<void> _pickFile() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf', 'png', 'jpg', 'jpeg'],
+    );
+    if (result != null && result.files.isNotEmpty) {
+      setState(() {
+        _selectedFileName = result.files.first.name;
+        _selectedFilePath = result.files.first.path ?? '';
+      });
+    }
+  }
+
+  void _upload() {
+    if (_selectedFilePath == null) return;
+    context.read<DiplomaBloc>().add(
+          DiplomaUploadRequested(
+            filePath: _selectedFilePath!,
+            fileName: _selectedFileName!,
+          ),
+        );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return DashboardScaffold(
+      title: 'Загрузка диплома',
+      body: BlocListener<DiplomaBloc, DiplomaState>(
+        listener: (context, state) {
+          if (state is DiplomaUploadSuccess) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Диплом успешно загружен!')),
+            );
+            Navigator.of(context).pop();
+          } else if (state is DiplomaFailure) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: theme.colorScheme.error,
+              ),
+            );
+          }
+        },
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 500),
+              child: Column(
+                children: [
+                  const SizedBox(height: 20),
+                  // Upload area
+                  InkWell(
+                    onTap: _pickFile,
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 48),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: theme.colorScheme.outlineVariant,
+                          width: 2,
+                          strokeAlign: BorderSide.strokeAlignInside,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        color: theme.colorScheme.surfaceContainerLowest,
+                      ),
+                      child: Column(
+                        children: [
+                          Icon(
+                            _selectedFileName != null
+                                ? Icons.check_circle
+                                : Icons.cloud_upload_outlined,
+                            size: 56,
+                            color: _selectedFileName != null
+                                ? Colors.green
+                                : theme.colorScheme.primary,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            _selectedFileName ?? 'Нажмите для выбора файла',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w500),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'PDF, PNG, JPG — до 10 МБ',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  // Info
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Как это работает',
+                              style: theme.textTheme.titleSmall
+                                  ?.copyWith(fontWeight: FontWeight.w600)),
+                          const SizedBox(height: 12),
+                          _StepItem(
+                              number: '1',
+                              text: 'Загрузите скан или фото диплома'),
+                          _StepItem(
+                              number: '2',
+                              text:
+                                  'AI-система распознает и извлечёт данные'),
+                          _StepItem(
+                              number: '3',
+                              text:
+                                  'Университет подтвердит подлинность'),
+                          _StepItem(
+                              number: '4',
+                              text:
+                                  'Вы получите цифровой сертификат с QR-кодом'),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  BlocBuilder<DiplomaBloc, DiplomaState>(
+                    builder: (context, state) {
+                      final loading = state is DiplomaUploadInProgress;
+                      return ElevatedButton.icon(
+                        onPressed: (_selectedFilePath != null && !loading)
+                            ? _upload
+                            : null,
+                        icon: loading
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2, color: Colors.white),
+                              )
+                            : const Icon(Icons.upload),
+                        label: Text(loading ? 'Загрузка...' : 'Загрузить'),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _StepItem extends StatelessWidget {
+  final String number;
+  final String text;
+  const _StepItem({required this.number, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 14,
+            backgroundColor: theme.colorScheme.primaryContainer,
+            child: Text(number,
+                style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.bold)),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+              child: Text(text, style: theme.textTheme.bodySmall)),
+        ],
+      ),
+    );
+  }
+}

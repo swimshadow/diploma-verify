@@ -11,4 +11,13 @@ class RouteNames {
   static const String dashboard = 'dashboard';
   static const String profile = 'profile';
   static const String notifications = 'notifications';
+
+  // Student
+  static const String studentDiplomas = 'student-diplomas';
+  static const String studentDiplomaDetail = 'student-diploma-detail';
+  static const String studentUpload = 'student-upload';
+  static const String studentCertificate = 'student-certificate';
+  static const String studentChats = 'student-chats';
+  static const String studentChatConversation = 'student-chat-conversation';
+  static const String studentProfile = 'student-profile';
 }
