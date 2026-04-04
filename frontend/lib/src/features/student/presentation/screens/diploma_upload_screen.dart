@@ -1,7 +1,10 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:file_picker/file_picker.dart';
 
+import '../../../../core/logging/app_logger.dart';
 import '../../bloc/diploma_bloc.dart';
 import '../../bloc/diploma_event.dart';
 import '../../bloc/diploma_state.dart';
@@ -15,27 +18,68 @@ class DiplomaUploadScreen extends StatefulWidget {
 }
 
 class _DiplomaUploadScreenState extends State<DiplomaUploadScreen> {
+  static const _tag = 'DiplomaUploadScreen';
+  final _log = AppLogger.instance;
   String? _selectedFileName;
-  String? _selectedFilePath;
+  Uint8List? _selectedFileBytes;
+
+  @override
+  void initState() {
+    super.initState();
+    _log.info(_tag, 'Screen opened');
+  }
+
+  @override
+  void dispose() {
+    _log.info(_tag, 'Screen disposed');
+    super.dispose();
+  }
 
   Future<void> _pickFile() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['pdf', 'png', 'jpg', 'jpeg'],
-    );
-    if (result != null && result.files.isNotEmpty) {
-      setState(() {
-        _selectedFileName = result.files.first.name;
-        _selectedFilePath = result.files.first.path ?? '';
-      });
+    _log.info(_tag, 'BTN: Выбрать файл — нажата');
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'png', 'jpg', 'jpeg'],
+        withData: true,
+      );
+      if (result != null && result.files.isNotEmpty) {
+        final file = result.files.first;
+        _log.info(_tag, 'Файл выбран: ${file.name} (${file.size} байт)');
+        if (file.bytes == null || file.bytes!.isEmpty) {
+          _log.error(_tag, 'Файл не содержит данных (bytes == null)');
+          return;
+        }
+        if (file.size > 10 * 1024 * 1024) {
+          _log.warning(_tag, 'Файл слишком большой: ${file.size} байт');
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Файл слишком большой (макс. 10 МБ)')),
+            );
+          }
+          return;
+        }
+        setState(() {
+          _selectedFileName = file.name;
+          _selectedFileBytes = file.bytes;
+        });
+      } else {
+        _log.info(_tag, 'Выбор файла отменён пользователем');
+      }
+    } catch (e, st) {
+      _log.error(_tag, 'Ошибка при выборе файла', e, st);
     }
   }
 
   void _upload() {
-    if (_selectedFilePath == null) return;
+    if (_selectedFileBytes == null || _selectedFileName == null) {
+      _log.warning(_tag, 'BTN: Загрузить — нажата, но файл не выбран');
+      return;
+    }
+    _log.info(_tag, 'BTN: Загрузить — отправка файла $_selectedFileName (${_selectedFileBytes!.length} байт)');
     context.read<DiplomaBloc>().add(
           DiplomaUploadRequested(
-            filePath: _selectedFilePath!,
+            fileBytes: _selectedFileBytes!,
             fileName: _selectedFileName!,
           ),
         );
@@ -150,7 +194,7 @@ class _DiplomaUploadScreenState extends State<DiplomaUploadScreen> {
                     builder: (context, state) {
                       final loading = state is DiplomaUploadInProgress;
                       return ElevatedButton.icon(
-                        onPressed: (_selectedFilePath != null && !loading)
+                        onPressed: (_selectedFileBytes != null && !loading)
                             ? _upload
                             : null,
                         icon: loading

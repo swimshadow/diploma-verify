@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/logging/app_logger.dart';
 import '../../bloc/university_bloc.dart';
 import '../../bloc/university_event.dart';
 import '../../bloc/university_state.dart';
 import '../../data/models/registry_diploma_model.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
 import '../../../../shared/widgets/anti_fraud_badge.dart';
+
+const _tag = 'UniversityDiplomaCardScreen';
 
 class UniversityDiplomaCardScreen extends StatelessWidget {
   final String diplomaId;
@@ -204,6 +207,8 @@ class UniversityDiplomaCardScreen extends StatelessWidget {
   }
 
   void _confirmRevoke(BuildContext context) {
+    final log = AppLogger.instance;
+    log.info(_tag, 'BTN: Отозвать диплом — нажата, diplomaId=$diplomaId');
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -213,10 +218,14 @@ class UniversityDiplomaCardScreen extends StatelessWidget {
             'Работодатели будут уведомлены при проверке.'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx),
+              onPressed: () {
+                log.info(_tag, 'BTN: Отмена отзыва диплома');
+                Navigator.pop(ctx);
+              },
               child: const Text('Отмена')),
           FilledButton(
             onPressed: () {
+              log.info(_tag, 'BTN: Подтвердить отзыв diplomaId=$diplomaId');
               context.read<UniversityBloc>().add(
                     UniversityRevokeDiploma(diplomaId),
                   );

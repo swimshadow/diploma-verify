@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/auth/bloc/auth_bloc.dart';
 import '../../features/auth/bloc/auth_state.dart';
+import '../logging/app_logger.dart';
 import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
@@ -55,32 +56,48 @@ import '../logging/logging_navigator_observer.dart';
 import 'route_names.dart';
 
 GoRouter createRouter(AuthBloc authBloc) {
+  final log = AppLogger.instance;
+  log.info('Router', 'createRouter() → создание GoRouter');
+
   return GoRouter(
     initialLocation: '/splash',
     observers: [LoggingNavigatorObserver()],
     refreshListenable: _GoRouterAuthRefresh(authBloc),
     redirect: (context, state) {
       final authState = authBloc.state;
-      final isOnAuth = state.matchedLocation == '/login' ||
-          state.matchedLocation == '/register' ||
-          state.matchedLocation == '/role-select' ||
-          state.matchedLocation == '/forgot-password';
-      final isOnPublic = state.matchedLocation == '/' ||
-          state.matchedLocation == '/splash' ||
-          state.matchedLocation == '/demo-login' ||
+      final loc = state.matchedLocation;
+      log.navigation('Router', 'redirect: loc=$loc, authState=${authState.runtimeType}');
+
+      final isOnAuth = loc == '/login' ||
+          loc == '/register' ||
+          loc == '/role-select' ||
+          loc == '/forgot-password';
+      final isOnPublic = loc == '/' ||
+          loc == '/splash' ||
+          loc == '/demo-login' ||
           isOnAuth;
 
       if (authState is AuthLoading || authState is AuthInitial) {
-        return state.matchedLocation == '/splash' ? null : '/splash';
+        final target = loc == '/splash' ? null : '/splash';
+        log.navigation('Router', 'redirect: auth loading/initial → ${target ?? 'stay'}');
+        return target;
       }
 
       if (authState is AuthAuthenticated) {
-        if (isOnPublic) return '/dashboard';
+        if (isOnPublic) {
+          log.navigation('Router', 'redirect: authenticated + public → /dashboard');
+          return '/dashboard';
+        }
+        log.navigation('Router', 'redirect: authenticated → stay');
         return null;
       }
 
-      // Unauthenticated — redirect splash and protected routes to home
-      if (state.matchedLocation == '/splash' || !isOnPublic) return '/';
+      // Unauthenticated
+      if (loc == '/splash' || !isOnPublic) {
+        log.navigation('Router', 'redirect: unauthenticated → /');
+        return '/';
+      }
+      log.navigation('Router', 'redirect: unauthenticated + public → stay');
       return null;
     },
     routes: [

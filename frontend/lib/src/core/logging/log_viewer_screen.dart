@@ -38,14 +38,14 @@ class _LogViewerScreenState extends State<LogViewerScreen> {
 
   void _onNewLog() {
     if (!mounted) return;
-    setState(() {});
-    if (_autoScroll && _scrollController.hasClients) {
-      Future.microtask(() {
-        if (_scrollController.hasClients) {
-          _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
-        }
-      });
-    }
+    // Defer to avoid setState during build phase
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      setState(() {});
+      if (_autoScroll && _scrollController.hasClients) {
+        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+      }
+    });
   }
 
   List<LogEntry> get _filteredEntries {

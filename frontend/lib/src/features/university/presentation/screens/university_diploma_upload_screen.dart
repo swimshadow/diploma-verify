@@ -1,10 +1,14 @@
 import 'dart:convert';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/di/service_locator.dart';
+import '../../../../core/logging/app_logger.dart';
 import '../../data/university_repository.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
+
+const _tag = 'UniversityDiplomaUpload';
 
 class UniversityDiplomaUploadScreen extends StatefulWidget {
   const UniversityDiplomaUploadScreen({super.key});
@@ -16,26 +20,61 @@ class UniversityDiplomaUploadScreen extends StatefulWidget {
 
 class _UniversityDiplomaUploadScreenState
     extends State<UniversityDiplomaUploadScreen> {
+  final _log = AppLogger.instance;
   final _formKey = GlobalKey<FormState>();
   final _fullNameCtrl = TextEditingController();
-  final _facultyCtrl = TextEditingController();
   final _specialityCtrl = TextEditingController();
   final _seriesCtrl = TextEditingController();
   final _numberCtrl = TextEditingController();
-  final _gpaCtrl = TextEditingController();
+  final _dobCtrl = TextEditingController();
 
   String _educationLevel = 'Бакалавр';
   DateTime? _issueDate;
+  DateTime? _dateOfBirth;
+
+  String? _pickedFileName;
+  List<int>? _pickedFileBytes;
+
+  bool _loading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _log.info(_tag, 'Screen opened');
+  }
 
   @override
   void dispose() {
     _fullNameCtrl.dispose();
-    _facultyCtrl.dispose();
     _specialityCtrl.dispose();
     _seriesCtrl.dispose();
     _numberCtrl.dispose();
-    _gpaCtrl.dispose();
+    _dobCtrl.dispose();
+    _log.info(_tag, 'Screen disposed');
     super.dispose();
+  }
+
+  Future<void> _pickPdf() async {
+    _log.info(_tag, 'BTN: Выбрать PDF — нажата');
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
+        withData: true,
+      );
+      if (result != null && result.files.isNotEmpty) {
+        final file = result.files.first;
+        _log.info(_tag, 'PDF выбран: ${file.name}, ${file.size} bytes');
+        setState(() {
+          _pickedFileName = file.name;
+          _pickedFileBytes = file.bytes;
+        });
+      } else {
+        _log.info(_tag, 'Выбор PDF отменён пользователем');
+      }
+    } catch (e, st) {
+      _log.error(_tag, 'Ошибка выбора файла: $e', e, st);
+    }
   }
 
   @override
@@ -53,6 +92,49 @@ class _UniversityDiplomaUploadScreenState
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  // ── PDF file picker ───────────────────────
+                  Text('PDF-файл диплома',
+                      style: theme.textTheme.titleLarge
+                          ?.copyWith(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 12),
+                  InkWell(
+                    onTap: _pickPdf,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 32),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: _pickedFileName != null
+                              ? Colors.green
+                              : theme.colorScheme.outlineVariant,
+                          width: 2,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        color: theme.colorScheme.surfaceContainerLowest,
+                      ),
+                      child: Column(
+                        children: [
+                          Icon(
+                            _pickedFileName != null
+                                ? Icons.check_circle
+                                : Icons.upload_file,
+                            size: 48,
+                            color: _pickedFileName != null
+                                ? Colors.green
+                                : theme.colorScheme.primary,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            _pickedFileName ?? 'Нажмите для выбора PDF',
+                            style: theme.textTheme.bodyLarge,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
                   Text('Данные выпускника',
                       style: theme.textTheme.titleLarge
                           ?.copyWith(fontWeight: FontWeight.bold)),
@@ -71,21 +153,9 @@ class _UniversityDiplomaUploadScreenState
                   const SizedBox(height: 16),
 
                   TextFormField(
-                    controller: _facultyCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Факультет *',
-                      prefixIcon: Icon(Icons.business_outlined),
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (v) =>
-                        (v == null || v.trim().isEmpty) ? 'Обязательное поле' : null,
-                  ),
-                  const SizedBox(height: 16),
-
-                  TextFormField(
                     controller: _specialityCtrl,
                     decoration: const InputDecoration(
-                      labelText: 'Специальность *',
+                      labelText: 'Специализация *',
                       prefixIcon: Icon(Icons.book_outlined),
                       border: OutlineInputBorder(),
                     ),
@@ -95,7 +165,7 @@ class _UniversityDiplomaUploadScreenState
                   const SizedBox(height: 16),
 
                   DropdownButtonFormField<String>(
-                    initialValue: _educationLevel,
+                    value: _educationLevel,
                     decoration: const InputDecoration(
                       labelText: 'Уровень образования *',
                       prefixIcon: Icon(Icons.school_outlined),
@@ -107,7 +177,47 @@ class _UniversityDiplomaUploadScreenState
                       DropdownMenuItem(value: 'Специалист', child: Text('Специалист')),
                       DropdownMenuItem(value: 'Доктор PhD', child: Text('Доктор PhD')),
                     ],
-                    onChanged: (v) => setState(() => _educationLevel = v!),
+                    onChanged: (v) {
+                      _log.info(_tag, 'BTN: Уровень образования изменён на $v');
+                      setState(() => _educationLevel = v!);
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Date of birth picker
+                  InkWell(
+                    onTap: () async {
+                      _log.info(_tag, 'BTN: Дата рождения — нажата');
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: DateTime(2000, 1, 1),
+                        firstDate: DateTime(1940),
+                        lastDate: DateTime.now(),
+                      );
+                      if (picked != null) {
+                        _log.info(_tag, 'Дата рождения выбрана: $picked');
+                        setState(() => _dateOfBirth = picked);
+                      } else {
+                        _log.info(_tag, 'Выбор даты рождения отменён');
+                      }
+                    },
+                    child: InputDecorator(
+                      decoration: const InputDecoration(
+                        labelText: 'Дата рождения',
+                        prefixIcon: Icon(Icons.cake_outlined),
+                        border: OutlineInputBorder(),
+                      ),
+                      child: Text(
+                        _dateOfBirth != null
+                            ? '${_dateOfBirth!.day.toString().padLeft(2, '0')}.${_dateOfBirth!.month.toString().padLeft(2, '0')}.${_dateOfBirth!.year}'
+                            : 'Выберите дату (необязательно)',
+                        style: TextStyle(
+                          color: _dateOfBirth != null
+                              ? null
+                              : theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
                   ),
 
                   const SizedBox(height: 24),
@@ -123,11 +233,9 @@ class _UniversityDiplomaUploadScreenState
                         child: TextFormField(
                           controller: _seriesCtrl,
                           decoration: const InputDecoration(
-                            labelText: 'Серия *',
+                            labelText: 'Серия',
                             border: OutlineInputBorder(),
                           ),
-                          validator: (v) =>
-                              (v == null || v.trim().isEmpty) ? 'Обязательно' : null,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -138,7 +246,6 @@ class _UniversityDiplomaUploadScreenState
                             labelText: 'Номер диплома *',
                             border: OutlineInputBorder(),
                           ),
-                          keyboardType: TextInputType.number,
                           validator: (v) =>
                               (v == null || v.trim().isEmpty) ? 'Обязательно' : null,
                         ),
@@ -147,36 +254,21 @@ class _UniversityDiplomaUploadScreenState
                   ),
                   const SizedBox(height: 16),
 
-                  TextFormField(
-                    controller: _gpaCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'GPA *',
-                      prefixIcon: Icon(Icons.grade_outlined),
-                      border: OutlineInputBorder(),
-                      hintText: '0.00 – 4.00',
-                    ),
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    validator: (v) {
-                      if (v == null || v.trim().isEmpty) return 'Обязательное поле';
-                      final gpa = double.tryParse(v.trim());
-                      if (gpa == null || gpa < 0 || gpa > 4) {
-                        return 'GPA от 0 до 4';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-
                   InkWell(
                     onTap: () async {
+                      _log.info(_tag, 'BTN: Дата выдачи — нажата');
                       final picked = await showDatePicker(
                         context: context,
                         initialDate: DateTime.now(),
                         firstDate: DateTime(1990),
                         lastDate: DateTime.now(),
                       );
-                      if (picked != null) setState(() => _issueDate = picked);
+                      if (picked != null) {
+                        _log.info(_tag, 'Дата выдачи выбрана: $picked');
+                        setState(() => _issueDate = picked);
+                      } else {
+                        _log.info(_tag, 'Выбор даты выдачи отменён');
+                      }
                     },
                     child: InputDecorator(
                       decoration: const InputDecoration(
@@ -199,16 +291,28 @@ class _UniversityDiplomaUploadScreenState
 
                   const SizedBox(height: 32),
                   FilledButton.icon(
-                    onPressed: _submit,
-                    icon: const Icon(Icons.save),
-                    label: const Text('Сохранить в реестр'),
+                    onPressed: _loading ? null : _submit,
+                    icon: _loading
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Icon(Icons.save),
+                    label: Text(_loading ? 'Загрузка...' : 'Сохранить в реестр'),
                     style: FilledButton.styleFrom(
                       minimumSize: const Size.fromHeight(50),
                     ),
                   ),
                   const SizedBox(height: 12),
                   OutlinedButton(
-                    onPressed: () => context.pop(),
+                    onPressed: () {
+                      _log.info(_tag, 'BTN: Отмена — нажата');
+                      context.pop();
+                    },
                     child: const Text('Отмена'),
                   ),
                 ],
@@ -221,8 +325,21 @@ class _UniversityDiplomaUploadScreenState
   }
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
+    _log.info(_tag, 'BTN: Сохранить в реестр — нажата');
+
+    if (!_formKey.currentState!.validate()) {
+      _log.warning(_tag, 'Валидация формы не пройдена');
+      return;
+    }
+    if (_pickedFileBytes == null || _pickedFileName == null) {
+      _log.warning(_tag, 'PDF файл не выбран');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Выберите PDF-файл диплома')),
+      );
+      return;
+    }
     if (_issueDate == null) {
+      _log.warning(_tag, 'Дата выдачи не выбрана');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Выберите дату выдачи')),
       );
@@ -231,23 +348,30 @@ class _UniversityDiplomaUploadScreenState
 
     final metadata = {
       'full_name': _fullNameCtrl.text.trim(),
-      'faculty': _facultyCtrl.text.trim(),
-      'speciality': _specialityCtrl.text.trim(),
-      'education_level': _educationLevel,
+      'diploma_number': _numberCtrl.text.trim(),
       'series': _seriesCtrl.text.trim(),
-      'number': _numberCtrl.text.trim(),
-      'gpa': double.tryParse(_gpaCtrl.text.trim()) ?? 0,
-      'issue_date': _issueDate!.toIso8601String(),
+      'degree': _educationLevel,
+      'specialization': _specialityCtrl.text.trim(),
+      'issue_date': '${_issueDate!.year}-${_issueDate!.month.toString().padLeft(2, '0')}-${_issueDate!.day.toString().padLeft(2, '0')}',
+      if (_dateOfBirth != null)
+        'date_of_birth':
+            '${_dateOfBirth!.year}-${_dateOfBirth!.month.toString().padLeft(2, '0')}-${_dateOfBirth!.day.toString().padLeft(2, '0')}',
     };
+
+    _log.info(_tag, 'Метаданные для отправки: ${jsonEncode(metadata)}');
+    _log.info(_tag, 'Файл: $_pickedFileName, ${_pickedFileBytes!.length} bytes');
+
+    setState(() => _loading = true);
 
     try {
       final repo = getIt<UniversityRepository>();
-      final metaBytes = utf8.encode(jsonEncode(metadata));
-      await repo.uploadDiploma(
-        fileBytes: metaBytes,
-        fileName: '${_seriesCtrl.text.trim()}_${_numberCtrl.text.trim()}.json',
+      _log.info(_tag, 'Вызов repo.uploadDiploma...');
+      final diplomaId = await repo.uploadDiploma(
+        fileBytes: _pickedFileBytes!,
+        fileName: _pickedFileName!,
         metadata: metadata,
       );
+      _log.info(_tag, 'Диплом загружен, ID: $diplomaId');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -256,7 +380,8 @@ class _UniversityDiplomaUploadScreenState
         ),
       );
       context.pop();
-    } catch (e) {
+    } catch (e, st) {
+      _log.error(_tag, 'Ошибка загрузки диплома: $e', e, st);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -264,6 +389,8 @@ class _UniversityDiplomaUploadScreenState
           behavior: SnackBarBehavior.floating,
         ),
       );
+    } finally {
+      if (mounted) setState(() => _loading = false);
     }
   }
 }

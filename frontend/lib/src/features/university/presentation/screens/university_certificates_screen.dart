@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/logging/app_logger.dart';
 import '../../bloc/university_bloc.dart';
 import '../../bloc/university_event.dart';
 import '../../bloc/university_state.dart';
 import '../../data/models/certificate_model.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
+
+const _tag = 'UniversityCertificatesScreen';
 
 class UniversityCertificatesScreen extends StatelessWidget {
   const UniversityCertificatesScreen({super.key});
@@ -132,6 +135,7 @@ class UniversityCertificatesScreen extends StatelessWidget {
                                     alignment: Alignment.centerRight,
                                     child: FilledButton.tonal(
                                       onPressed: () {
+                                        AppLogger.instance.info(_tag, 'BTN: Перевыпустить сертификат ${cert.id}');
                                         context
                                             .read<UniversityBloc>()
                                             .add(UniversityReissueCertificate(

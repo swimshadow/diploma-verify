@@ -1,1 +1,1591 @@
 2026-04-03 16:25:02.483 | INFO     | routers.internal:send_notification:58 - [notification stub] type=welcome account_id=823e26dc-6e87-4f8d-97f7-014af22395ff subject=Добро пожаловать
+2026-04-04 18:10:56.045 | ERROR    | routers.internal:send_notification:54 - Notification persist failed: (psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist
+LINE 1: ...tifications (id, account_id, type, subject, body, is_read, r...
+                                                             ^
+
+[SQL: INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(account_id)s::UUID, %(type)s, %(subject)s, %(body)s, %(is_read)s, %(route)s, %(sent)s, %(sent_at)s) RETURNING notifications.created_at]
+[parameters: {'id': UUID('7bbd1b25-b4da-44ad-807d-f6ca86953451'), 'account_id': UUID('cde79c09-3da9-47cc-b53b-2b2a4dd62827'), 'type': 'welcome', 'subject': 'Добро пожаловать', 'body': 'Регистрация завершена для dan@gmail.com', 'is_read': False, 'route': None, 'sent': False, 'sent_at': None}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+Traceback (most recent call last):
+
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    │    │       └ <function DefaultDialect.do_execute at 0x7a4ba91874c0>
+    │    └ <sqlalchemy.dialects.postgresql.psycopg2.PGDialect_psycopg2 object at 0x7a4ba8d97e10>
+    └ <sqlalchemy.engine.base.Connection object at 0x7a4ba6bdcf50>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    │      │       │          └ {'id': UUID('7bbd1b25-b4da-44ad-807d-f6ca86953451'), 'account_id': UUID('cde79c09-3da9-47cc-b53b-2b2a4dd62827'), 'type': 'wel...
+    │      │       └ 'INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(accou...
+    │      └ <method 'execute' of 'psycopg2.extensions.cursor' objects>
+    └ <cursor object at 0x7a4ba73db3d0; closed: -1>
+
+psycopg2.errors.UndefinedColumn: column "is_read" of relation "notifications" does not exist
+LINE 1: ...tifications (id, account_id, type, subject, body, is_read, r...
+                                                             ^
+
+
+
+The above exception was the direct cause of the following exception:
+
+
+Traceback (most recent call last):
+
+  File "/usr/local/lib/python3.11/threading.py", line 1002, in _bootstrap
+    self._bootstrap_inner()
+    │    └ <function Thread._bootstrap_inner at 0x7a4bab907880>
+    └ <WorkerThread(AnyIO worker thread, started 134465319610048)>
+  File "/usr/local/lib/python3.11/threading.py", line 1045, in _bootstrap_inner
+    self.run()
+    │    └ <function WorkerThread.run at 0x7a4ba6b134c0>
+    └ <WorkerThread(AnyIO worker thread, started 134465319610048)>
+  File "/usr/local/lib/python3.11/site-packages/anyio/_backends/_asyncio.py", line 1002, in run
+    result = context.run(func, *args)
+             │       │   │      └ ()
+             │       │   └ functools.partial(<function send_notification at 0x7a4ba7be5800>, db=<sqlalchemy.orm.session.Session object at 0x7a4ba6bd4c10...
+             │       └ <method 'run' of '_contextvars.Context' objects>
+             └ <_contextvars.Context object at 0x7a4ba6bca0c0>
+
+> File "/app/routers/internal.py", line 50, in send_notification
+    db.commit()
+    │  └ <function Session.commit at 0x7a4ba8ebd3a0>
+    └ <sqlalchemy.orm.session.Session object at 0x7a4ba6bd4c10>
+
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2030, in commit
+    trans.commit(_to_root=True)
+    │     └ <function SessionTransaction.commit at 0x7a4ba8ebc360>
+    └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba8bc0370>
+  File "<string>", line 2, in commit
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                │  │      │      └ {'_to_root': True}
+                │  │      └ ()
+                │  └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba8bc0370>
+                └ <function SessionTransaction.commit at 0x7a4ba8ebc2c0>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 1311, in commit
+    self._prepare_impl()
+    │    └ <function SessionTransaction._prepare_impl at 0x7a4ba8ebc180>
+    └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba8bc0370>
+  File "<string>", line 2, in _prepare_impl
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                │  │      │      └ {}
+                │  │      └ ()
+                │  └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba8bc0370>
+                └ <function SessionTransaction._prepare_impl at 0x7a4ba8ebc0e0>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 1286, in _prepare_impl
+    self.session.flush()
+    │    │       └ <function Session.flush at 0x7a4ba8ec02c0>
+    │    └ <sqlalchemy.orm.session.Session object at 0x7a4ba6bd4c10>
+    └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba8bc0370>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4331, in flush
+    self._flush(objects)
+    │    │      └ None
+    │    └ <function Session._flush at 0x7a4ba8ec04a0>
+    └ <sqlalchemy.orm.session.Session object at 0x7a4ba6bd4c10>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4466, in _flush
+    with util.safe_reraise():
+         │    └ <class 'sqlalchemy.util.langhelpers.safe_reraise'>
+         └ <module 'sqlalchemy.util' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/util/__init__.py'>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/util/langhelpers.py", line 121, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+          │         │              └ <traceback object at 0x7a4ba6b9be00>
+          │         └ <method 'with_traceback' of 'BaseException' objects>
+          └ ProgrammingError('(psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist\nLINE 1: ...t...
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4427, in _flush
+    flush_context.execute()
+    │             └ <function UOWTransaction.execute at 0x7a4ba8e2bf60>
+    └ <sqlalchemy.orm.unitofwork.UOWTransaction object at 0x7a4ba8ba0090>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/unitofwork.py", line 466, in execute
+    rec.execute(self)
+    │   │       └ <sqlalchemy.orm.unitofwork.UOWTransaction object at 0x7a4ba8ba0090>
+    │   └ <function SaveUpdateAll.execute at 0x7a4ba8e44ae0>
+    └ SaveUpdateAll(Mapper[Notification(notifications)])
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+    │    │         │               └ <function save_obj at 0x7a4ba8e46700>
+    │    │         └ <module 'sqlalchemy.orm.persistence' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py'>
+    │    └ <module 'sqlalchemy.util.preloaded' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/util/preloaded.py'>
+    └ <module 'sqlalchemy.util' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/util/__init__.py'>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py", line 93, in save_obj
+    _emit_insert_statements(
+    └ <function _emit_insert_statements at 0x7a4ba8e95c60>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py", line 1233, in _emit_insert_statements
+    result = connection.execute(
+             │          └ <function Connection.execute at 0x7a4ba90e7920>
+             └ <sqlalchemy.engine.base.Connection object at 0x7a4ba6bdcf50>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+    return meth(
+           └ <bound method ClauseElement._execute_on_connection of <sqlalchemy.sql.dml.Insert object at 0x7a4ba6b65a50>>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 527, in _execute_on_connection
+    return connection._execute_clauseelement(
+           │          └ <function Connection._execute_clauseelement at 0x7a4ba90e7c40>
+           └ <sqlalchemy.engine.base.Connection object at 0x7a4ba6bdcf50>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+          │    └ <function Connection._execute_context at 0x7a4ba90e7e20>
+          └ <sqlalchemy.engine.base.Connection object at 0x7a4ba6bdcf50>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           │    └ <function Connection._exec_single_context at 0x7a4ba90e7ec0>
+           └ <sqlalchemy.engine.base.Connection object at 0x7a4ba6bdcf50>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    │    └ <function Connection._handle_dbapi_exception at 0x7a4ba90f8180>
+    └ <sqlalchemy.engine.base.Connection object at 0x7a4ba6bdcf50>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2363, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+          │                    │              │                 └ UndefinedColumn('column "is_read" of relation "notifications" does not exist\nLINE 1: ...tifications (id, account_id, type, s...
+          │                    │              └ (<class 'psycopg2.errors.UndefinedColumn'>, UndefinedColumn('column "is_read" of relation "notifications" does not exist\nLIN...
+          │                    └ <method 'with_traceback' of 'BaseException' objects>
+          └ ProgrammingError('(psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist\nLINE 1: ...t...
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    │    │       └ <function DefaultDialect.do_execute at 0x7a4ba91874c0>
+    │    └ <sqlalchemy.dialects.postgresql.psycopg2.PGDialect_psycopg2 object at 0x7a4ba8d97e10>
+    └ <sqlalchemy.engine.base.Connection object at 0x7a4ba6bdcf50>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    │      │       │          └ {'id': UUID('7bbd1b25-b4da-44ad-807d-f6ca86953451'), 'account_id': UUID('cde79c09-3da9-47cc-b53b-2b2a4dd62827'), 'type': 'wel...
+    │      │       └ 'INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(accou...
+    │      └ <method 'execute' of 'psycopg2.extensions.cursor' objects>
+    └ <cursor object at 0x7a4ba73db3d0; closed: -1>
+
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist
+LINE 1: ...tifications (id, account_id, type, subject, body, is_read, r...
+                                                             ^
+
+[SQL: INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(account_id)s::UUID, %(type)s, %(subject)s, %(body)s, %(is_read)s, %(route)s, %(sent)s, %(sent_at)s) RETURNING notifications.created_at]
+[parameters: {'id': UUID('7bbd1b25-b4da-44ad-807d-f6ca86953451'), 'account_id': UUID('cde79c09-3da9-47cc-b53b-2b2a4dd62827'), 'type': 'welcome', 'subject': 'Добро пожаловать', 'body': 'Регистрация завершена для dan@gmail.com', 'is_read': False, 'route': None, 'sent': False, 'sent_at': None}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-04-04 18:14:12.740 | ERROR    | routers.internal:send_notification:54 - Notification persist failed: (psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist
+LINE 1: ...tifications (id, account_id, type, subject, body, is_read, r...
+                                                             ^
+
+[SQL: INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(account_id)s::UUID, %(type)s, %(subject)s, %(body)s, %(is_read)s, %(route)s, %(sent)s, %(sent_at)s) RETURNING notifications.created_at]
+[parameters: {'id': UUID('c74fd5b1-1575-45ae-9fb1-0fc2684470a2'), 'account_id': UUID('cde79c09-3da9-47cc-b53b-2b2a4dd62827'), 'type': 'diploma_uploaded', 'subject': 'Диплом загружен', 'body': 'Диплом 4242 отправлен на обработку', 'is_read': False, 'route': None, 'sent': False, 'sent_at': None}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+Traceback (most recent call last):
+
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    │    │       └ <function DefaultDialect.do_execute at 0x7a4ba91874c0>
+    │    └ <sqlalchemy.dialects.postgresql.psycopg2.PGDialect_psycopg2 object at 0x7a4ba8d97e10>
+    └ <sqlalchemy.engine.base.Connection object at 0x7a4ba51a6c50>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    │      │       │          └ {'id': UUID('c74fd5b1-1575-45ae-9fb1-0fc2684470a2'), 'account_id': UUID('cde79c09-3da9-47cc-b53b-2b2a4dd62827'), 'type': 'dip...
+    │      │       └ 'INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(accou...
+    │      └ <method 'execute' of 'psycopg2.extensions.cursor' objects>
+    └ <cursor object at 0x7a4ba6ba8130; closed: -1>
+
+psycopg2.errors.UndefinedColumn: column "is_read" of relation "notifications" does not exist
+LINE 1: ...tifications (id, account_id, type, subject, body, is_read, r...
+                                                             ^
+
+
+
+The above exception was the direct cause of the following exception:
+
+
+Traceback (most recent call last):
+
+  File "/usr/local/lib/python3.11/threading.py", line 1002, in _bootstrap
+    self._bootstrap_inner()
+    │    └ <function Thread._bootstrap_inner at 0x7a4bab907880>
+    └ <WorkerThread(AnyIO worker thread, started 134465319610048)>
+  File "/usr/local/lib/python3.11/threading.py", line 1045, in _bootstrap_inner
+    self.run()
+    │    └ <function WorkerThread.run at 0x7a4ba6b134c0>
+    └ <WorkerThread(AnyIO worker thread, started 134465319610048)>
+  File "/usr/local/lib/python3.11/site-packages/anyio/_backends/_asyncio.py", line 1002, in run
+    result = context.run(func, *args)
+             │       │   │      └ ()
+             │       │   └ functools.partial(<function send_notification at 0x7a4ba7be5800>, db=<sqlalchemy.orm.session.Session object at 0x7a4ba51a4550...
+             │       └ <method 'run' of '_contextvars.Context' objects>
+             └ <_contextvars.Context object at 0x7a4ba6bcbf00>
+
+> File "/app/routers/internal.py", line 50, in send_notification
+    db.commit()
+    │  └ <function Session.commit at 0x7a4ba8ebd3a0>
+    └ <sqlalchemy.orm.session.Session object at 0x7a4ba51a4550>
+
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2030, in commit
+    trans.commit(_to_root=True)
+    │     └ <function SessionTransaction.commit at 0x7a4ba8ebc360>
+    └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba8bc0500>
+  File "<string>", line 2, in commit
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                │  │      │      └ {'_to_root': True}
+                │  │      └ ()
+                │  └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba8bc0500>
+                └ <function SessionTransaction.commit at 0x7a4ba8ebc2c0>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 1311, in commit
+    self._prepare_impl()
+    │    └ <function SessionTransaction._prepare_impl at 0x7a4ba8ebc180>
+    └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba8bc0500>
+  File "<string>", line 2, in _prepare_impl
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                │  │      │      └ {}
+                │  │      └ ()
+                │  └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba8bc0500>
+                └ <function SessionTransaction._prepare_impl at 0x7a4ba8ebc0e0>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 1286, in _prepare_impl
+    self.session.flush()
+    │    │       └ <function Session.flush at 0x7a4ba8ec02c0>
+    │    └ <sqlalchemy.orm.session.Session object at 0x7a4ba51a4550>
+    └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba8bc0500>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4331, in flush
+    self._flush(objects)
+    │    │      └ None
+    │    └ <function Session._flush at 0x7a4ba8ec04a0>
+    └ <sqlalchemy.orm.session.Session object at 0x7a4ba51a4550>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4466, in _flush
+    with util.safe_reraise():
+         │    └ <class 'sqlalchemy.util.langhelpers.safe_reraise'>
+         └ <module 'sqlalchemy.util' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/util/__init__.py'>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/util/langhelpers.py", line 121, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+          │         │              └ <traceback object at 0x7a4ba51a6180>
+          │         └ <method 'with_traceback' of 'BaseException' objects>
+          └ ProgrammingError('(psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist\nLINE 1: ...t...
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4427, in _flush
+    flush_context.execute()
+    │             └ <function UOWTransaction.execute at 0x7a4ba8e2bf60>
+    └ <sqlalchemy.orm.unitofwork.UOWTransaction object at 0x7a4ba6b64210>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/unitofwork.py", line 466, in execute
+    rec.execute(self)
+    │   │       └ <sqlalchemy.orm.unitofwork.UOWTransaction object at 0x7a4ba6b64210>
+    │   └ <function SaveUpdateAll.execute at 0x7a4ba8e44ae0>
+    └ SaveUpdateAll(Mapper[Notification(notifications)])
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+    │    │         │               └ <function save_obj at 0x7a4ba8e46700>
+    │    │         └ <module 'sqlalchemy.orm.persistence' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py'>
+    │    └ <module 'sqlalchemy.util.preloaded' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/util/preloaded.py'>
+    └ <module 'sqlalchemy.util' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/util/__init__.py'>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py", line 93, in save_obj
+    _emit_insert_statements(
+    └ <function _emit_insert_statements at 0x7a4ba8e95c60>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py", line 1233, in _emit_insert_statements
+    result = connection.execute(
+             │          └ <function Connection.execute at 0x7a4ba90e7920>
+             └ <sqlalchemy.engine.base.Connection object at 0x7a4ba51a6c50>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+    return meth(
+           └ <bound method ClauseElement._execute_on_connection of <sqlalchemy.sql.dml.Insert object at 0x7a4ba51a7050>>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 527, in _execute_on_connection
+    return connection._execute_clauseelement(
+           │          └ <function Connection._execute_clauseelement at 0x7a4ba90e7c40>
+           └ <sqlalchemy.engine.base.Connection object at 0x7a4ba51a6c50>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+          │    └ <function Connection._execute_context at 0x7a4ba90e7e20>
+          └ <sqlalchemy.engine.base.Connection object at 0x7a4ba51a6c50>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           │    └ <function Connection._exec_single_context at 0x7a4ba90e7ec0>
+           └ <sqlalchemy.engine.base.Connection object at 0x7a4ba51a6c50>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    │    └ <function Connection._handle_dbapi_exception at 0x7a4ba90f8180>
+    └ <sqlalchemy.engine.base.Connection object at 0x7a4ba51a6c50>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2363, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+          │                    │              │                 └ UndefinedColumn('column "is_read" of relation "notifications" does not exist\nLINE 1: ...tifications (id, account_id, type, s...
+          │                    │              └ (<class 'psycopg2.errors.UndefinedColumn'>, UndefinedColumn('column "is_read" of relation "notifications" does not exist\nLIN...
+          │                    └ <method 'with_traceback' of 'BaseException' objects>
+          └ ProgrammingError('(psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist\nLINE 1: ...t...
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    │    │       └ <function DefaultDialect.do_execute at 0x7a4ba91874c0>
+    │    └ <sqlalchemy.dialects.postgresql.psycopg2.PGDialect_psycopg2 object at 0x7a4ba8d97e10>
+    └ <sqlalchemy.engine.base.Connection object at 0x7a4ba51a6c50>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    │      │       │          └ {'id': UUID('c74fd5b1-1575-45ae-9fb1-0fc2684470a2'), 'account_id': UUID('cde79c09-3da9-47cc-b53b-2b2a4dd62827'), 'type': 'dip...
+    │      │       └ 'INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(accou...
+    │      └ <method 'execute' of 'psycopg2.extensions.cursor' objects>
+    └ <cursor object at 0x7a4ba6ba8130; closed: -1>
+
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist
+LINE 1: ...tifications (id, account_id, type, subject, body, is_read, r...
+                                                             ^
+
+[SQL: INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(account_id)s::UUID, %(type)s, %(subject)s, %(body)s, %(is_read)s, %(route)s, %(sent)s, %(sent_at)s) RETURNING notifications.created_at]
+[parameters: {'id': UUID('c74fd5b1-1575-45ae-9fb1-0fc2684470a2'), 'account_id': UUID('cde79c09-3da9-47cc-b53b-2b2a4dd62827'), 'type': 'diploma_uploaded', 'subject': 'Диплом загружен', 'body': 'Диплом 4242 отправлен на обработку', 'is_read': False, 'route': None, 'sent': False, 'sent_at': None}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-04-04 18:14:13.460 | ERROR    | routers.internal:send_notification:54 - Notification persist failed: (psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist
+LINE 1: ...tifications (id, account_id, type, subject, body, is_read, r...
+                                                             ^
+
+[SQL: INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(account_id)s::UUID, %(type)s, %(subject)s, %(body)s, %(is_read)s, %(route)s, %(sent)s, %(sent_at)s) RETURNING notifications.created_at]
+[parameters: {'id': UUID('6695866e-9fc7-4084-9908-a9ba5242c842'), 'account_id': UUID('cde79c09-3da9-47cc-b53b-2b2a4dd62827'), 'type': 'diploma_verified', 'subject': 'Диплом проверен', 'body': 'Диплом 4242 подтверждён автоматически', 'is_read': False, 'route': None, 'sent': False, 'sent_at': None}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+Traceback (most recent call last):
+
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    │    │       └ <function DefaultDialect.do_execute at 0x7a4ba91874c0>
+    │    └ <sqlalchemy.dialects.postgresql.psycopg2.PGDialect_psycopg2 object at 0x7a4ba8d97e10>
+    └ <sqlalchemy.engine.base.Connection object at 0x7a4ba4fdbd10>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    │      │       │          └ {'id': UUID('6695866e-9fc7-4084-9908-a9ba5242c842'), 'account_id': UUID('cde79c09-3da9-47cc-b53b-2b2a4dd62827'), 'type': 'dip...
+    │      │       └ 'INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(accou...
+    │      └ <method 'execute' of 'psycopg2.extensions.cursor' objects>
+    └ <cursor object at 0x7a4ba51b4310; closed: -1>
+
+psycopg2.errors.UndefinedColumn: column "is_read" of relation "notifications" does not exist
+LINE 1: ...tifications (id, account_id, type, subject, body, is_read, r...
+                                                             ^
+
+
+
+The above exception was the direct cause of the following exception:
+
+
+Traceback (most recent call last):
+
+  File "/usr/local/lib/python3.11/threading.py", line 1002, in _bootstrap
+    self._bootstrap_inner()
+    │    └ <function Thread._bootstrap_inner at 0x7a4bab907880>
+    └ <WorkerThread(AnyIO worker thread, started 134465319610048)>
+  File "/usr/local/lib/python3.11/threading.py", line 1045, in _bootstrap_inner
+    self.run()
+    │    └ <function WorkerThread.run at 0x7a4ba6b134c0>
+    └ <WorkerThread(AnyIO worker thread, started 134465319610048)>
+  File "/usr/local/lib/python3.11/site-packages/anyio/_backends/_asyncio.py", line 1002, in run
+    result = context.run(func, *args)
+             │       │   │      └ ()
+             │       │   └ functools.partial(<function send_notification at 0x7a4ba7be5800>, db=<sqlalchemy.orm.session.Session object at 0x7a4ba51bb0d0...
+             │       └ <method 'run' of '_contextvars.Context' objects>
+             └ <_contextvars.Context object at 0x7a4ba51a6640>
+
+> File "/app/routers/internal.py", line 50, in send_notification
+    db.commit()
+    │  └ <function Session.commit at 0x7a4ba8ebd3a0>
+    └ <sqlalchemy.orm.session.Session object at 0x7a4ba51bb0d0>
+
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2030, in commit
+    trans.commit(_to_root=True)
+    │     └ <function SessionTransaction.commit at 0x7a4ba8ebc360>
+    └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba51ae2b0>
+  File "<string>", line 2, in commit
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                │  │      │      └ {'_to_root': True}
+                │  │      └ ()
+                │  └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba51ae2b0>
+                └ <function SessionTransaction.commit at 0x7a4ba8ebc2c0>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 1311, in commit
+    self._prepare_impl()
+    │    └ <function SessionTransaction._prepare_impl at 0x7a4ba8ebc180>
+    └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba51ae2b0>
+  File "<string>", line 2, in _prepare_impl
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                │  │      │      └ {}
+                │  │      └ ()
+                │  └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba51ae2b0>
+                └ <function SessionTransaction._prepare_impl at 0x7a4ba8ebc0e0>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 1286, in _prepare_impl
+    self.session.flush()
+    │    │       └ <function Session.flush at 0x7a4ba8ec02c0>
+    │    └ <sqlalchemy.orm.session.Session object at 0x7a4ba51bb0d0>
+    └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba51ae2b0>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4331, in flush
+    self._flush(objects)
+    │    │      └ None
+    │    └ <function Session._flush at 0x7a4ba8ec04a0>
+    └ <sqlalchemy.orm.session.Session object at 0x7a4ba51bb0d0>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4466, in _flush
+    with util.safe_reraise():
+         │    └ <class 'sqlalchemy.util.langhelpers.safe_reraise'>
+         └ <module 'sqlalchemy.util' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/util/__init__.py'>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/util/langhelpers.py", line 121, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+          │         │              └ <traceback object at 0x7a4ba4fe47c0>
+          │         └ <method 'with_traceback' of 'BaseException' objects>
+          └ ProgrammingError('(psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist\nLINE 1: ...t...
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4427, in _flush
+    flush_context.execute()
+    │             └ <function UOWTransaction.execute at 0x7a4ba8e2bf60>
+    └ <sqlalchemy.orm.unitofwork.UOWTransaction object at 0x7a4ba4fdbb10>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/unitofwork.py", line 466, in execute
+    rec.execute(self)
+    │   │       └ <sqlalchemy.orm.unitofwork.UOWTransaction object at 0x7a4ba4fdbb10>
+    │   └ <function SaveUpdateAll.execute at 0x7a4ba8e44ae0>
+    └ SaveUpdateAll(Mapper[Notification(notifications)])
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+    │    │         │               └ <function save_obj at 0x7a4ba8e46700>
+    │    │         └ <module 'sqlalchemy.orm.persistence' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py'>
+    │    └ <module 'sqlalchemy.util.preloaded' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/util/preloaded.py'>
+    └ <module 'sqlalchemy.util' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/util/__init__.py'>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py", line 93, in save_obj
+    _emit_insert_statements(
+    └ <function _emit_insert_statements at 0x7a4ba8e95c60>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py", line 1233, in _emit_insert_statements
+    result = connection.execute(
+             │          └ <function Connection.execute at 0x7a4ba90e7920>
+             └ <sqlalchemy.engine.base.Connection object at 0x7a4ba4fdbd10>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+    return meth(
+           └ <bound method ClauseElement._execute_on_connection of <sqlalchemy.sql.dml.Insert object at 0x7a4ba4fdbe10>>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 527, in _execute_on_connection
+    return connection._execute_clauseelement(
+           │          └ <function Connection._execute_clauseelement at 0x7a4ba90e7c40>
+           └ <sqlalchemy.engine.base.Connection object at 0x7a4ba4fdbd10>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+          │    └ <function Connection._execute_context at 0x7a4ba90e7e20>
+          └ <sqlalchemy.engine.base.Connection object at 0x7a4ba4fdbd10>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           │    └ <function Connection._exec_single_context at 0x7a4ba90e7ec0>
+           └ <sqlalchemy.engine.base.Connection object at 0x7a4ba4fdbd10>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    │    └ <function Connection._handle_dbapi_exception at 0x7a4ba90f8180>
+    └ <sqlalchemy.engine.base.Connection object at 0x7a4ba4fdbd10>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2363, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+          │                    │              │                 └ UndefinedColumn('column "is_read" of relation "notifications" does not exist\nLINE 1: ...tifications (id, account_id, type, s...
+          │                    │              └ (<class 'psycopg2.errors.UndefinedColumn'>, UndefinedColumn('column "is_read" of relation "notifications" does not exist\nLIN...
+          │                    └ <method 'with_traceback' of 'BaseException' objects>
+          └ ProgrammingError('(psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist\nLINE 1: ...t...
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    │    │       └ <function DefaultDialect.do_execute at 0x7a4ba91874c0>
+    │    └ <sqlalchemy.dialects.postgresql.psycopg2.PGDialect_psycopg2 object at 0x7a4ba8d97e10>
+    └ <sqlalchemy.engine.base.Connection object at 0x7a4ba4fdbd10>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    │      │       │          └ {'id': UUID('6695866e-9fc7-4084-9908-a9ba5242c842'), 'account_id': UUID('cde79c09-3da9-47cc-b53b-2b2a4dd62827'), 'type': 'dip...
+    │      │       └ 'INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(accou...
+    │      └ <method 'execute' of 'psycopg2.extensions.cursor' objects>
+    └ <cursor object at 0x7a4ba51b4310; closed: -1>
+
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist
+LINE 1: ...tifications (id, account_id, type, subject, body, is_read, r...
+                                                             ^
+
+[SQL: INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(account_id)s::UUID, %(type)s, %(subject)s, %(body)s, %(is_read)s, %(route)s, %(sent)s, %(sent_at)s) RETURNING notifications.created_at]
+[parameters: {'id': UUID('6695866e-9fc7-4084-9908-a9ba5242c842'), 'account_id': UUID('cde79c09-3da9-47cc-b53b-2b2a4dd62827'), 'type': 'diploma_verified', 'subject': 'Диплом проверен', 'body': 'Диплом 4242 подтверждён автоматически', 'is_read': False, 'route': None, 'sent': False, 'sent_at': None}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-04-04 18:15:23.719 | ERROR    | routers.internal:send_notification:54 - Notification persist failed: (psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist
+LINE 1: ...tifications (id, account_id, type, subject, body, is_read, r...
+                                                             ^
+
+[SQL: INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(account_id)s::UUID, %(type)s, %(subject)s, %(body)s, %(is_read)s, %(route)s, %(sent)s, %(sent_at)s) RETURNING notifications.created_at]
+[parameters: {'id': UUID('2f8f03b7-c9cf-4988-9bcb-d1ae5ab436f0'), 'account_id': UUID('cde79c09-3da9-47cc-b53b-2b2a4dd62827'), 'type': 'diploma_uploaded', 'subject': 'Диплом загружен', 'body': 'Диплом 333 отправлен на обработку', 'is_read': False, 'route': None, 'sent': False, 'sent_at': None}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+Traceback (most recent call last):
+
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    │    │       └ <function DefaultDialect.do_execute at 0x7a4ba91874c0>
+    │    └ <sqlalchemy.dialects.postgresql.psycopg2.PGDialect_psycopg2 object at 0x7a4ba8d97e10>
+    └ <sqlalchemy.engine.base.Connection object at 0x7a4ba51b1f90>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    │      │       │          └ {'id': UUID('2f8f03b7-c9cf-4988-9bcb-d1ae5ab436f0'), 'account_id': UUID('cde79c09-3da9-47cc-b53b-2b2a4dd62827'), 'type': 'dip...
+    │      │       └ 'INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(accou...
+    │      └ <method 'execute' of 'psycopg2.extensions.cursor' objects>
+    └ <cursor object at 0x7a4ba51b6c50; closed: -1>
+
+psycopg2.errors.UndefinedColumn: column "is_read" of relation "notifications" does not exist
+LINE 1: ...tifications (id, account_id, type, subject, body, is_read, r...
+                                                             ^
+
+
+
+The above exception was the direct cause of the following exception:
+
+
+Traceback (most recent call last):
+
+  File "/usr/local/lib/python3.11/threading.py", line 1002, in _bootstrap
+    self._bootstrap_inner()
+    │    └ <function Thread._bootstrap_inner at 0x7a4bab907880>
+    └ <WorkerThread(AnyIO worker thread, started 134465319610048)>
+  File "/usr/local/lib/python3.11/threading.py", line 1045, in _bootstrap_inner
+    self.run()
+    │    └ <function WorkerThread.run at 0x7a4ba6b134c0>
+    └ <WorkerThread(AnyIO worker thread, started 134465319610048)>
+  File "/usr/local/lib/python3.11/site-packages/anyio/_backends/_asyncio.py", line 1002, in run
+    result = context.run(func, *args)
+             │       │   │      └ ()
+             │       │   └ functools.partial(<function send_notification at 0x7a4ba7be5800>, db=<sqlalchemy.orm.session.Session object at 0x7a4ba4fe5050...
+             │       └ <method 'run' of '_contextvars.Context' objects>
+             └ <_contextvars.Context object at 0x7a4ba7727280>
+
+> File "/app/routers/internal.py", line 50, in send_notification
+    db.commit()
+    │  └ <function Session.commit at 0x7a4ba8ebd3a0>
+    └ <sqlalchemy.orm.session.Session object at 0x7a4ba4fe5050>
+
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2030, in commit
+    trans.commit(_to_root=True)
+    │     └ <function SessionTransaction.commit at 0x7a4ba8ebc360>
+    └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba51ad360>
+  File "<string>", line 2, in commit
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                │  │      │      └ {'_to_root': True}
+                │  │      └ ()
+                │  └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba51ad360>
+                └ <function SessionTransaction.commit at 0x7a4ba8ebc2c0>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 1311, in commit
+    self._prepare_impl()
+    │    └ <function SessionTransaction._prepare_impl at 0x7a4ba8ebc180>
+    └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba51ad360>
+  File "<string>", line 2, in _prepare_impl
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                │  │      │      └ {}
+                │  │      └ ()
+                │  └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba51ad360>
+                └ <function SessionTransaction._prepare_impl at 0x7a4ba8ebc0e0>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 1286, in _prepare_impl
+    self.session.flush()
+    │    │       └ <function Session.flush at 0x7a4ba8ec02c0>
+    │    └ <sqlalchemy.orm.session.Session object at 0x7a4ba4fe5050>
+    └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba51ad360>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4331, in flush
+    self._flush(objects)
+    │    │      └ None
+    │    └ <function Session._flush at 0x7a4ba8ec04a0>
+    └ <sqlalchemy.orm.session.Session object at 0x7a4ba4fe5050>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4466, in _flush
+    with util.safe_reraise():
+         │    └ <class 'sqlalchemy.util.langhelpers.safe_reraise'>
+         └ <module 'sqlalchemy.util' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/util/__init__.py'>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/util/langhelpers.py", line 121, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+          │         │              └ <traceback object at 0x7a4ba4fee080>
+          │         └ <method 'with_traceback' of 'BaseException' objects>
+          └ ProgrammingError('(psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist\nLINE 1: ...t...
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4427, in _flush
+    flush_context.execute()
+    │             └ <function UOWTransaction.execute at 0x7a4ba8e2bf60>
+    └ <sqlalchemy.orm.unitofwork.UOWTransaction object at 0x7a4ba4fe4210>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/unitofwork.py", line 466, in execute
+    rec.execute(self)
+    │   │       └ <sqlalchemy.orm.unitofwork.UOWTransaction object at 0x7a4ba4fe4210>
+    │   └ <function SaveUpdateAll.execute at 0x7a4ba8e44ae0>
+    └ SaveUpdateAll(Mapper[Notification(notifications)])
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+    │    │         │               └ <function save_obj at 0x7a4ba8e46700>
+    │    │         └ <module 'sqlalchemy.orm.persistence' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py'>
+    │    └ <module 'sqlalchemy.util.preloaded' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/util/preloaded.py'>
+    └ <module 'sqlalchemy.util' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/util/__init__.py'>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py", line 93, in save_obj
+    _emit_insert_statements(
+    └ <function _emit_insert_statements at 0x7a4ba8e95c60>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py", line 1233, in _emit_insert_statements
+    result = connection.execute(
+             │          └ <function Connection.execute at 0x7a4ba90e7920>
+             └ <sqlalchemy.engine.base.Connection object at 0x7a4ba51b1f90>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+    return meth(
+           └ <bound method ClauseElement._execute_on_connection of <sqlalchemy.sql.dml.Insert object at 0x7a4ba51b2f90>>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 527, in _execute_on_connection
+    return connection._execute_clauseelement(
+           │          └ <function Connection._execute_clauseelement at 0x7a4ba90e7c40>
+           └ <sqlalchemy.engine.base.Connection object at 0x7a4ba51b1f90>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+          │    └ <function Connection._execute_context at 0x7a4ba90e7e20>
+          └ <sqlalchemy.engine.base.Connection object at 0x7a4ba51b1f90>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           │    └ <function Connection._exec_single_context at 0x7a4ba90e7ec0>
+           └ <sqlalchemy.engine.base.Connection object at 0x7a4ba51b1f90>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    │    └ <function Connection._handle_dbapi_exception at 0x7a4ba90f8180>
+    └ <sqlalchemy.engine.base.Connection object at 0x7a4ba51b1f90>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2363, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+          │                    │              │                 └ UndefinedColumn('column "is_read" of relation "notifications" does not exist\nLINE 1: ...tifications (id, account_id, type, s...
+          │                    │              └ (<class 'psycopg2.errors.UndefinedColumn'>, UndefinedColumn('column "is_read" of relation "notifications" does not exist\nLIN...
+          │                    └ <method 'with_traceback' of 'BaseException' objects>
+          └ ProgrammingError('(psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist\nLINE 1: ...t...
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    │    │       └ <function DefaultDialect.do_execute at 0x7a4ba91874c0>
+    │    └ <sqlalchemy.dialects.postgresql.psycopg2.PGDialect_psycopg2 object at 0x7a4ba8d97e10>
+    └ <sqlalchemy.engine.base.Connection object at 0x7a4ba51b1f90>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    │      │       │          └ {'id': UUID('2f8f03b7-c9cf-4988-9bcb-d1ae5ab436f0'), 'account_id': UUID('cde79c09-3da9-47cc-b53b-2b2a4dd62827'), 'type': 'dip...
+    │      │       └ 'INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(accou...
+    │      └ <method 'execute' of 'psycopg2.extensions.cursor' objects>
+    └ <cursor object at 0x7a4ba51b6c50; closed: -1>
+
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist
+LINE 1: ...tifications (id, account_id, type, subject, body, is_read, r...
+                                                             ^
+
+[SQL: INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(account_id)s::UUID, %(type)s, %(subject)s, %(body)s, %(is_read)s, %(route)s, %(sent)s, %(sent_at)s) RETURNING notifications.created_at]
+[parameters: {'id': UUID('2f8f03b7-c9cf-4988-9bcb-d1ae5ab436f0'), 'account_id': UUID('cde79c09-3da9-47cc-b53b-2b2a4dd62827'), 'type': 'diploma_uploaded', 'subject': 'Диплом загружен', 'body': 'Диплом 333 отправлен на обработку', 'is_read': False, 'route': None, 'sent': False, 'sent_at': None}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-04-04 18:15:23.819 | ERROR    | routers.internal:send_notification:54 - Notification persist failed: (psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist
+LINE 1: ...tifications (id, account_id, type, subject, body, is_read, r...
+                                                             ^
+
+[SQL: INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(account_id)s::UUID, %(type)s, %(subject)s, %(body)s, %(is_read)s, %(route)s, %(sent)s, %(sent_at)s) RETURNING notifications.created_at]
+[parameters: {'id': UUID('3a37b838-cc49-4ace-b290-35a326b87436'), 'account_id': UUID('cde79c09-3da9-47cc-b53b-2b2a4dd62827'), 'type': 'diploma_verified', 'subject': 'Диплом проверен', 'body': 'Диплом 333 подтверждён автоматически', 'is_read': False, 'route': None, 'sent': False, 'sent_at': None}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+Traceback (most recent call last):
+
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    │    │       └ <function DefaultDialect.do_execute at 0x7a4ba91874c0>
+    │    └ <sqlalchemy.dialects.postgresql.psycopg2.PGDialect_psycopg2 object at 0x7a4ba8d97e10>
+    └ <sqlalchemy.engine.base.Connection object at 0x7a4ba5001910>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    │      │       │          └ {'id': UUID('3a37b838-cc49-4ace-b290-35a326b87436'), 'account_id': UUID('cde79c09-3da9-47cc-b53b-2b2a4dd62827'), 'type': 'dip...
+    │      │       └ 'INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(accou...
+    │      └ <method 'execute' of 'psycopg2.extensions.cursor' objects>
+    └ <cursor object at 0x7a4ba51b7e20; closed: -1>
+
+psycopg2.errors.UndefinedColumn: column "is_read" of relation "notifications" does not exist
+LINE 1: ...tifications (id, account_id, type, subject, body, is_read, r...
+                                                             ^
+
+
+
+The above exception was the direct cause of the following exception:
+
+
+Traceback (most recent call last):
+
+  File "/usr/local/lib/python3.11/threading.py", line 1002, in _bootstrap
+    self._bootstrap_inner()
+    │    └ <function Thread._bootstrap_inner at 0x7a4bab907880>
+    └ <WorkerThread(AnyIO worker thread, started 134465319610048)>
+  File "/usr/local/lib/python3.11/threading.py", line 1045, in _bootstrap_inner
+    self.run()
+    │    └ <function WorkerThread.run at 0x7a4ba6b134c0>
+    └ <WorkerThread(AnyIO worker thread, started 134465319610048)>
+  File "/usr/local/lib/python3.11/site-packages/anyio/_backends/_asyncio.py", line 1002, in run
+    result = context.run(func, *args)
+             │       │   │      └ ()
+             │       │   └ functools.partial(<function send_notification at 0x7a4ba7be5800>, db=<sqlalchemy.orm.session.Session object at 0x7a4ba4fecb10...
+             │       └ <method 'run' of '_contextvars.Context' objects>
+             └ <_contextvars.Context object at 0x7a4ba4fda0c0>
+
+> File "/app/routers/internal.py", line 50, in send_notification
+    db.commit()
+    │  └ <function Session.commit at 0x7a4ba8ebd3a0>
+    └ <sqlalchemy.orm.session.Session object at 0x7a4ba4fecb10>
+
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2030, in commit
+    trans.commit(_to_root=True)
+    │     └ <function SessionTransaction.commit at 0x7a4ba8ebc360>
+    └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba51afcf0>
+  File "<string>", line 2, in commit
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                │  │      │      └ {'_to_root': True}
+                │  │      └ ()
+                │  └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba51afcf0>
+                └ <function SessionTransaction.commit at 0x7a4ba8ebc2c0>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 1311, in commit
+    self._prepare_impl()
+    │    └ <function SessionTransaction._prepare_impl at 0x7a4ba8ebc180>
+    └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba51afcf0>
+  File "<string>", line 2, in _prepare_impl
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                │  │      │      └ {}
+                │  │      └ ()
+                │  └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba51afcf0>
+                └ <function SessionTransaction._prepare_impl at 0x7a4ba8ebc0e0>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 1286, in _prepare_impl
+    self.session.flush()
+    │    │       └ <function Session.flush at 0x7a4ba8ec02c0>
+    │    └ <sqlalchemy.orm.session.Session object at 0x7a4ba4fecb10>
+    └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba51afcf0>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4331, in flush
+    self._flush(objects)
+    │    │      └ None
+    │    └ <function Session._flush at 0x7a4ba8ec04a0>
+    └ <sqlalchemy.orm.session.Session object at 0x7a4ba4fecb10>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4466, in _flush
+    with util.safe_reraise():
+         │    └ <class 'sqlalchemy.util.langhelpers.safe_reraise'>
+         └ <module 'sqlalchemy.util' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/util/__init__.py'>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/util/langhelpers.py", line 121, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+          │         │              └ <traceback object at 0x7a4ba5002380>
+          │         └ <method 'with_traceback' of 'BaseException' objects>
+          └ ProgrammingError('(psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist\nLINE 1: ...t...
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4427, in _flush
+    flush_context.execute()
+    │             └ <function UOWTransaction.execute at 0x7a4ba8e2bf60>
+    └ <sqlalchemy.orm.unitofwork.UOWTransaction object at 0x7a4ba5001710>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/unitofwork.py", line 466, in execute
+    rec.execute(self)
+    │   │       └ <sqlalchemy.orm.unitofwork.UOWTransaction object at 0x7a4ba5001710>
+    │   └ <function SaveUpdateAll.execute at 0x7a4ba8e44ae0>
+    └ SaveUpdateAll(Mapper[Notification(notifications)])
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+    │    │         │               └ <function save_obj at 0x7a4ba8e46700>
+    │    │         └ <module 'sqlalchemy.orm.persistence' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py'>
+    │    └ <module 'sqlalchemy.util.preloaded' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/util/preloaded.py'>
+    └ <module 'sqlalchemy.util' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/util/__init__.py'>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py", line 93, in save_obj
+    _emit_insert_statements(
+    └ <function _emit_insert_statements at 0x7a4ba8e95c60>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py", line 1233, in _emit_insert_statements
+    result = connection.execute(
+             │          └ <function Connection.execute at 0x7a4ba90e7920>
+             └ <sqlalchemy.engine.base.Connection object at 0x7a4ba5001910>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+    return meth(
+           └ <bound method ClauseElement._execute_on_connection of <sqlalchemy.sql.dml.Insert object at 0x7a4ba5001a10>>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 527, in _execute_on_connection
+    return connection._execute_clauseelement(
+           │          └ <function Connection._execute_clauseelement at 0x7a4ba90e7c40>
+           └ <sqlalchemy.engine.base.Connection object at 0x7a4ba5001910>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+          │    └ <function Connection._execute_context at 0x7a4ba90e7e20>
+          └ <sqlalchemy.engine.base.Connection object at 0x7a4ba5001910>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           │    └ <function Connection._exec_single_context at 0x7a4ba90e7ec0>
+           └ <sqlalchemy.engine.base.Connection object at 0x7a4ba5001910>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    │    └ <function Connection._handle_dbapi_exception at 0x7a4ba90f8180>
+    └ <sqlalchemy.engine.base.Connection object at 0x7a4ba5001910>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2363, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+          │                    │              │                 └ UndefinedColumn('column "is_read" of relation "notifications" does not exist\nLINE 1: ...tifications (id, account_id, type, s...
+          │                    │              └ (<class 'psycopg2.errors.UndefinedColumn'>, UndefinedColumn('column "is_read" of relation "notifications" does not exist\nLIN...
+          │                    └ <method 'with_traceback' of 'BaseException' objects>
+          └ ProgrammingError('(psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist\nLINE 1: ...t...
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    │    │       └ <function DefaultDialect.do_execute at 0x7a4ba91874c0>
+    │    └ <sqlalchemy.dialects.postgresql.psycopg2.PGDialect_psycopg2 object at 0x7a4ba8d97e10>
+    └ <sqlalchemy.engine.base.Connection object at 0x7a4ba5001910>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    │      │       │          └ {'id': UUID('3a37b838-cc49-4ace-b290-35a326b87436'), 'account_id': UUID('cde79c09-3da9-47cc-b53b-2b2a4dd62827'), 'type': 'dip...
+    │      │       └ 'INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(accou...
+    │      └ <method 'execute' of 'psycopg2.extensions.cursor' objects>
+    └ <cursor object at 0x7a4ba51b7e20; closed: -1>
+
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist
+LINE 1: ...tifications (id, account_id, type, subject, body, is_read, r...
+                                                             ^
+
+[SQL: INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(account_id)s::UUID, %(type)s, %(subject)s, %(body)s, %(is_read)s, %(route)s, %(sent)s, %(sent_at)s) RETURNING notifications.created_at]
+[parameters: {'id': UUID('3a37b838-cc49-4ace-b290-35a326b87436'), 'account_id': UUID('cde79c09-3da9-47cc-b53b-2b2a4dd62827'), 'type': 'diploma_verified', 'subject': 'Диплом проверен', 'body': 'Диплом 333 подтверждён автоматически', 'is_read': False, 'route': None, 'sent': False, 'sent_at': None}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-04-04 18:39:08.319 | ERROR    | routers.internal:send_notification:54 - Notification persist failed: (psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist
+LINE 1: ...tifications (id, account_id, type, subject, body, is_read, r...
+                                                             ^
+
+[SQL: INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(account_id)s::UUID, %(type)s, %(subject)s, %(body)s, %(is_read)s, %(route)s, %(sent)s, %(sent_at)s) RETURNING notifications.created_at]
+[parameters: {'id': UUID('b85d5c55-0ecc-44f3-816b-ec235f73a4be'), 'account_id': UUID('b6f56e80-f820-4d48-aff0-b1a8b02f8fe2'), 'type': 'welcome', 'subject': 'Добро пожаловать', 'body': 'Регистрация завершена для dany@g.com', 'is_read': False, 'route': None, 'sent': False, 'sent_at': None}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+Traceback (most recent call last):
+
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    │    │       └ <function DefaultDialect.do_execute at 0x7a4ba91874c0>
+    │    └ <sqlalchemy.dialects.postgresql.psycopg2.PGDialect_psycopg2 object at 0x7a4ba8d97e10>
+    └ <sqlalchemy.engine.base.Connection object at 0x7a4ba6b9bb50>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    │      │       │          └ {'id': UUID('b85d5c55-0ecc-44f3-816b-ec235f73a4be'), 'account_id': UUID('b6f56e80-f820-4d48-aff0-b1a8b02f8fe2'), 'type': 'wel...
+    │      │       └ 'INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(accou...
+    │      └ <method 'execute' of 'psycopg2.extensions.cursor' objects>
+    └ <cursor object at 0x7a4ba6ba9c60; closed: -1>
+
+psycopg2.errors.UndefinedColumn: column "is_read" of relation "notifications" does not exist
+LINE 1: ...tifications (id, account_id, type, subject, body, is_read, r...
+                                                             ^
+
+
+
+The above exception was the direct cause of the following exception:
+
+
+Traceback (most recent call last):
+
+  File "/usr/local/lib/python3.11/threading.py", line 1002, in _bootstrap
+    self._bootstrap_inner()
+    │    └ <function Thread._bootstrap_inner at 0x7a4bab907880>
+    └ <WorkerThread(AnyIO worker thread, started 134465319610048)>
+  File "/usr/local/lib/python3.11/threading.py", line 1045, in _bootstrap_inner
+    self.run()
+    │    └ <function WorkerThread.run at 0x7a4ba6b134c0>
+    └ <WorkerThread(AnyIO worker thread, started 134465319610048)>
+  File "/usr/local/lib/python3.11/site-packages/anyio/_backends/_asyncio.py", line 1002, in run
+    result = context.run(func, *args)
+             │       │   │      └ ()
+             │       │   └ functools.partial(<function send_notification at 0x7a4ba7be5800>, db=<sqlalchemy.orm.session.Session object at 0x7a4ba5001050...
+             │       └ <method 'run' of '_contextvars.Context' objects>
+             └ <_contextvars.Context object at 0x7a4ba6bca0c0>
+
+> File "/app/routers/internal.py", line 50, in send_notification
+    db.commit()
+    │  └ <function Session.commit at 0x7a4ba8ebd3a0>
+    └ <sqlalchemy.orm.session.Session object at 0x7a4ba5001050>
+
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2030, in commit
+    trans.commit(_to_root=True)
+    │     └ <function SessionTransaction.commit at 0x7a4ba8ebc360>
+    └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba8bc0460>
+  File "<string>", line 2, in commit
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                │  │      │      └ {'_to_root': True}
+                │  │      └ ()
+                │  └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba8bc0460>
+                └ <function SessionTransaction.commit at 0x7a4ba8ebc2c0>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 1311, in commit
+    self._prepare_impl()
+    │    └ <function SessionTransaction._prepare_impl at 0x7a4ba8ebc180>
+    └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba8bc0460>
+  File "<string>", line 2, in _prepare_impl
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                │  │      │      └ {}
+                │  │      └ ()
+                │  └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba8bc0460>
+                └ <function SessionTransaction._prepare_impl at 0x7a4ba8ebc0e0>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 1286, in _prepare_impl
+    self.session.flush()
+    │    │       └ <function Session.flush at 0x7a4ba8ec02c0>
+    │    └ <sqlalchemy.orm.session.Session object at 0x7a4ba5001050>
+    └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba8bc0460>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4331, in flush
+    self._flush(objects)
+    │    │      └ None
+    │    └ <function Session._flush at 0x7a4ba8ec04a0>
+    └ <sqlalchemy.orm.session.Session object at 0x7a4ba5001050>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4466, in _flush
+    with util.safe_reraise():
+         │    └ <class 'sqlalchemy.util.langhelpers.safe_reraise'>
+         └ <module 'sqlalchemy.util' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/util/__init__.py'>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/util/langhelpers.py", line 121, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+          │         │              └ <traceback object at 0x7a4ba5017400>
+          │         └ <method 'with_traceback' of 'BaseException' objects>
+          └ ProgrammingError('(psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist\nLINE 1: ...t...
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4427, in _flush
+    flush_context.execute()
+    │             └ <function UOWTransaction.execute at 0x7a4ba8e2bf60>
+    └ <sqlalchemy.orm.unitofwork.UOWTransaction object at 0x7a4ba6bac9d0>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/unitofwork.py", line 466, in execute
+    rec.execute(self)
+    │   │       └ <sqlalchemy.orm.unitofwork.UOWTransaction object at 0x7a4ba6bac9d0>
+    │   └ <function SaveUpdateAll.execute at 0x7a4ba8e44ae0>
+    └ SaveUpdateAll(Mapper[Notification(notifications)])
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+    │    │         │               └ <function save_obj at 0x7a4ba8e46700>
+    │    │         └ <module 'sqlalchemy.orm.persistence' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py'>
+    │    └ <module 'sqlalchemy.util.preloaded' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/util/preloaded.py'>
+    └ <module 'sqlalchemy.util' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/util/__init__.py'>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py", line 93, in save_obj
+    _emit_insert_statements(
+    └ <function _emit_insert_statements at 0x7a4ba8e95c60>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py", line 1233, in _emit_insert_statements
+    result = connection.execute(
+             │          └ <function Connection.execute at 0x7a4ba90e7920>
+             └ <sqlalchemy.engine.base.Connection object at 0x7a4ba6b9bb50>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+    return meth(
+           └ <bound method ClauseElement._execute_on_connection of <sqlalchemy.sql.dml.Insert object at 0x7a4ba4fede90>>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 527, in _execute_on_connection
+    return connection._execute_clauseelement(
+           │          └ <function Connection._execute_clauseelement at 0x7a4ba90e7c40>
+           └ <sqlalchemy.engine.base.Connection object at 0x7a4ba6b9bb50>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+          │    └ <function Connection._execute_context at 0x7a4ba90e7e20>
+          └ <sqlalchemy.engine.base.Connection object at 0x7a4ba6b9bb50>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           │    └ <function Connection._exec_single_context at 0x7a4ba90e7ec0>
+           └ <sqlalchemy.engine.base.Connection object at 0x7a4ba6b9bb50>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    │    └ <function Connection._handle_dbapi_exception at 0x7a4ba90f8180>
+    └ <sqlalchemy.engine.base.Connection object at 0x7a4ba6b9bb50>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2363, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+          │                    │              │                 └ UndefinedColumn('column "is_read" of relation "notifications" does not exist\nLINE 1: ...tifications (id, account_id, type, s...
+          │                    │              └ (<class 'psycopg2.errors.UndefinedColumn'>, UndefinedColumn('column "is_read" of relation "notifications" does not exist\nLIN...
+          │                    └ <method 'with_traceback' of 'BaseException' objects>
+          └ ProgrammingError('(psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist\nLINE 1: ...t...
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    │    │       └ <function DefaultDialect.do_execute at 0x7a4ba91874c0>
+    │    └ <sqlalchemy.dialects.postgresql.psycopg2.PGDialect_psycopg2 object at 0x7a4ba8d97e10>
+    └ <sqlalchemy.engine.base.Connection object at 0x7a4ba6b9bb50>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    │      │       │          └ {'id': UUID('b85d5c55-0ecc-44f3-816b-ec235f73a4be'), 'account_id': UUID('b6f56e80-f820-4d48-aff0-b1a8b02f8fe2'), 'type': 'wel...
+    │      │       └ 'INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(accou...
+    │      └ <method 'execute' of 'psycopg2.extensions.cursor' objects>
+    └ <cursor object at 0x7a4ba6ba9c60; closed: -1>
+
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist
+LINE 1: ...tifications (id, account_id, type, subject, body, is_read, r...
+                                                             ^
+
+[SQL: INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(account_id)s::UUID, %(type)s, %(subject)s, %(body)s, %(is_read)s, %(route)s, %(sent)s, %(sent_at)s) RETURNING notifications.created_at]
+[parameters: {'id': UUID('b85d5c55-0ecc-44f3-816b-ec235f73a4be'), 'account_id': UUID('b6f56e80-f820-4d48-aff0-b1a8b02f8fe2'), 'type': 'welcome', 'subject': 'Добро пожаловать', 'body': 'Регистрация завершена для dany@g.com', 'is_read': False, 'route': None, 'sent': False, 'sent_at': None}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-04-04 18:40:15.321 | ERROR    | routers.internal:send_notification:54 - Notification persist failed: (psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist
+LINE 1: ...tifications (id, account_id, type, subject, body, is_read, r...
+                                                             ^
+
+[SQL: INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(account_id)s::UUID, %(type)s, %(subject)s, %(body)s, %(is_read)s, %(route)s, %(sent)s, %(sent_at)s) RETURNING notifications.created_at]
+[parameters: {'id': UUID('4a79771f-dab3-4c14-9aaf-ef1f4869d2c0'), 'account_id': UUID('0d7a8812-bbd0-4d2a-b7bd-3b7ff0c0f32e'), 'type': 'welcome', 'subject': 'Добро пожаловать', 'body': 'Регистрация завершена для dan@g.com', 'is_read': False, 'route': None, 'sent': False, 'sent_at': None}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+Traceback (most recent call last):
+
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    │    │       └ <function DefaultDialect.do_execute at 0x7a4ba91874c0>
+    │    └ <sqlalchemy.dialects.postgresql.psycopg2.PGDialect_psycopg2 object at 0x7a4ba8d97e10>
+    └ <sqlalchemy.engine.base.Connection object at 0x7a4ba4fd9d90>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    │      │       │          └ {'id': UUID('4a79771f-dab3-4c14-9aaf-ef1f4869d2c0'), 'account_id': UUID('0d7a8812-bbd0-4d2a-b7bd-3b7ff0c0f32e'), 'type': 'wel...
+    │      │       └ 'INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(accou...
+    │      └ <method 'execute' of 'psycopg2.extensions.cursor' objects>
+    └ <cursor object at 0x7a4ba51b44f0; closed: -1>
+
+psycopg2.errors.UndefinedColumn: column "is_read" of relation "notifications" does not exist
+LINE 1: ...tifications (id, account_id, type, subject, body, is_read, r...
+                                                             ^
+
+
+
+The above exception was the direct cause of the following exception:
+
+
+Traceback (most recent call last):
+
+  File "/usr/local/lib/python3.11/threading.py", line 1002, in _bootstrap
+    self._bootstrap_inner()
+    │    └ <function Thread._bootstrap_inner at 0x7a4bab907880>
+    └ <WorkerThread(AnyIO worker thread, started 134465319610048)>
+  File "/usr/local/lib/python3.11/threading.py", line 1045, in _bootstrap_inner
+    self.run()
+    │    └ <function WorkerThread.run at 0x7a4ba6b134c0>
+    └ <WorkerThread(AnyIO worker thread, started 134465319610048)>
+  File "/usr/local/lib/python3.11/site-packages/anyio/_backends/_asyncio.py", line 1002, in run
+    result = context.run(func, *args)
+             │       │   │      └ ()
+             │       │   └ functools.partial(<function send_notification at 0x7a4ba7be5800>, db=<sqlalchemy.orm.session.Session object at 0x7a4ba5017210...
+             │       └ <method 'run' of '_contextvars.Context' objects>
+             └ <_contextvars.Context object at 0x7a4ba6b0ae40>
+
+> File "/app/routers/internal.py", line 50, in send_notification
+    db.commit()
+    │  └ <function Session.commit at 0x7a4ba8ebd3a0>
+    └ <sqlalchemy.orm.session.Session object at 0x7a4ba5017210>
+
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2030, in commit
+    trans.commit(_to_root=True)
+    │     └ <function SessionTransaction.commit at 0x7a4ba8ebc360>
+    └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba6bb63a0>
+  File "<string>", line 2, in commit
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                │  │      │      └ {'_to_root': True}
+                │  │      └ ()
+                │  └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba6bb63a0>
+                └ <function SessionTransaction.commit at 0x7a4ba8ebc2c0>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 1311, in commit
+    self._prepare_impl()
+    │    └ <function SessionTransaction._prepare_impl at 0x7a4ba8ebc180>
+    └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba6bb63a0>
+  File "<string>", line 2, in _prepare_impl
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                │  │      │      └ {}
+                │  │      └ ()
+                │  └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba6bb63a0>
+                └ <function SessionTransaction._prepare_impl at 0x7a4ba8ebc0e0>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 1286, in _prepare_impl
+    self.session.flush()
+    │    │       └ <function Session.flush at 0x7a4ba8ec02c0>
+    │    └ <sqlalchemy.orm.session.Session object at 0x7a4ba5017210>
+    └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba6bb63a0>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4331, in flush
+    self._flush(objects)
+    │    │      └ None
+    │    └ <function Session._flush at 0x7a4ba8ec04a0>
+    └ <sqlalchemy.orm.session.Session object at 0x7a4ba5017210>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4466, in _flush
+    with util.safe_reraise():
+         │    └ <class 'sqlalchemy.util.langhelpers.safe_reraise'>
+         └ <module 'sqlalchemy.util' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/util/__init__.py'>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/util/langhelpers.py", line 121, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+          │         │              └ <traceback object at 0x7a4ba5017e40>
+          │         └ <method 'with_traceback' of 'BaseException' objects>
+          └ ProgrammingError('(psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist\nLINE 1: ...t...
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4427, in _flush
+    flush_context.execute()
+    │             └ <function UOWTransaction.execute at 0x7a4ba8e2bf60>
+    └ <sqlalchemy.orm.unitofwork.UOWTransaction object at 0x7a4ba4fdbd10>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/unitofwork.py", line 466, in execute
+    rec.execute(self)
+    │   │       └ <sqlalchemy.orm.unitofwork.UOWTransaction object at 0x7a4ba4fdbd10>
+    │   └ <function SaveUpdateAll.execute at 0x7a4ba8e44ae0>
+    └ SaveUpdateAll(Mapper[Notification(notifications)])
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+    │    │         │               └ <function save_obj at 0x7a4ba8e46700>
+    │    │         └ <module 'sqlalchemy.orm.persistence' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py'>
+    │    └ <module 'sqlalchemy.util.preloaded' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/util/preloaded.py'>
+    └ <module 'sqlalchemy.util' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/util/__init__.py'>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py", line 93, in save_obj
+    _emit_insert_statements(
+    └ <function _emit_insert_statements at 0x7a4ba8e95c60>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py", line 1233, in _emit_insert_statements
+    result = connection.execute(
+             │          └ <function Connection.execute at 0x7a4ba90e7920>
+             └ <sqlalchemy.engine.base.Connection object at 0x7a4ba4fd9d90>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+    return meth(
+           └ <bound method ClauseElement._execute_on_connection of <sqlalchemy.sql.dml.Insert object at 0x7a4ba4fd9e50>>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 527, in _execute_on_connection
+    return connection._execute_clauseelement(
+           │          └ <function Connection._execute_clauseelement at 0x7a4ba90e7c40>
+           └ <sqlalchemy.engine.base.Connection object at 0x7a4ba4fd9d90>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+          │    └ <function Connection._execute_context at 0x7a4ba90e7e20>
+          └ <sqlalchemy.engine.base.Connection object at 0x7a4ba4fd9d90>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           │    └ <function Connection._exec_single_context at 0x7a4ba90e7ec0>
+           └ <sqlalchemy.engine.base.Connection object at 0x7a4ba4fd9d90>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    │    └ <function Connection._handle_dbapi_exception at 0x7a4ba90f8180>
+    └ <sqlalchemy.engine.base.Connection object at 0x7a4ba4fd9d90>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2363, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+          │                    │              │                 └ UndefinedColumn('column "is_read" of relation "notifications" does not exist\nLINE 1: ...tifications (id, account_id, type, s...
+          │                    │              └ (<class 'psycopg2.errors.UndefinedColumn'>, UndefinedColumn('column "is_read" of relation "notifications" does not exist\nLIN...
+          │                    └ <method 'with_traceback' of 'BaseException' objects>
+          └ ProgrammingError('(psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist\nLINE 1: ...t...
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    │    │       └ <function DefaultDialect.do_execute at 0x7a4ba91874c0>
+    │    └ <sqlalchemy.dialects.postgresql.psycopg2.PGDialect_psycopg2 object at 0x7a4ba8d97e10>
+    └ <sqlalchemy.engine.base.Connection object at 0x7a4ba4fd9d90>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    │      │       │          └ {'id': UUID('4a79771f-dab3-4c14-9aaf-ef1f4869d2c0'), 'account_id': UUID('0d7a8812-bbd0-4d2a-b7bd-3b7ff0c0f32e'), 'type': 'wel...
+    │      │       └ 'INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(accou...
+    │      └ <method 'execute' of 'psycopg2.extensions.cursor' objects>
+    └ <cursor object at 0x7a4ba51b44f0; closed: -1>
+
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist
+LINE 1: ...tifications (id, account_id, type, subject, body, is_read, r...
+                                                             ^
+
+[SQL: INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(account_id)s::UUID, %(type)s, %(subject)s, %(body)s, %(is_read)s, %(route)s, %(sent)s, %(sent_at)s) RETURNING notifications.created_at]
+[parameters: {'id': UUID('4a79771f-dab3-4c14-9aaf-ef1f4869d2c0'), 'account_id': UUID('0d7a8812-bbd0-4d2a-b7bd-3b7ff0c0f32e'), 'type': 'welcome', 'subject': 'Добро пожаловать', 'body': 'Регистрация завершена для dan@g.com', 'is_read': False, 'route': None, 'sent': False, 'sent_at': None}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-04-04 18:40:54.324 | ERROR    | routers.internal:send_notification:54 - Notification persist failed: (psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist
+LINE 1: ...tifications (id, account_id, type, subject, body, is_read, r...
+                                                             ^
+
+[SQL: INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(account_id)s::UUID, %(type)s, %(subject)s, %(body)s, %(is_read)s, %(route)s, %(sent)s, %(sent_at)s) RETURNING notifications.created_at]
+[parameters: {'id': UUID('0e90886b-58e1-4ba5-b18d-d860f0873257'), 'account_id': UUID('0d7a8812-bbd0-4d2a-b7bd-3b7ff0c0f32e'), 'type': 'diploma_uploaded', 'subject': 'Диплом загружен', 'body': 'Диплом 43232 отправлен на обработку', 'is_read': False, 'route': None, 'sent': False, 'sent_at': None}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+Traceback (most recent call last):
+
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    │    │       └ <function DefaultDialect.do_execute at 0x7a4ba91874c0>
+    │    └ <sqlalchemy.dialects.postgresql.psycopg2.PGDialect_psycopg2 object at 0x7a4ba8d97e10>
+    └ <sqlalchemy.engine.base.Connection object at 0x7a4ba4fe7c10>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    │      │       │          └ {'id': UUID('0e90886b-58e1-4ba5-b18d-d860f0873257'), 'account_id': UUID('0d7a8812-bbd0-4d2a-b7bd-3b7ff0c0f32e'), 'type': 'dip...
+    │      │       └ 'INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(accou...
+    │      └ <method 'execute' of 'psycopg2.extensions.cursor' objects>
+    └ <cursor object at 0x7a4ba6baa6b0; closed: -1>
+
+psycopg2.errors.UndefinedColumn: column "is_read" of relation "notifications" does not exist
+LINE 1: ...tifications (id, account_id, type, subject, body, is_read, r...
+                                                             ^
+
+
+
+The above exception was the direct cause of the following exception:
+
+
+Traceback (most recent call last):
+
+  File "/usr/local/lib/python3.11/threading.py", line 1002, in _bootstrap
+    self._bootstrap_inner()
+    │    └ <function Thread._bootstrap_inner at 0x7a4bab907880>
+    └ <WorkerThread(AnyIO worker thread, started 134465319610048)>
+  File "/usr/local/lib/python3.11/threading.py", line 1045, in _bootstrap_inner
+    self.run()
+    │    └ <function WorkerThread.run at 0x7a4ba6b134c0>
+    └ <WorkerThread(AnyIO worker thread, started 134465319610048)>
+  File "/usr/local/lib/python3.11/site-packages/anyio/_backends/_asyncio.py", line 1002, in run
+    result = context.run(func, *args)
+             │       │   │      └ ()
+             │       │   └ functools.partial(<function send_notification at 0x7a4ba7be5800>, db=<sqlalchemy.orm.session.Session object at 0x7a4ba4fe5510...
+             │       └ <method 'run' of '_contextvars.Context' objects>
+             └ <_contextvars.Context object at 0x7a4ba51a61c0>
+
+> File "/app/routers/internal.py", line 50, in send_notification
+    db.commit()
+    │  └ <function Session.commit at 0x7a4ba8ebd3a0>
+    └ <sqlalchemy.orm.session.Session object at 0x7a4ba4fe5510>
+
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2030, in commit
+    trans.commit(_to_root=True)
+    │     └ <function SessionTransaction.commit at 0x7a4ba8ebc360>
+    └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba51ae4e0>
+  File "<string>", line 2, in commit
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                │  │      │      └ {'_to_root': True}
+                │  │      └ ()
+                │  └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba51ae4e0>
+                └ <function SessionTransaction.commit at 0x7a4ba8ebc2c0>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 1311, in commit
+    self._prepare_impl()
+    │    └ <function SessionTransaction._prepare_impl at 0x7a4ba8ebc180>
+    └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba51ae4e0>
+  File "<string>", line 2, in _prepare_impl
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                │  │      │      └ {}
+                │  │      └ ()
+                │  └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba51ae4e0>
+                └ <function SessionTransaction._prepare_impl at 0x7a4ba8ebc0e0>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 1286, in _prepare_impl
+    self.session.flush()
+    │    │       └ <function Session.flush at 0x7a4ba8ec02c0>
+    │    └ <sqlalchemy.orm.session.Session object at 0x7a4ba4fe5510>
+    └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba51ae4e0>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4331, in flush
+    self._flush(objects)
+    │    │      └ None
+    │    └ <function Session._flush at 0x7a4ba8ec04a0>
+    └ <sqlalchemy.orm.session.Session object at 0x7a4ba4fe5510>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4466, in _flush
+    with util.safe_reraise():
+         │    └ <class 'sqlalchemy.util.langhelpers.safe_reraise'>
+         └ <module 'sqlalchemy.util' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/util/__init__.py'>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/util/langhelpers.py", line 121, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+          │         │              └ <traceback object at 0x7a4ba4fe66c0>
+          │         └ <method 'with_traceback' of 'BaseException' objects>
+          └ ProgrammingError('(psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist\nLINE 1: ...t...
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4427, in _flush
+    flush_context.execute()
+    │             └ <function UOWTransaction.execute at 0x7a4ba8e2bf60>
+    └ <sqlalchemy.orm.unitofwork.UOWTransaction object at 0x7a4ba4fe4850>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/unitofwork.py", line 466, in execute
+    rec.execute(self)
+    │   │       └ <sqlalchemy.orm.unitofwork.UOWTransaction object at 0x7a4ba4fe4850>
+    │   └ <function SaveUpdateAll.execute at 0x7a4ba8e44ae0>
+    └ SaveUpdateAll(Mapper[Notification(notifications)])
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+    │    │         │               └ <function save_obj at 0x7a4ba8e46700>
+    │    │         └ <module 'sqlalchemy.orm.persistence' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py'>
+    │    └ <module 'sqlalchemy.util.preloaded' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/util/preloaded.py'>
+    └ <module 'sqlalchemy.util' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/util/__init__.py'>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py", line 93, in save_obj
+    _emit_insert_statements(
+    └ <function _emit_insert_statements at 0x7a4ba8e95c60>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py", line 1233, in _emit_insert_statements
+    result = connection.execute(
+             │          └ <function Connection.execute at 0x7a4ba90e7920>
+             └ <sqlalchemy.engine.base.Connection object at 0x7a4ba4fe7c10>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+    return meth(
+           └ <bound method ClauseElement._execute_on_connection of <sqlalchemy.sql.dml.Insert object at 0x7a4ba4fe4f90>>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 527, in _execute_on_connection
+    return connection._execute_clauseelement(
+           │          └ <function Connection._execute_clauseelement at 0x7a4ba90e7c40>
+           └ <sqlalchemy.engine.base.Connection object at 0x7a4ba4fe7c10>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+          │    └ <function Connection._execute_context at 0x7a4ba90e7e20>
+          └ <sqlalchemy.engine.base.Connection object at 0x7a4ba4fe7c10>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           │    └ <function Connection._exec_single_context at 0x7a4ba90e7ec0>
+           └ <sqlalchemy.engine.base.Connection object at 0x7a4ba4fe7c10>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    │    └ <function Connection._handle_dbapi_exception at 0x7a4ba90f8180>
+    └ <sqlalchemy.engine.base.Connection object at 0x7a4ba4fe7c10>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2363, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+          │                    │              │                 └ UndefinedColumn('column "is_read" of relation "notifications" does not exist\nLINE 1: ...tifications (id, account_id, type, s...
+          │                    │              └ (<class 'psycopg2.errors.UndefinedColumn'>, UndefinedColumn('column "is_read" of relation "notifications" does not exist\nLIN...
+          │                    └ <method 'with_traceback' of 'BaseException' objects>
+          └ ProgrammingError('(psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist\nLINE 1: ...t...
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    │    │       └ <function DefaultDialect.do_execute at 0x7a4ba91874c0>
+    │    └ <sqlalchemy.dialects.postgresql.psycopg2.PGDialect_psycopg2 object at 0x7a4ba8d97e10>
+    └ <sqlalchemy.engine.base.Connection object at 0x7a4ba4fe7c10>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    │      │       │          └ {'id': UUID('0e90886b-58e1-4ba5-b18d-d860f0873257'), 'account_id': UUID('0d7a8812-bbd0-4d2a-b7bd-3b7ff0c0f32e'), 'type': 'dip...
+    │      │       └ 'INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(accou...
+    │      └ <method 'execute' of 'psycopg2.extensions.cursor' objects>
+    └ <cursor object at 0x7a4ba6baa6b0; closed: -1>
+
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist
+LINE 1: ...tifications (id, account_id, type, subject, body, is_read, r...
+                                                             ^
+
+[SQL: INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(account_id)s::UUID, %(type)s, %(subject)s, %(body)s, %(is_read)s, %(route)s, %(sent)s, %(sent_at)s) RETURNING notifications.created_at]
+[parameters: {'id': UUID('0e90886b-58e1-4ba5-b18d-d860f0873257'), 'account_id': UUID('0d7a8812-bbd0-4d2a-b7bd-3b7ff0c0f32e'), 'type': 'diploma_uploaded', 'subject': 'Диплом загружен', 'body': 'Диплом 43232 отправлен на обработку', 'is_read': False, 'route': None, 'sent': False, 'sent_at': None}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-04-04 18:40:54.419 | ERROR    | routers.internal:send_notification:54 - Notification persist failed: (psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist
+LINE 1: ...tifications (id, account_id, type, subject, body, is_read, r...
+                                                             ^
+
+[SQL: INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(account_id)s::UUID, %(type)s, %(subject)s, %(body)s, %(is_read)s, %(route)s, %(sent)s, %(sent_at)s) RETURNING notifications.created_at]
+[parameters: {'id': UUID('2f44f4ef-be4f-45b8-afca-d7b469bd2b3a'), 'account_id': UUID('0d7a8812-bbd0-4d2a-b7bd-3b7ff0c0f32e'), 'type': 'diploma_verified', 'subject': 'Диплом проверен', 'body': 'Диплом 43232 подтверждён автоматически', 'is_read': False, 'route': None, 'sent': False, 'sent_at': None}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+Traceback (most recent call last):
+
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    │    │       └ <function DefaultDialect.do_execute at 0x7a4ba91874c0>
+    │    └ <sqlalchemy.dialects.postgresql.psycopg2.PGDialect_psycopg2 object at 0x7a4ba8d97e10>
+    └ <sqlalchemy.engine.base.Connection object at 0x7a4ba51a6450>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    │      │       │          └ {'id': UUID('2f44f4ef-be4f-45b8-afca-d7b469bd2b3a'), 'account_id': UUID('0d7a8812-bbd0-4d2a-b7bd-3b7ff0c0f32e'), 'type': 'dip...
+    │      │       └ 'INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(accou...
+    │      └ <method 'execute' of 'psycopg2.extensions.cursor' objects>
+    └ <cursor object at 0x7a4ba500f880; closed: -1>
+
+psycopg2.errors.UndefinedColumn: column "is_read" of relation "notifications" does not exist
+LINE 1: ...tifications (id, account_id, type, subject, body, is_read, r...
+                                                             ^
+
+
+
+The above exception was the direct cause of the following exception:
+
+
+Traceback (most recent call last):
+
+  File "/usr/local/lib/python3.11/threading.py", line 1002, in _bootstrap
+    self._bootstrap_inner()
+    │    └ <function Thread._bootstrap_inner at 0x7a4bab907880>
+    └ <WorkerThread(AnyIO worker thread, started 134465319610048)>
+  File "/usr/local/lib/python3.11/threading.py", line 1045, in _bootstrap_inner
+    self.run()
+    │    └ <function WorkerThread.run at 0x7a4ba6b134c0>
+    └ <WorkerThread(AnyIO worker thread, started 134465319610048)>
+  File "/usr/local/lib/python3.11/site-packages/anyio/_backends/_asyncio.py", line 1002, in run
+    result = context.run(func, *args)
+             │       │   │      └ ()
+             │       │   └ functools.partial(<function send_notification at 0x7a4ba7be5800>, db=<sqlalchemy.orm.session.Session object at 0x7a4ba50147d0...
+             │       └ <method 'run' of '_contextvars.Context' objects>
+             └ <_contextvars.Context object at 0x7a4ba6bcaa40>
+
+> File "/app/routers/internal.py", line 50, in send_notification
+    db.commit()
+    │  └ <function Session.commit at 0x7a4ba8ebd3a0>
+    └ <sqlalchemy.orm.session.Session object at 0x7a4ba50147d0>
+
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2030, in commit
+    trans.commit(_to_root=True)
+    │     └ <function SessionTransaction.commit at 0x7a4ba8ebc360>
+    └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba51ae580>
+  File "<string>", line 2, in commit
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                │  │      │      └ {'_to_root': True}
+                │  │      └ ()
+                │  └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba51ae580>
+                └ <function SessionTransaction.commit at 0x7a4ba8ebc2c0>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 1311, in commit
+    self._prepare_impl()
+    │    └ <function SessionTransaction._prepare_impl at 0x7a4ba8ebc180>
+    └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba51ae580>
+  File "<string>", line 2, in _prepare_impl
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                │  │      │      └ {}
+                │  │      └ ()
+                │  └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba51ae580>
+                └ <function SessionTransaction._prepare_impl at 0x7a4ba8ebc0e0>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 1286, in _prepare_impl
+    self.session.flush()
+    │    │       └ <function Session.flush at 0x7a4ba8ec02c0>
+    │    └ <sqlalchemy.orm.session.Session object at 0x7a4ba50147d0>
+    └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba51ae580>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4331, in flush
+    self._flush(objects)
+    │    │      └ None
+    │    └ <function Session._flush at 0x7a4ba8ec04a0>
+    └ <sqlalchemy.orm.session.Session object at 0x7a4ba50147d0>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4466, in _flush
+    with util.safe_reraise():
+         │    └ <class 'sqlalchemy.util.langhelpers.safe_reraise'>
+         └ <module 'sqlalchemy.util' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/util/__init__.py'>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/util/langhelpers.py", line 121, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+          │         │              └ <traceback object at 0x7a4ba51bae40>
+          │         └ <method 'with_traceback' of 'BaseException' objects>
+          └ ProgrammingError('(psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist\nLINE 1: ...t...
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4427, in _flush
+    flush_context.execute()
+    │             └ <function UOWTransaction.execute at 0x7a4ba8e2bf60>
+    └ <sqlalchemy.orm.unitofwork.UOWTransaction object at 0x7a4ba51a5b50>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/unitofwork.py", line 466, in execute
+    rec.execute(self)
+    │   │       └ <sqlalchemy.orm.unitofwork.UOWTransaction object at 0x7a4ba51a5b50>
+    │   └ <function SaveUpdateAll.execute at 0x7a4ba8e44ae0>
+    └ SaveUpdateAll(Mapper[Notification(notifications)])
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+    │    │         │               └ <function save_obj at 0x7a4ba8e46700>
+    │    │         └ <module 'sqlalchemy.orm.persistence' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py'>
+    │    └ <module 'sqlalchemy.util.preloaded' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/util/preloaded.py'>
+    └ <module 'sqlalchemy.util' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/util/__init__.py'>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py", line 93, in save_obj
+    _emit_insert_statements(
+    └ <function _emit_insert_statements at 0x7a4ba8e95c60>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py", line 1233, in _emit_insert_statements
+    result = connection.execute(
+             │          └ <function Connection.execute at 0x7a4ba90e7920>
+             └ <sqlalchemy.engine.base.Connection object at 0x7a4ba51a6450>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+    return meth(
+           └ <bound method ClauseElement._execute_on_connection of <sqlalchemy.sql.dml.Insert object at 0x7a4ba51a4ad0>>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 527, in _execute_on_connection
+    return connection._execute_clauseelement(
+           │          └ <function Connection._execute_clauseelement at 0x7a4ba90e7c40>
+           └ <sqlalchemy.engine.base.Connection object at 0x7a4ba51a6450>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+          │    └ <function Connection._execute_context at 0x7a4ba90e7e20>
+          └ <sqlalchemy.engine.base.Connection object at 0x7a4ba51a6450>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           │    └ <function Connection._exec_single_context at 0x7a4ba90e7ec0>
+           └ <sqlalchemy.engine.base.Connection object at 0x7a4ba51a6450>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    │    └ <function Connection._handle_dbapi_exception at 0x7a4ba90f8180>
+    └ <sqlalchemy.engine.base.Connection object at 0x7a4ba51a6450>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2363, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+          │                    │              │                 └ UndefinedColumn('column "is_read" of relation "notifications" does not exist\nLINE 1: ...tifications (id, account_id, type, s...
+          │                    │              └ (<class 'psycopg2.errors.UndefinedColumn'>, UndefinedColumn('column "is_read" of relation "notifications" does not exist\nLIN...
+          │                    └ <method 'with_traceback' of 'BaseException' objects>
+          └ ProgrammingError('(psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist\nLINE 1: ...t...
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    │    │       └ <function DefaultDialect.do_execute at 0x7a4ba91874c0>
+    │    └ <sqlalchemy.dialects.postgresql.psycopg2.PGDialect_psycopg2 object at 0x7a4ba8d97e10>
+    └ <sqlalchemy.engine.base.Connection object at 0x7a4ba51a6450>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    │      │       │          └ {'id': UUID('2f44f4ef-be4f-45b8-afca-d7b469bd2b3a'), 'account_id': UUID('0d7a8812-bbd0-4d2a-b7bd-3b7ff0c0f32e'), 'type': 'dip...
+    │      │       └ 'INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(accou...
+    │      └ <method 'execute' of 'psycopg2.extensions.cursor' objects>
+    └ <cursor object at 0x7a4ba500f880; closed: -1>
+
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist
+LINE 1: ...tifications (id, account_id, type, subject, body, is_read, r...
+                                                             ^
+
+[SQL: INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(account_id)s::UUID, %(type)s, %(subject)s, %(body)s, %(is_read)s, %(route)s, %(sent)s, %(sent_at)s) RETURNING notifications.created_at]
+[parameters: {'id': UUID('2f44f4ef-be4f-45b8-afca-d7b469bd2b3a'), 'account_id': UUID('0d7a8812-bbd0-4d2a-b7bd-3b7ff0c0f32e'), 'type': 'diploma_verified', 'subject': 'Диплом проверен', 'body': 'Диплом 43232 подтверждён автоматически', 'is_read': False, 'route': None, 'sent': False, 'sent_at': None}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-04-04 18:42:03.347 | ERROR    | routers.internal:send_notification:54 - Notification persist failed: (psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist
+LINE 1: ...tifications (id, account_id, type, subject, body, is_read, r...
+                                                             ^
+
+[SQL: INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(account_id)s::UUID, %(type)s, %(subject)s, %(body)s, %(is_read)s, %(route)s, %(sent)s, %(sent_at)s) RETURNING notifications.created_at]
+[parameters: {'id': UUID('89b5be1a-c562-4470-859a-5479fa498abb'), 'account_id': UUID('8c9c761e-59f8-416b-a378-a2f048bb65da'), 'type': 'welcome', 'subject': 'Добро пожаловать', 'body': 'Регистрация завершена для dan@g.comq', 'is_read': False, 'route': None, 'sent': False, 'sent_at': None}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+Traceback (most recent call last):
+
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    │    │       └ <function DefaultDialect.do_execute at 0x7a4ba91874c0>
+    │    └ <sqlalchemy.dialects.postgresql.psycopg2.PGDialect_psycopg2 object at 0x7a4ba8d97e10>
+    └ <sqlalchemy.engine.base.Connection object at 0x7a4ba50259d0>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    │      │       │          └ {'id': UUID('89b5be1a-c562-4470-859a-5479fa498abb'), 'account_id': UUID('8c9c761e-59f8-416b-a378-a2f048bb65da'), 'type': 'wel...
+    │      │       └ 'INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(accou...
+    │      └ <method 'execute' of 'psycopg2.extensions.cursor' objects>
+    └ <cursor object at 0x7a4ba500d7b0; closed: -1>
+
+psycopg2.errors.UndefinedColumn: column "is_read" of relation "notifications" does not exist
+LINE 1: ...tifications (id, account_id, type, subject, body, is_read, r...
+                                                             ^
+
+
+
+The above exception was the direct cause of the following exception:
+
+
+Traceback (most recent call last):
+
+  File "/usr/local/lib/python3.11/threading.py", line 1002, in _bootstrap
+    self._bootstrap_inner()
+    │    └ <function Thread._bootstrap_inner at 0x7a4bab907880>
+    └ <WorkerThread(AnyIO worker thread, started 134465319610048)>
+  File "/usr/local/lib/python3.11/threading.py", line 1045, in _bootstrap_inner
+    self.run()
+    │    └ <function WorkerThread.run at 0x7a4ba6b134c0>
+    └ <WorkerThread(AnyIO worker thread, started 134465319610048)>
+  File "/usr/local/lib/python3.11/site-packages/anyio/_backends/_asyncio.py", line 1002, in run
+    result = context.run(func, *args)
+             │       │   │      └ ()
+             │       │   └ functools.partial(<function send_notification at 0x7a4ba7be5800>, db=<sqlalchemy.orm.session.Session object at 0x7a4ba51b8c90...
+             │       └ <method 'run' of '_contextvars.Context' objects>
+             └ <_contextvars.Context object at 0x7a4ba7724700>
+
+> File "/app/routers/internal.py", line 50, in send_notification
+    db.commit()
+    │  └ <function Session.commit at 0x7a4ba8ebd3a0>
+    └ <sqlalchemy.orm.session.Session object at 0x7a4ba51b8c90>
+
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2030, in commit
+    trans.commit(_to_root=True)
+    │     └ <function SessionTransaction.commit at 0x7a4ba8ebc360>
+    └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba51afde0>
+  File "<string>", line 2, in commit
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                │  │      │      └ {'_to_root': True}
+                │  │      └ ()
+                │  └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba51afde0>
+                └ <function SessionTransaction.commit at 0x7a4ba8ebc2c0>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 1311, in commit
+    self._prepare_impl()
+    │    └ <function SessionTransaction._prepare_impl at 0x7a4ba8ebc180>
+    └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba51afde0>
+  File "<string>", line 2, in _prepare_impl
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                │  │      │      └ {}
+                │  │      └ ()
+                │  └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba51afde0>
+                └ <function SessionTransaction._prepare_impl at 0x7a4ba8ebc0e0>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 1286, in _prepare_impl
+    self.session.flush()
+    │    │       └ <function Session.flush at 0x7a4ba8ec02c0>
+    │    └ <sqlalchemy.orm.session.Session object at 0x7a4ba51b8c90>
+    └ <sqlalchemy.orm.session.SessionTransaction object at 0x7a4ba51afde0>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4331, in flush
+    self._flush(objects)
+    │    │      └ None
+    │    └ <function Session._flush at 0x7a4ba8ec04a0>
+    └ <sqlalchemy.orm.session.Session object at 0x7a4ba51b8c90>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4466, in _flush
+    with util.safe_reraise():
+         │    └ <class 'sqlalchemy.util.langhelpers.safe_reraise'>
+         └ <module 'sqlalchemy.util' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/util/__init__.py'>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/util/langhelpers.py", line 121, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+          │         │              └ <traceback object at 0x7a4ba5026200>
+          │         └ <method 'with_traceback' of 'BaseException' objects>
+          └ ProgrammingError('(psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist\nLINE 1: ...t...
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4427, in _flush
+    flush_context.execute()
+    │             └ <function UOWTransaction.execute at 0x7a4ba8e2bf60>
+    └ <sqlalchemy.orm.unitofwork.UOWTransaction object at 0x7a4ba50257d0>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/unitofwork.py", line 466, in execute
+    rec.execute(self)
+    │   │       └ <sqlalchemy.orm.unitofwork.UOWTransaction object at 0x7a4ba50257d0>
+    │   └ <function SaveUpdateAll.execute at 0x7a4ba8e44ae0>
+    └ SaveUpdateAll(Mapper[Notification(notifications)])
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+    │    │         │               └ <function save_obj at 0x7a4ba8e46700>
+    │    │         └ <module 'sqlalchemy.orm.persistence' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py'>
+    │    └ <module 'sqlalchemy.util.preloaded' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/util/preloaded.py'>
+    └ <module 'sqlalchemy.util' from '/usr/local/lib/python3.11/site-packages/sqlalchemy/util/__init__.py'>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py", line 93, in save_obj
+    _emit_insert_statements(
+    └ <function _emit_insert_statements at 0x7a4ba8e95c60>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py", line 1233, in _emit_insert_statements
+    result = connection.execute(
+             │          └ <function Connection.execute at 0x7a4ba90e7920>
+             └ <sqlalchemy.engine.base.Connection object at 0x7a4ba50259d0>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+    return meth(
+           └ <bound method ClauseElement._execute_on_connection of <sqlalchemy.sql.dml.Insert object at 0x7a4ba5025a90>>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 527, in _execute_on_connection
+    return connection._execute_clauseelement(
+           │          └ <function Connection._execute_clauseelement at 0x7a4ba90e7c40>
+           └ <sqlalchemy.engine.base.Connection object at 0x7a4ba50259d0>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+          │    └ <function Connection._execute_context at 0x7a4ba90e7e20>
+          └ <sqlalchemy.engine.base.Connection object at 0x7a4ba50259d0>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           │    └ <function Connection._exec_single_context at 0x7a4ba90e7ec0>
+           └ <sqlalchemy.engine.base.Connection object at 0x7a4ba50259d0>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    │    └ <function Connection._handle_dbapi_exception at 0x7a4ba90f8180>
+    └ <sqlalchemy.engine.base.Connection object at 0x7a4ba50259d0>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2363, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+          │                    │              │                 └ UndefinedColumn('column "is_read" of relation "notifications" does not exist\nLINE 1: ...tifications (id, account_id, type, s...
+          │                    │              └ (<class 'psycopg2.errors.UndefinedColumn'>, UndefinedColumn('column "is_read" of relation "notifications" does not exist\nLIN...
+          │                    └ <method 'with_traceback' of 'BaseException' objects>
+          └ ProgrammingError('(psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist\nLINE 1: ...t...
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    │    │       └ <function DefaultDialect.do_execute at 0x7a4ba91874c0>
+    │    └ <sqlalchemy.dialects.postgresql.psycopg2.PGDialect_psycopg2 object at 0x7a4ba8d97e10>
+    └ <sqlalchemy.engine.base.Connection object at 0x7a4ba50259d0>
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    │      │       │          └ {'id': UUID('89b5be1a-c562-4470-859a-5479fa498abb'), 'account_id': UUID('8c9c761e-59f8-416b-a378-a2f048bb65da'), 'type': 'wel...
+    │      │       └ 'INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(accou...
+    │      └ <method 'execute' of 'psycopg2.extensions.cursor' objects>
+    └ <cursor object at 0x7a4ba500d7b0; closed: -1>
+
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn) column "is_read" of relation "notifications" does not exist
+LINE 1: ...tifications (id, account_id, type, subject, body, is_read, r...
+                                                             ^
+
+[SQL: INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(account_id)s::UUID, %(type)s, %(subject)s, %(body)s, %(is_read)s, %(route)s, %(sent)s, %(sent_at)s) RETURNING notifications.created_at]
+[parameters: {'id': UUID('89b5be1a-c562-4470-859a-5479fa498abb'), 'account_id': UUID('8c9c761e-59f8-416b-a378-a2f048bb65da'), 'type': 'welcome', 'subject': 'Добро пожаловать', 'body': 'Регистрация завершена для dan@g.comq', 'is_read': False, 'route': None, 'sent': False, 'sent_at': None}]
+(Background on this error at: https://sqlalche.me/e/20/f405)

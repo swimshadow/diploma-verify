@@ -3,22 +3,18 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:encrypt/encrypt.dart' as encrypt;
+import '../logging/app_logger.dart';
 
 /// AES-256-GCM interceptor.
-///
-/// Encrypts request payloads before sending and decrypts response payloads
-/// after receiving. The encrypted format is:
-///   base64( 12-byte IV ‖ ciphertext ‖ 16-byte GCM tag )
-///
-/// Requests with encryption carry header `X-Encrypted: 1` and body
-/// `{"_enc": "<base64>"}`.
-/// Responses with the same header are automatically decrypted.
 class CryptoInterceptor extends Interceptor {
+  static const _tag = 'CryptoInterceptor';
+  final _log = AppLogger.instance;
   final encrypt.Key _key;
 
-  /// [keyBase64] — 256-bit (32-byte) key encoded as base64.
   CryptoInterceptor({required String keyBase64})
-      : _key = encrypt.Key.fromBase64(keyBase64);
+      : _key = encrypt.Key.fromBase64(keyBase64) {
+    AppLogger.instance.info(_tag, 'CryptoInterceptor создан');
+  }
 
   // ─── helpers ───────────────────────────────────────────────
 
@@ -59,10 +55,13 @@ class CryptoInterceptor extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     if (options.data != null && !_isMultipart(options)) {
+      _log.debug(_tag, 'onRequest: шифрование тела → ${options.method} ${options.uri}');
       final jsonStr = jsonEncode(options.data);
       final encrypted = _encrypt(jsonStr);
       options.data = {'_enc': encrypted};
       options.headers['X-Encrypted'] = '1';
+    } else if (_isMultipart(options)) {
+      _log.debug(_tag, 'onRequest: пропуск шифрования (multipart) → ${options.method} ${options.uri}');
     }
     handler.next(options);
   }
@@ -73,6 +72,7 @@ class CryptoInterceptor extends Interceptor {
   void onResponse(Response response, ResponseInterceptorHandler handler) {
     final data = response.data;
     if (data is Map && data.containsKey('_enc')) {
+      _log.debug(_tag, 'onResponse: дешифрование ответа ← ${response.requestOptions.uri}');
       final decrypted = _decrypt(data['_enc'] as String);
       response.data = jsonDecode(decrypted);
     }

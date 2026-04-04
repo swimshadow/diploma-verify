@@ -1,12 +1,15 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../core/logging/app_logger.dart';
 import '../data/diploma_repository.dart';
 import '../data/models/diploma_model.dart';
 import 'diploma_event.dart';
 import 'diploma_state.dart';
 
 class DiplomaBloc extends Bloc<DiplomaEvent, DiplomaState> {
+  static const _tag = 'DiplomaBloc';
+  final _log = AppLogger.instance;
   final DiplomaRepository _repository;
 
   DiplomaBloc({required DiplomaRepository repository})
@@ -15,17 +18,21 @@ class DiplomaBloc extends Bloc<DiplomaEvent, DiplomaState> {
     on<DiplomaLoadRequested>(_onLoad);
     on<DiplomaFilterChanged>(_onFilter);
     on<DiplomaUploadRequested>(_onUpload);
+    _log.info(_tag, 'DiplomaBloc создан');
   }
 
   List<Diploma> _diplomas = [];
 
   Future<void> _onLoad(
       DiplomaLoadRequested event, Emitter<DiplomaState> emit) async {
+    _log.info(_tag, '_onLoad → загрузка дипломов');
     emit(DiplomaLoading());
     try {
       final raw = await _repository.fetchMyDiplomas();
+      _log.info(_tag, '_onLoad ← получено ${raw.length} дипломов');
       _diplomas = raw.map(_mapDiploma).toList();
-    } catch (e) {
+    } catch (e, st) {
+      _log.error(_tag, '_onLoad ОШИБКА', e, st);
       _diplomas = [];
     }
     emit(DiplomaLoaded(
@@ -35,9 +42,11 @@ class DiplomaBloc extends Bloc<DiplomaEvent, DiplomaState> {
   }
 
   void _onFilter(DiplomaFilterChanged event, Emitter<DiplomaState> emit) {
+    _log.info(_tag, '_onFilter → status=${event.status}');
     final filtered = event.status == null
         ? _diplomas
         : _diplomas.where((d) => d.status == event.status).toList();
+    _log.info(_tag, '_onFilter ← ${filtered.length} из ${_diplomas.length}');
     emit(DiplomaLoaded(
       allDiplomas: _diplomas,
       filteredDiplomas: filtered,
@@ -47,16 +56,18 @@ class DiplomaBloc extends Bloc<DiplomaEvent, DiplomaState> {
 
   Future<void> _onUpload(
       DiplomaUploadRequested event, Emitter<DiplomaState> emit) async {
+    _log.info(_tag, '_onUpload → файл=${event.fileName}, ${event.fileBytes.length} байт');
     emit(DiplomaUploadInProgress());
 
     try {
       await _repository.uploadDiploma(
-        fileBytes: [],
+        fileBytes: event.fileBytes,
         fileName: event.fileName,
-        metadata: {'file_path': event.filePath},
+        metadata: {},
       );
-    } catch (_) {
-      // continue with local placeholder
+      _log.info(_tag, '_onUpload ← загрузка на сервер OK');
+    } catch (e, st) {
+      _log.error(_tag, '_onUpload ОШИБКА при загрузке', e, st);
     }
 
     final newDiploma = Diploma(

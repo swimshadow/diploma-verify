@@ -2,7 +2,8 @@
     header {
         Access-Control-Allow-Origin *
         Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-        Access-Control-Allow-Headers "Authorization, Content-Type, Accept"
+        Access-Control-Allow-Headers "Authorization, Content-Type, Accept, X-Encrypted"
+        Access-Control-Expose-Headers "X-Encrypted"
         Access-Control-Max-Age 3600
     }
 
@@ -61,7 +62,8 @@
         uri strip_prefix /api
         reverse_proxy notification-service:8008
     }
-    handle /api/notifications/* {
+    @notifications path /api/notifications /api/notifications/*
+    handle @notifications {
         uri strip_prefix /api
         reverse_proxy notification-service:8008
     }

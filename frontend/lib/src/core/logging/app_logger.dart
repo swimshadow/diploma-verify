@@ -99,13 +99,17 @@ class AppLogger {
     }
     _entries.addLast(entry);
 
-    // Console output (only in debug mode)
-    if (kDebugMode) {
-      final ansiColor = _ansiColor(level);
-      const reset = '\x1B[0m';
+    // Console output
+    final ansiColor = _ansiColor(level);
+    const reset = '\x1B[0m';
+    // ignore: avoid_print
+    print('$ansiColor${entry.formatted}$reset');
+    if (error != null && kDebugMode) {
       developer.log(
-        '$ansiColor${entry.formatted}$reset',
+        entry.formatted,
         name: 'DiplomaVerify',
+        error: error,
+        stackTrace: stackTrace,
       );
     }
 

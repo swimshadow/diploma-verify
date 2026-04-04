@@ -141,7 +141,9 @@ async def _send_notification(
 
 @router.post("/register", response_model=RegisterResponse, status_code=status.HTTP_201_CREATED)
 async def register(payload: RegisterRequest, db: Session = Depends(get_db)):
+    logger.info(f"[REGISTER] Начало регистрации: email={payload.email}, role={payload.role}")
     if db.query(Account).filter(Account.email == str(payload.email)).first():
+        logger.warning(f"[REGISTER] Email уже зарегистрирован: {payload.email}")
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Email already registered",
@@ -215,11 +217,13 @@ async def register(payload: RegisterRequest, db: Session = Depends(get_db)):
         db.commit()
     except IntegrityError:
         db.rollback()
+        logger.error(f"[REGISTER] IntegrityError при регистрации: {payload.email}")
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Registration conflict",
         )
 
+    logger.info(f"[REGISTER] Регистрация успешна: account_id={account.id}, role={account.role}")
     await _send_notification(
         account.id,
         "welcome",
@@ -237,6 +241,7 @@ async def register(payload: RegisterRequest, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=LoginResponse)
 async def login(payload: LoginRequest, db: Session = Depends(get_db)):
+    logger.info(f"[LOGIN] Попытка входа: email={payload.email}")
     email_key = str(payload.email)
     _check_login_attempts_allowed(email_key)
     account = (
@@ -250,12 +255,14 @@ async def login(payload: LoginRequest, db: Session = Depends(get_db)):
         .first()
     )
     if account is None or not verify_password(payload.password, account.password_hash):
+        logger.warning(f"[LOGIN] Неверные учётные данные: {payload.email}")
         _record_failed_login(email_key)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials",
         )
     if getattr(account, "is_blocked", False):
+        logger.warning(f"[LOGIN] Аккаунт заблокирован: {payload.email}")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Account is blocked",
@@ -280,6 +287,7 @@ async def login(payload: LoginRequest, db: Session = Depends(get_db)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Could not issue session",
         )
+    logger.info(f"[LOGIN] Вход успешен: account_id={account.id}, role={account.role}")
     return LoginResponse(
         access_token=access,
         refresh_token=refresh_plain,

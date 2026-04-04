@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:file_picker/file_picker.dart';
 
+import '../../../../core/logging/app_logger.dart';
 import '../../bloc/import_bloc.dart';
 import '../../bloc/import_event.dart';
 import '../../bloc/import_state.dart';
@@ -9,6 +10,8 @@ import '../../data/models/import_model.dart';
 import '../../../university/bloc/university_bloc.dart';
 import '../../../university/bloc/university_state.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
+
+const _tag = 'UniversityBulkImportScreen';
 
 class UniversityBulkImportScreen extends StatelessWidget {
   const UniversityBulkImportScreen({super.key});
@@ -139,6 +142,7 @@ class _UploadSection extends StatelessWidget {
   }
 
   Future<void> _pickFile(BuildContext context) async {
+    AppLogger.instance.info(_tag, 'BTN: Выбрать файл для импорта — нажата');
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['csv', 'xlsx', 'json', 'xml', 'zip'],
@@ -146,6 +150,7 @@ class _UploadSection extends StatelessWidget {
     );
     if (result != null && result.files.isNotEmpty && context.mounted) {
       final file = result.files.first;
+      AppLogger.instance.info(_tag, 'Файл выбран: ${file.name}, ${file.size} bytes');
       final bytes = file.bytes;
       if (bytes == null) return;
       context.read<ImportBloc>().add(ImportStarted(

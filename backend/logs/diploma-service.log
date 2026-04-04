@@ -1,0 +1,4 @@
+2026-04-04 18:42:07.327 | INFO     | routers.student:list_my_diplomas:29 - [STUDENT] Запрос списка дипломов: user=None
+2026-04-04 18:42:07.340 | INFO     | routers.student:list_my_diplomas:47 - [STUDENT] Профиль: full_name=qwert asdf zxcv, dob=2000-01-10
+2026-04-04 18:42:07.358 | INFO     | routers.student:list_my_diplomas:113 - [STUDENT] Найдено дипломов: 0
+2026-04-04 18:42:07.358 | INFO     | routers.student:list_my_diplomas:156 - [STUDENT] Возвращаем 0 дипломов для user=None

@@ -7,6 +7,8 @@ import 'log_viewer_screen.dart';
 
 /// Floating action button overlay that shows error count badge
 /// and opens the LogViewer on tap. Only visible in debug mode.
+///
+/// Uses [Overlay] so the FAB never interferes with the child's layout.
 class LogOverlay extends StatefulWidget {
   final Widget child;
 
@@ -16,83 +18,101 @@ class LogOverlay extends StatefulWidget {
   State<LogOverlay> createState() => _LogOverlayState();
 }
 
-class _LogOverlayState extends State<LogOverlay>
-    with SingleTickerProviderStateMixin {
+class _LogOverlayState extends State<LogOverlay> {
   final _logger = AppLogger.instance;
+  OverlayEntry? _overlayEntry;
   int _errorCount = 0;
-  late final AnimationController _pulseController;
-  late final Animation<double> _pulseAnimation;
 
   @override
   void initState() {
     super.initState();
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 600),
-    );
-    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
-    );
-    _logger.addListener(_onLogChanged);
+    if (kDebugMode) {
+      _logger.addListener(_onLogChanged);
+      // Insert overlay after the first frame when Overlay is available
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _insertOverlay();
+      });
+    }
   }
 
   @override
   void dispose() {
     _logger.removeListener(_onLogChanged);
-    _pulseController.dispose();
+    _overlayEntry?.remove();
+    _overlayEntry = null;
     super.dispose();
   }
 
   void _onLogChanged() {
     if (!mounted) return;
-    final newCount =
-        _logger.entries.where((e) => e.level == LogLevel.error).length;
-    if (newCount > _errorCount) {
-      _pulseController.forward().then((_) => _pulseController.reverse());
-    }
-    setState(() => _errorCount = newCount);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final newCount =
+          _logger.entries.where((e) => e.level == LogLevel.error).length;
+      if (newCount != _errorCount) {
+        _errorCount = newCount;
+        _overlayEntry?.markNeedsBuild();
+      }
+    });
+  }
+
+  void _insertOverlay() {
+    if (!mounted) return;
+    final overlay = Overlay.of(context, rootOverlay: true);
+    _overlayEntry = OverlayEntry(
+      builder: (_) => Positioned(
+        right: 16,
+        bottom: 80,
+        child: _LogFab(
+          errorCount: _errorCount,
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const LogViewerScreen()),
+            );
+          },
+        ),
+      ),
+    );
+    overlay.insert(_overlayEntry!);
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!kDebugMode) return widget.child;
+    // Just pass through — the FAB lives in the Overlay
+    return widget.child;
+  }
+}
 
-    return Stack(
-      children: [
-        widget.child,
-        Positioned(
-          right: 16,
-          bottom: 80,
-          child: ScaleTransition(
-            scale: _pulseAnimation,
-            child: FloatingActionButton.small(
-              heroTag: '__log_viewer_fab__',
-              backgroundColor: _errorCount > 0
-                  ? Colors.redAccent.withAlpha(220)
-                  : const Color(0xFF0F3460).withAlpha(220),
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const LogViewerScreen(),
-                  ),
-                );
-              },
-              child: Badge(
-                isLabelVisible: _errorCount > 0,
-                label: Text(
-                  '$_errorCount',
-                  style: const TextStyle(fontSize: 9),
-                ),
-                child: const Icon(
-                  Icons.bug_report,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ),
-            ),
+class _LogFab extends StatelessWidget {
+  final int errorCount;
+  final VoidCallback onTap;
+
+  const _LogFab({required this.errorCount, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 40,
+      height: 40,
+      child: FloatingActionButton.small(
+        heroTag: '__log_viewer_fab__',
+        backgroundColor: errorCount > 0
+            ? Colors.redAccent.withAlpha(220)
+            : const Color(0xFF0F3460).withAlpha(220),
+        onPressed: onTap,
+        child: Badge(
+          isLabelVisible: errorCount > 0,
+          label: Text(
+            '$errorCount',
+            style: const TextStyle(fontSize: 9),
+          ),
+          child: const Icon(
+            Icons.bug_report,
+            color: Colors.white,
+            size: 20,
           ),
         ),
-      ],
+      ),
     );
   }
 }

@@ -1,2 +1,54 @@
 2026-04-04 17:16:58.521 | INFO     | main:create_tables:83 - University service tables ready
 2026-04-04 17:17:58.053 | INFO     | main:create_tables:83 - University service tables ready
+2026-04-04 17:32:42.021 | INFO     | main:create_tables:83 - University service tables ready
+2026-04-04 17:41:48.212 | INFO     | main:create_tables:83 - University service tables ready
+2026-04-04 18:07:29.058 | INFO     | main:create_tables:83 - University service tables ready
+2026-04-04 18:09:18.635 | INFO     | main:create_tables:83 - University service tables ready
+2026-04-04 18:14:12.634 | INFO     | routers.universities:upload_diploma:293 - [UPLOAD] Начало загрузки диплома. user=cde79c09-3da9-47cc-b53b-2b2a4dd62827
+2026-04-04 18:14:12.634 | INFO     | routers.universities:upload_diploma:294 - [UPLOAD] Файл: name=Lab_C++_week_6 (1).pdf, content_type=application/pdf, size=2854374
+2026-04-04 18:14:12.634 | INFO     | routers.universities:upload_diploma:295 - [UPLOAD] Metadata (raw): {"full_name":"мдьадыьджваьд  бамбк идка ла идк","diploma_number":"4242","series":"1312","degree":"Бакалавр","specialization":"абдуьмзуь","issue_date":"2026-04-03"}
+2026-04-04 18:14:12.635 | INFO     | routers.universities:upload_diploma:298 - [UPLOAD] Metadata parsed: full_name=мдьадыьджваьд  бамбк идка ла идк, diploma_number=4242, degree=Бакалавр
+2026-04-04 18:14:12.635 | INFO     | routers.universities:upload_diploma:307 - [UPLOAD] Валидация файла: fname=lab_c++_week_6 (1).pdf, content_type=application/pdf
+2026-04-04 18:14:12.646 | INFO     | routers.universities:upload_diploma:316 - [UPLOAD] Университет: dan@gmail.com (cde79c09-3da9-47cc-b53b-2b2a4dd62827)
+2026-04-04 18:14:12.646 | INFO     | routers.universities:upload_diploma:324 - [UPLOAD] Data hash computed: bc65ad21963ecbdd...
+2026-04-04 18:14:12.648 | INFO     | routers.universities:upload_diploma:326 - [UPLOAD] Прочитано 2854374 bytes из файла
+2026-04-04 18:14:12.648 | INFO     | routers.universities:upload_diploma:328 - [UPLOAD] Загрузка файла в file-service: http://file-service:8005/files/upload
+2026-04-04 18:14:12.693 | INFO     | routers.universities:upload_diploma:353 - [UPLOAD] Файл загружен, file_id=f87b8bef-2036-4d37-bfa5-0e5aff98a0b2
+2026-04-04 18:14:12.693 | INFO     | routers.universities:upload_diploma:374 - [UPLOAD] Без шифрования полей
+2026-04-04 18:14:12.700 | INFO     | routers.universities:upload_diploma:394 - [UPLOAD] Диплом создан в БД: id=921c1940-a383-45ca-85f2-99674f828512, status=pending
+2026-04-04 18:14:12.700 | INFO     | routers.universities:upload_diploma:397 - [UPLOAD] Запуск AI extraction: http://ai-integration-service:8007/ai/extract
+2026-04-04 18:14:12.731 | INFO     | routers.universities:upload_diploma:404 - [UPLOAD] AI extraction запущен
+2026-04-04 18:14:12.744 | INFO     | routers.universities:upload_diploma:414 - [UPLOAD] Уведомление отправлено
+2026-04-04 18:14:13.376 | INFO     | routers.universities:upload_diploma:427 - [UPLOAD] Аудит записан. Загрузка завершена успешно. diploma_id=921c1940-a383-45ca-85f2-99674f828512
+2026-04-04 18:15:23.649 | INFO     | routers.universities:upload_diploma:293 - [UPLOAD] Начало загрузки диплома. user=cde79c09-3da9-47cc-b53b-2b2a4dd62827
+2026-04-04 18:15:23.649 | INFO     | routers.universities:upload_diploma:294 - [UPLOAD] Файл: name=Lab_C++_week_6 (1).pdf, content_type=application/pdf, size=2854374
+2026-04-04 18:15:23.649 | INFO     | routers.universities:upload_diploma:295 - [UPLOAD] Metadata (raw): {"full_name":"дьмдкл кпк пкпк","diploma_number":"333","series":"343","degree":"Бакалавр","specialization":"мькд","issue_date":"2026-04-01"}
+2026-04-04 18:15:23.649 | INFO     | routers.universities:upload_diploma:298 - [UPLOAD] Metadata parsed: full_name=дьмдкл кпк пкпк, diploma_number=333, degree=Бакалавр
+2026-04-04 18:15:23.649 | INFO     | routers.universities:upload_diploma:307 - [UPLOAD] Валидация файла: fname=lab_c++_week_6 (1).pdf, content_type=application/pdf
+2026-04-04 18:15:23.660 | INFO     | routers.universities:upload_diploma:316 - [UPLOAD] Университет: dan@gmail.com (cde79c09-3da9-47cc-b53b-2b2a4dd62827)
+2026-04-04 18:15:23.660 | INFO     | routers.universities:upload_diploma:324 - [UPLOAD] Data hash computed: 44fb521490cc389d...
+2026-04-04 18:15:23.661 | INFO     | routers.universities:upload_diploma:326 - [UPLOAD] Прочитано 2854374 bytes из файла
+2026-04-04 18:15:23.661 | INFO     | routers.universities:upload_diploma:328 - [UPLOAD] Загрузка файла в file-service: http://file-service:8005/files/upload
+2026-04-04 18:15:23.691 | INFO     | routers.universities:upload_diploma:353 - [UPLOAD] Файл загружен, file_id=23461266-8752-4633-bf2e-94fbeccd9bf4
+2026-04-04 18:15:23.691 | INFO     | routers.universities:upload_diploma:374 - [UPLOAD] Без шифрования полей
+2026-04-04 18:15:23.695 | INFO     | routers.universities:upload_diploma:394 - [UPLOAD] Диплом создан в БД: id=9d0fdd5d-7260-47ab-baa2-bca181648e5d, status=pending
+2026-04-04 18:15:23.695 | INFO     | routers.universities:upload_diploma:397 - [UPLOAD] Запуск AI extraction: http://ai-integration-service:8007/ai/extract
+2026-04-04 18:15:23.711 | INFO     | routers.universities:upload_diploma:404 - [UPLOAD] AI extraction запущен
+2026-04-04 18:15:23.723 | INFO     | routers.universities:upload_diploma:414 - [UPLOAD] Уведомление отправлено
+2026-04-04 18:15:23.735 | INFO     | routers.universities:upload_diploma:427 - [UPLOAD] Аудит записан. Загрузка завершена успешно. diploma_id=9d0fdd5d-7260-47ab-baa2-bca181648e5d
+2026-04-04 18:40:54.267 | INFO     | routers.universities:upload_diploma:293 - [UPLOAD] Начало загрузки диплома. user=0d7a8812-bbd0-4d2a-b7bd-3b7ff0c0f32e
+2026-04-04 18:40:54.267 | INFO     | routers.universities:upload_diploma:294 - [UPLOAD] Файл: name=Lab_C++_week_6 (1).pdf, content_type=application/pdf, size=2854374
+2026-04-04 18:40:54.267 | INFO     | routers.universities:upload_diploma:295 - [UPLOAD] Metadata (raw): {"full_name":"qwer asdf zxcv","diploma_number":"43232","series":"13","degree":"Бакалавр","specialization":"kvnkd","issue_date":"2026-04-02"}
+2026-04-04 18:40:54.267 | INFO     | routers.universities:upload_diploma:298 - [UPLOAD] Metadata parsed: full_name=qwer asdf zxcv, diploma_number=43232, degree=Бакалавр
+2026-04-04 18:40:54.267 | INFO     | routers.universities:upload_diploma:307 - [UPLOAD] Валидация файла: fname=lab_c++_week_6 (1).pdf, content_type=application/pdf
+2026-04-04 18:40:54.275 | INFO     | routers.universities:upload_diploma:316 - [UPLOAD] Университет: dan@g.com (0d7a8812-bbd0-4d2a-b7bd-3b7ff0c0f32e)
+2026-04-04 18:40:54.275 | INFO     | routers.universities:upload_diploma:324 - [UPLOAD] Data hash computed: acd9f93263a5c187...
+2026-04-04 18:40:54.277 | INFO     | routers.universities:upload_diploma:326 - [UPLOAD] Прочитано 2854374 bytes из файла
+2026-04-04 18:40:54.277 | INFO     | routers.universities:upload_diploma:328 - [UPLOAD] Загрузка файла в file-service: http://file-service:8005/files/upload
+2026-04-04 18:40:54.300 | INFO     | routers.universities:upload_diploma:353 - [UPLOAD] Файл загружен, file_id=a2ae99c2-ad1f-4fc8-852b-700d01a1a05e
+2026-04-04 18:40:54.300 | INFO     | routers.universities:upload_diploma:374 - [UPLOAD] Без шифрования полей
+2026-04-04 18:40:54.303 | INFO     | routers.universities:upload_diploma:394 - [UPLOAD] Диплом создан в БД: id=277728a3-9998-4e14-b0d3-7c9d10e53774, status=pending
+2026-04-04 18:40:54.303 | INFO     | routers.universities:upload_diploma:397 - [UPLOAD] Запуск AI extraction: http://ai-integration-service:8007/ai/extract
+2026-04-04 18:40:54.316 | INFO     | routers.universities:upload_diploma:404 - [UPLOAD] AI extraction запущен
+2026-04-04 18:40:54.328 | INFO     | routers.universities:upload_diploma:414 - [UPLOAD] Уведомление отправлено
+2026-04-04 18:40:54.367 | INFO     | routers.universities:upload_diploma:427 - [UPLOAD] Аудит записан. Загрузка завершена успешно. diploma_id=277728a3-9998-4e14-b0d3-7c9d10e53774

@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/logging/app_logger.dart';
 import '../../bloc/auth_bloc.dart';
 import '../../bloc/auth_event.dart';
 import '../../bloc/auth_state.dart';
+
+const _tag = 'RegisterScreen';
 
 class RegisterScreen extends StatefulWidget {
   final String role;
@@ -35,6 +38,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
   // Employer fields
   final _companyNameCtrl = TextEditingController();
   final _employerInnCtrl = TextEditingController();
+  final _log = AppLogger.instance;
+
+  @override
+  void initState() {
+    super.initState();
+    _log.info(_tag, 'Screen opened, role=${widget.role}');
+  }
 
   @override
   void dispose() {
@@ -88,7 +98,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   void _submit() {
-    if (!_formKey.currentState!.validate()) return;
+    _log.info(_tag, 'BTN: Зарегистрироваться — нажата');
+    if (!_formKey.currentState!.validate()) {
+      _log.warning(_tag, 'Валидация формы не пройдена');
+      return;
+    }
+    _log.info(_tag, 'Отправка регистрации: email=${_emailCtrl.text.trim()}, role=${widget.role}');
     context.read<AuthBloc>().add(
           AuthRegisterRequested(
             email: _emailCtrl.text.trim(),
@@ -100,6 +115,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _pickDate() async {
+    _log.info(_tag, 'BTN: Выбрать дату рождения — нажата');
     final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
@@ -108,6 +124,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       lastDate: now,
     );
     if (picked != null) {
+      _log.info(_tag, 'Дата рождения выбрана: $picked');
       _studentDobCtrl.text =
           '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
     }
@@ -247,7 +264,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         children: [
                           const Text('Уже есть аккаунт?'),
                           TextButton(
-                            onPressed: () => context.push('/login'),
+                            onPressed: () {
+                              _log.info(_tag, 'BTN: Войти (c экрана регистрации) — нажата');
+                              context.push('/login');
+                            },
                             child: const Text('Войти'),
                           ),
                         ],

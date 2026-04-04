@@ -29,6 +29,7 @@ async def upload_file(
     uploader_account_id: str | None = Form(default=None),
     db: Session = Depends(get_db),
 ):
+    logger.info(f"[UPLOAD] Начало загрузки файла: name={file.filename}, content_type={file.content_type}, uploader={uploader_account_id}")
     UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
     fid = uuid.uuid4()
     suffix = Path(file.filename or "bin").suffix or ".bin"
@@ -68,6 +69,7 @@ async def upload_file(
     )
     db.add(rec)
     db.commit()
+    logger.info(f"[UPLOAD] Файл сохранён: file_id={fid}, name={rec.original_name}, size={size}, path={dest}")
     return UploadResponse(
         file_id=str(fid),
         original_name=rec.original_name,
@@ -77,9 +79,12 @@ async def upload_file(
 
 @router.get("/{file_id}")
 async def download_file(file_id: uuid.UUID, db: Session = Depends(get_db)):
+    logger.info(f"[DOWNLOAD] Запрос файла: file_id={file_id}")
     rec = db.query(FileRecord).filter(FileRecord.id == file_id).first()
     if rec is None or not Path(rec.stored_path).is_file():
+        logger.warning(f"[DOWNLOAD] Файл не найден: file_id={file_id}")
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+    logger.info(f"[DOWNLOAD] Отдаём файл: file_id={file_id}, name={rec.original_name}")
     return FileResponse(
         rec.stored_path,
         filename=rec.original_name,
@@ -93,17 +98,21 @@ async def delete_file(
     db: Session = Depends(get_db),
     x_internal_token: str | None = Header(default=None, alias="X-Internal-Token"),
 ):
+    logger.info(f"[DELETE] Запрос удаления файла: file_id={file_id}")
     if FILE_INTERNAL_DELETE_TOKEN and x_internal_token != FILE_INTERNAL_DELETE_TOKEN:
+        logger.warning(f"[DELETE] Неверный internal token для file_id={file_id}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or missing internal token",
         )
     rec = db.query(FileRecord).filter(FileRecord.id == file_id).first()
     if rec is None:
+        logger.warning(f"[DELETE] Файл не найден: file_id={file_id}")
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
     p = Path(rec.stored_path)
     if p.is_file():
         p.unlink(missing_ok=True)
     db.delete(rec)
     db.commit()
+    logger.info(f"[DELETE] Файл удалён: file_id={file_id}, name={rec.original_name}")
     return Response(status_code=status.HTTP_204_NO_CONTENT)

@@ -66,3 +66,20 @@ def create_tables():
         conn.commit()
     Base.metadata.create_all(bind=engine)
     AuditBase.metadata.create_all(bind=engine)
+
+    # Миграция: добавляем недостающие колонки в notifications
+    with engine.connect() as conn:
+        for col, col_def in [
+            ("is_read", "BOOLEAN NOT NULL DEFAULT FALSE"),
+            ("route", "VARCHAR(500)"),
+            ("sent", "BOOLEAN NOT NULL DEFAULT FALSE"),
+            ("sent_at", "TIMESTAMP WITH TIME ZONE"),
+        ]:
+            try:
+                conn.execute(text(
+                    f"ALTER TABLE notifications ADD COLUMN {col} {col_def}"
+                ))
+                conn.commit()
+                logger.info(f"[MIGRATION] Добавлена колонка notifications.{col}")
+            except Exception:
+                conn.rollback()

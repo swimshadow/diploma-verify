@@ -9,7 +9,7 @@ from typing import Any, Optional
 
 import httpx
 import rsa
-from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Request, Response, status
 from loguru import logger
 from sqlalchemy.orm import Session
 
@@ -80,6 +80,22 @@ CERTIFICATE_SERVICE_URL = os.getenv(
 NOTIFICATION_SERVICE_URL = os.getenv(
     "NOTIFICATION_SERVICE_URL", "http://notification-service:8008"
 )
+AUTH_SERVICE_URL = os.getenv(
+    "AUTH_SERVICE_URL", "http://auth-service:8001"
+)
+
+
+async def _get_account_id(authorization: str) -> uuid.UUID:
+    url = f"{AUTH_SERVICE_URL.rstrip('/')}/internal/verify-token"
+    token = authorization.replace("Bearer ", "").strip()
+    try:
+        async with httpx.AsyncClient(timeout=HTTP_TIMEOUT) as client:
+            r = await client.get(url, params={"token": token})
+    except httpx.RequestError:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Auth unavailable")
+    if r.status_code != 200:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+    return uuid.UUID(r.json()["account_id"])
 
 
 def _log(
@@ -262,6 +278,32 @@ async def _verify_qr_core(qr_token: str, db: Session) -> dict[str, Any]:
             logger.warning(f"Blockchain check failed: {e}")
     cache_set_json(cache_key, out, 60)
     return out
+
+
+@router.get("/history")
+async def verification_history(
+    authorization: str = Header(..., alias="Authorization"),
+    db: Session = Depends(get_db),
+):
+    account_id = await _get_account_id(authorization)
+    rows = (
+        db.query(VerificationLog)
+        .filter(VerificationLog.checker_account_id == account_id)
+        .order_by(VerificationLog.checked_at.desc())
+        .limit(50)
+        .all()
+    )
+    items = [
+        {
+            "id": r.id,
+            "diploma_id": str(r.diploma_id) if r.diploma_id else None,
+            "check_method": r.check_method,
+            "result": r.result,
+            "checked_at": r.checked_at.isoformat() if r.checked_at else None,
+        }
+        for r in rows
+    ]
+    return {"items": items}
 
 
 @router.get("/qr/{qr_token}", response_model=VerifyPublicResponse)

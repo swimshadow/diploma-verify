@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/logging/app_logger.dart';
 import '../../bloc/auth_bloc.dart';
 import '../../bloc/auth_event.dart';
 import '../../bloc/auth_state.dart';
+
+const _tag = 'LoginScreen';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -18,16 +21,29 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   bool _obscurePassword = true;
+  final _log = AppLogger.instance;
+
+  @override
+  void initState() {
+    super.initState();
+    _log.info(_tag, 'Screen opened');
+  }
 
   @override
   void dispose() {
+    _log.info(_tag, 'Screen disposed');
     _emailCtrl.dispose();
     _passwordCtrl.dispose();
     super.dispose();
   }
 
   void _submit() {
-    if (!_formKey.currentState!.validate()) return;
+    _log.info(_tag, 'BTN: Войти — нажата');
+    if (!_formKey.currentState!.validate()) {
+      _log.warning(_tag, 'Валидация формы не пройдена');
+      return;
+    }
+    _log.info(_tag, 'Отправка логина для email: ${_emailCtrl.text.trim()}');
     context.read<AuthBloc>().add(
           AuthLoginRequested(
             email: _emailCtrl.text.trim(),
@@ -106,8 +122,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             icon: Icon(_obscurePassword
                                 ? Icons.visibility_off
                                 : Icons.visibility),
-                            onPressed: () => setState(
-                                () => _obscurePassword = !_obscurePassword),
+                            onPressed: () {
+                              _log.debug(_tag, 'BTN: Переключение видимости пароля');
+                              setState(() => _obscurePassword = !_obscurePassword);
+                            },
                           ),
                         ),
                         validator: (v) {
@@ -119,7 +137,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       Align(
                         alignment: Alignment.centerRight,
                         child: TextButton(
-                          onPressed: () => context.push('/forgot-password'),
+                          onPressed: () {
+                            _log.info(_tag, 'BTN: Забыли пароль — нажата');
+                            context.push('/forgot-password');
+                          },
                           child: const Text('Забыли пароль?'),
                         ),
                       ),
@@ -146,7 +167,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         children: [
                           const Text('Нет аккаунта?'),
                           TextButton(
-                            onPressed: () => context.push('/role-select'),
+                            onPressed: () {
+                              _log.info(_tag, 'BTN: Зарегистрироваться — нажата');
+                              context.push('/role-select');
+                            },
                             child: const Text('Зарегистрироваться'),
                           ),
                         ],

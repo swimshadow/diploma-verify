@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import 'src/core/di/service_locator.dart';
+import 'src/core/logging/app_logger.dart';
 import 'src/core/logging/log_overlay.dart';
 import 'src/core/router/app_router.dart';
 import 'src/core/theme/app_theme.dart';
@@ -42,6 +43,8 @@ class App extends StatefulWidget {
 }
 
 class _AppState extends State<App> {
+  static const _tag = 'App';
+  final _log = AppLogger.instance;
   late final AuthBloc _authBloc;
   late final DiplomaBloc _diplomaBloc;
   late final ChatBloc _chatBloc;
@@ -58,6 +61,7 @@ class _AppState extends State<App> {
   @override
   void initState() {
     super.initState();
+    _log.info(_tag, 'initState() → инициализация BLoCs');
     _authBloc = AuthBloc(repository: getIt<AuthRepository>());
     _diplomaBloc = DiplomaBloc(repository: getIt<DiplomaRepository>());
     _chatBloc = ChatBloc();
@@ -71,16 +75,21 @@ class _AppState extends State<App> {
     _notificationBloc =
         NotificationBloc(repository: getIt<NotificationRepository>());
     _router = createRouter(_authBloc);
+    _log.info(_tag, 'initState(): все BLoCs и роутер созданы');
 
     // Load data for all BLoCs once user is authenticated
     _authSub = _authBloc.stream.listen((state) {
+      _log.info(_tag, 'AuthBloc stream → ${state.runtimeType}');
       if (state is AuthAuthenticated) {
+        _log.info(_tag, 'Пользователь авторизован (${state.user.role}) → загрузка данных');
         _loadAllData();
       }
     });
+    _log.info(_tag, 'initState() ← завершён');
   }
 
   void _loadAllData() {
+    _log.info(_tag, '_loadAllData() → отправка запросов во все BLoCs');
     _diplomaBloc.add(DiplomaLoadRequested());
     _chatBloc.add(ChatLoadConversations());
     _employerBloc.add(EmployerLoadRequested());
@@ -88,10 +97,12 @@ class _AppState extends State<App> {
     _universityBloc.add(UniversityLoadRequested());
     _adminBloc.add(AdminLoadRequested());
     _notificationBloc.add(NotificationLoadRequested());
+    _log.info(_tag, '_loadAllData() ← все события отправлены');
   }
 
   @override
   void dispose() {
+    _log.info(_tag, 'dispose() → закрытие всех BLoCs');
     _authSub.cancel();
     _authBloc.close();
     _diplomaBloc.close();
@@ -103,6 +114,7 @@ class _AppState extends State<App> {
     _importBloc.close();
     _adminBloc.close();
     _notificationBloc.close();
+    _log.info(_tag, 'dispose() ← все BLoCs закрыты');
     super.dispose();
   }
 
@@ -121,13 +133,12 @@ class _AppState extends State<App> {
         BlocProvider.value(value: _adminBloc),
         BlocProvider.value(value: _notificationBloc),
       ],
-      child: LogOverlay(
-        child: MaterialApp.router(
-          title: 'DiplomaVerify',
-          debugShowCheckedModeBanner: false,
-          theme: AppTheme.light,
-          routerConfig: _router,
-        ),
+      child: MaterialApp.router(
+        title: 'DiplomaVerify',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.light,
+        routerConfig: _router,
+        builder: (context, child) => LogOverlay(child: child!),
       ),
     );
   }

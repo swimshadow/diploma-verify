@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:equatable/equatable.dart';
 import '../data/models/diploma_model.dart';
 
@@ -17,12 +19,12 @@ class DiplomaFilterChanged extends DiplomaEvent {
 }
 
 class DiplomaUploadRequested extends DiplomaEvent {
-  final String filePath;
+  final Uint8List fileBytes;
   final String fileName;
   const DiplomaUploadRequested({
-    required this.filePath,
+    required this.fileBytes,
     required this.fileName,
   });
   @override
-  List<Object?> get props => [filePath, fileName];
+  List<Object?> get props => [fileName];
 }

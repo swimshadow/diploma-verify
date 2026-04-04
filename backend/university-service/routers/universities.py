@@ -290,22 +290,30 @@ async def upload_diploma(
     db: Session = Depends(get_db),
     user: dict = Depends(require_role("university")),
 ):
+    logger.info(f"[UPLOAD] Начало загрузки диплома. user={user.get('account_id')}")
+    logger.info(f"[UPLOAD] Файл: name={file.filename}, content_type={file.content_type}, size={file.size}")
+    logger.info(f"[UPLOAD] Metadata (raw): {metadata[:500]}")
     try:
         meta = DiplomaMetadata.model_validate_json(metadata)
+        logger.info(f"[UPLOAD] Metadata parsed: full_name={meta.full_name}, diploma_number={meta.diploma_number}, degree={meta.degree}")
     except Exception as e:
+        logger.error(f"[UPLOAD] Invalid metadata: {e}")
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Invalid metadata: {e}",
         )
     fname = (file.filename or "").lower()
     ct = (file.content_type or "").lower()
+    logger.info(f"[UPLOAD] Валидация файла: fname={fname}, content_type={ct}")
     if not (fname.endswith(".pdf") or ct == "application/pdf" or ct.endswith("/pdf")):
+        logger.error(f"[UPLOAD] Файл не PDF! fname={fname}, ct={ct}")
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Only PDF files are allowed (use .pdf or application/pdf)",
         )
     uni_account = uuid.UUID(user["account_id"])
     uni_name = await _university_display_name(uni_account)
+    logger.info(f"[UPLOAD] Университет: {uni_name} ({uni_account})")
     plain_name = meta.full_name
     dh = compute_data_hash(
         meta.diploma_number,
@@ -313,8 +321,11 @@ async def upload_diploma(
         meta.issue_date,
         _secret_salt(),
     )
+    logger.info(f"[UPLOAD] Data hash computed: {dh[:16]}...")
     file_bytes = await file.read()
+    logger.info(f"[UPLOAD] Прочитано {len(file_bytes)} bytes из файла")
     upload_url = f"{FILE_SERVICE_URL.rstrip('/')}/files/upload"
+    logger.info(f"[UPLOAD] Загрузка файла в file-service: {upload_url}")
     try:
         async with httpx.AsyncClient(timeout=UPLOAD_HTTP_TIMEOUT) as client:
             files = {
@@ -327,19 +338,22 @@ async def upload_diploma(
             data = {"uploader_account_id": str(uni_account)}
             ur = await client.post(upload_url, files=files, data=data)
     except httpx.RequestError as e:
-        logger.exception(f"File upload failed: {e}")
+        logger.exception(f"[UPLOAD] File upload failed: {e}")
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="File service unavailable",
         )
     if ur.status_code not in (200, 201):
+        logger.error(f"[UPLOAD] File service error: status={ur.status_code}, body={ur.text}")
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail=f"File service: {ur.text}",
         )
     file_id = uuid.UUID(ur.json()["file_id"])
+    logger.info(f"[UPLOAD] Файл загружен, file_id={file_id}")
     enc_key = os.getenv("ENCRYPTION_KEY", "").strip()
     if enc_key:
+        logger.info("[UPLOAD] Используется шифрование полей")
         diploma = Diploma(
             university_account_id=uni_account,
             file_id=file_id,
@@ -357,6 +371,7 @@ async def upload_diploma(
             data_hash=dh,
         )
     else:
+        logger.info("[UPLOAD] Без шифрования полей")
         diploma = Diploma(
             university_account_id=uni_account,
             file_id=file_id,
@@ -376,16 +391,19 @@ async def upload_diploma(
     db.add(diploma)
     db.commit()
     db.refresh(diploma)
+    logger.info(f"[UPLOAD] Диплом создан в БД: id={diploma.id}, status=pending")
 
     ai_url = f"{AI_SERVICE_URL.rstrip('/')}/ai/extract"
+    logger.info(f"[UPLOAD] Запуск AI extraction: {ai_url}")
     try:
         async with httpx.AsyncClient(timeout=HTTP_TIMEOUT) as client:
             await client.post(
                 ai_url,
                 json={"file_id": str(file_id), "diploma_id": str(diploma.id)},
             )
+        logger.info("[UPLOAD] AI extraction запущен")
     except httpx.RequestError as e:
-        logger.warning(f"AI extract trigger failed: {e}")
+        logger.warning(f"[UPLOAD] AI extract trigger failed: {e}")
 
     await _notify(
         uni_account,
@@ -393,6 +411,7 @@ async def upload_diploma(
         "Диплом загружен",
         f"Диплом {meta.diploma_number} отправлен на обработку",
     )
+    logger.info(f"[UPLOAD] Уведомление отправлено")
     await _send_audit(
         actor_id=uni_account,
         actor_role="university",
@@ -405,6 +424,7 @@ async def upload_diploma(
         success=True,
         error_message=None,
     )
+    logger.info(f"[UPLOAD] Аудит записан. Загрузка завершена успешно. diploma_id={diploma.id}")
     return UploadDiplomaResponse(diploma_id=str(diploma.id), status="pending")
 
 
@@ -474,6 +494,7 @@ async def verify_manual(
     db: Session = Depends(get_db),
     user: dict = Depends(require_role("university")),
 ):
+    logger.info(f"[VERIFY] Начало верификации diploma_id={diploma_id}, user={user.get('account_id')}")
     uid = uuid.UUID(user["account_id"])
     d = (
         db.query(Diploma)
@@ -484,19 +505,26 @@ async def verify_manual(
         .first()
     )
     if d is None:
+        logger.warning(f"[VERIFY] Диплом не найден: {diploma_id}")
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+    logger.info(f"[VERIFY] Диплом найден: status={d.status}")
     if d.status == "revoked":
+        logger.warning(f"[VERIFY] Попытка верификации отозванного диплома {diploma_id}")
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Cannot verify a revoked diploma",
         )
     if d.status == "verified":
+        logger.info(f"[VERIFY] Диплом уже верифицирован: {diploma_id}")
         return UploadDiplomaResponse(diploma_id=str(d.id), status="verified")
     d.status = "verified"
     _sign_and_timestamp_diploma(d)
     db.commit()
+    logger.info(f"[VERIFY] Диплом подписан и сохранён: {diploma_id}")
     await _post_certificate_generate(d)
+    logger.info(f"[VERIFY] Сертификат сгенерирован")
     await _write_blockchain_record(d, db)
+    logger.info(f"[VERIFY] Блокчейн запись добавлена")
     await _send_audit(
         actor_id=uid,
         actor_role="university",
@@ -518,6 +546,7 @@ async def revoke_diploma(
     db: Session = Depends(get_db),
     user: dict = Depends(require_role("university")),
 ):
+    logger.info(f"[REVOKE] Начало отзыва diploma_id={diploma_id}, user={user.get('account_id')}")
     uid = uuid.UUID(user["account_id"])
     d = (
         db.query(Diploma)
@@ -528,13 +557,17 @@ async def revoke_diploma(
         .first()
     )
     if d is None:
+        logger.warning(f"[REVOKE] Диплом не найден: {diploma_id}")
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
     if d.status == "revoked":
+        logger.info(f"[REVOKE] Диплом уже отозван: {diploma_id}")
         return UploadDiplomaResponse(diploma_id=str(d.id), status="revoked")
     prev_status = d.status
     d.status = "revoked"
     db.commit()
+    logger.info(f"[REVOKE] Диплом отозван: {diploma_id}, prev_status={prev_status}")
     await _post_certificate_deactivate(diploma_id)
+    logger.info(f"[REVOKE] Сертификат деактивирован")
     await _notify(
         uid,
         "diploma_revoked",

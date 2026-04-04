@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/logging/app_logger.dart';
 import '../../bloc/university_bloc.dart';
 import '../../bloc/university_state.dart';
 import '../../data/models/registry_diploma_model.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
+
+const _tag = 'UniversityRegistryScreen';
 
 class UniversityRegistryScreen extends StatefulWidget {
   const UniversityRegistryScreen({super.key});
@@ -16,6 +19,7 @@ class UniversityRegistryScreen extends StatefulWidget {
 }
 
 class _UniversityRegistryScreenState extends State<UniversityRegistryScreen> {
+  final _log = AppLogger.instance;
   String _searchQuery = '';
   RegistryDiplomaStatus? _statusFilter;
 
@@ -59,7 +63,10 @@ class _UniversityRegistryScreenState extends State<UniversityRegistryScreen> {
                               borderRadius: BorderRadius.circular(12)),
                           isDense: true,
                         ),
-                        onChanged: (v) => setState(() => _searchQuery = v),
+                        onChanged: (v) {
+                          _log.debug(_tag, 'Поиск изменён: "$v"');
+                          setState(() => _searchQuery = v);
+                        },
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -72,12 +79,17 @@ class _UniversityRegistryScreenState extends State<UniversityRegistryScreen> {
                         ...RegistryDiplomaStatus.values.map((s) =>
                             DropdownMenuItem(value: s, child: Text(s.label))),
                       ],
-                      onChanged: (v) => setState(() => _statusFilter = v),
+                      onChanged: (v) {
+                        _log.info(_tag, 'BTN: Фильтр статуса изменён на $v');
+                        setState(() => _statusFilter = v);
+                      },
                     ),
                     const SizedBox(width: 12),
                     FilledButton.icon(
-                      onPressed: () =>
-                          context.push('/university/diploma-upload'),
+                      onPressed: () {
+                        _log.info(_tag, 'BTN: Добавить диплом — нажата');
+                        context.push('/university/diploma-upload');
+                      },
                       icon: const Icon(Icons.add, size: 18),
                       label: const Text('Добавить'),
                     ),
@@ -146,8 +158,10 @@ class _UniversityRegistryScreenState extends State<UniversityRegistryScreen> {
                                           icon: const Icon(
                                               Icons.open_in_new,
                                               size: 18),
-                                          onPressed: () => context.push(
-                                              '/university/diploma/${d.id}'),
+                                          onPressed: () {
+                                            _log.info(_tag, 'BTN: Открыть диплом ${d.id}');
+                                            context.push('/university/diploma/${d.id}');
+                                          },
                                         )),
                                       ],
                                     ))

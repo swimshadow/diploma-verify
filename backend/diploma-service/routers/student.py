@@ -26,6 +26,7 @@ async def list_my_diplomas(
     authorization: str = Header(..., alias="Authorization"),
     user: dict = Depends(require_role("student")),
 ):
+    logger.info(f"[STUDENT] Запрос списка дипломов: user={user.get('sub')}")
     me_url = f"{AUTH_SERVICE_URL.rstrip('/')}/auth/me"
     try:
         async with httpx.AsyncClient(timeout=HTTP_TIMEOUT) as client:
@@ -37,11 +38,13 @@ async def list_my_diplomas(
             detail="Auth service unavailable",
         )
     if mr.status_code != 200:
+        logger.warning(f"[STUDENT] auth/me вернул {mr.status_code}")
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     me = mr.json()
     profile = me.get("profile") or {}
     full_name = profile.get("full_name")
     dob_s = profile.get("date_of_birth")
+    logger.info(f"[STUDENT] Профиль: full_name={full_name}, dob={dob_s}")
     if not full_name or not dob_s:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -104,8 +107,10 @@ async def list_my_diplomas(
         )
 
     if sr2.status_code != 200:
+        logger.warning(f"[STUDENT] Повторный поиск вернул {sr2.status_code}")
         return StudentDiplomaListResponse(diplomas=[])
     items_raw = sr2.json().get("diplomas") or []
+    logger.info(f"[STUDENT] Найдено дипломов: {len(items_raw)}")
     out: list[StudentDiplomaItem] = []
     for d in items_raw:
         if d.get("student_account_id") != str(account_id):
@@ -148,6 +153,7 @@ async def list_my_diplomas(
                 created_at=d.get("created_at"),
             )
         )
+    logger.info(f"[STUDENT] Возвращаем {len(out)} дипломов для user={user.get('sub')}")
     return StudentDiplomaListResponse(diplomas=out)
 
 
@@ -201,6 +207,7 @@ async def get_certificate(
     authorization: str = Header(..., alias="Authorization"),
     user: dict = Depends(require_role("student")),
 ):
+    logger.info(f"[STUDENT] Запрос сертификата: diploma_id={diploma_id}, user={user.get('sub')}")
     me_url = f"{AUTH_SERVICE_URL.rstrip('/')}/auth/me"
     search_base = f"{UNIVERSITY_SERVICE_URL.rstrip('/')}/internal/diplomas/search"
     cert_url = f"{CERTIFICATE_SERVICE_URL.rstrip('/')}/certificates/{diploma_id}"

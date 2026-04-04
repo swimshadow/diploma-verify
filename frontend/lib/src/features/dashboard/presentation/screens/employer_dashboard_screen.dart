@@ -264,14 +264,20 @@ class _StatCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon, color: color, size: 28),
-            const SizedBox(height: 6),
-            Text(value,
-                style: theme.textTheme.titleLarge
-                    ?.copyWith(fontWeight: FontWeight.bold, color: color)),
-            Text(label,
-                style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant),
-                textAlign: TextAlign.center),
+            const SizedBox(height: 4),
+            Flexible(
+              child: Text(value,
+                  style: theme.textTheme.titleLarge
+                      ?.copyWith(fontWeight: FontWeight.bold, color: color),
+                  overflow: TextOverflow.ellipsis),
+            ),
+            Flexible(
+              child: Text(label,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant),
+                  textAlign: TextAlign.center,
+                  overflow: TextOverflow.ellipsis),
+            ),
           ],
         ),
       ),
