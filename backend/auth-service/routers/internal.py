@@ -5,11 +5,16 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session, joinedload
 
 from database import get_db
+from internal_deps import internal_only
 from models import Account
 from schemas import InternalProfileResponse, VerifyTokenResponse
 from security import decode_access_token, hash_password
 
-router = APIRouter(prefix="/internal", tags=["internal"])
+router = APIRouter(
+    prefix="/internal",
+    tags=["internal"],
+    dependencies=[Depends(internal_only)],
+)
 
 
 class CreateAdminRequest(BaseModel):
@@ -44,6 +49,22 @@ async def verify_token(token: str, db: Session = Depends(get_db)):
     )
     if account is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+
+    if getattr(account, "is_blocked", False):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account is blocked",
+        )
+
+    if account.role == "admin":
+        if profile_id != account_id:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+        return VerifyTokenResponse(
+            account_id=str(account_id),
+            role=account.role,
+            profile_id=str(profile_id),
+        )
+
     actual_pid: uuid.UUID | None = None
     if account.role == "university" and account.university_profile:
         actual_pid = account.university_profile.id
@@ -61,6 +82,8 @@ async def verify_token(token: str, db: Session = Depends(get_db)):
 
 
 def _profile_dict(account: Account) -> dict:
+    if account.role == "admin":
+        return {}
     if account.role == "university" and account.university_profile:
         p = account.university_profile
         return {"name": p.name, "inn": p.inn, "ogrn": p.ogrn}

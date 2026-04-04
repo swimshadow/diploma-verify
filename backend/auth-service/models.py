@@ -22,7 +22,8 @@ class Account(Base):
     __tablename__ = "accounts"
     __table_args__ = (
         CheckConstraint(
-            "role IN ('university','student','employer')", name="accounts_role_check"
+            "role IN ('university','student','employer','admin')",
+            name="accounts_role_check",
         ),
     )
 
@@ -31,6 +32,7 @@ class Account(Base):
     password_hash = Column(Text, nullable=False)
     role = Column(String(32), nullable=False)
     is_verified = Column(Boolean, nullable=False, default=False)
+    is_blocked = Column(Boolean, nullable=False, default=False)
     created_at = Column(
         DateTime(timezone=True),
         nullable=False,

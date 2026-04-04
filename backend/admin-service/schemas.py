@@ -105,6 +105,10 @@ class DiplomaDetailResponse(BaseModel):
     ai_extracted_data: Optional[dict]
 
 
+class ForceModerationBody(BaseModel):
+    reason: str
+
+
 class DiplomasStatsResponse(BaseModel):
     total: int
     by_status: dict
@@ -140,3 +144,25 @@ class LogsStatsResponse(BaseModel):
     checks_this_week: int
     most_checked_diplomas: List[dict]
     checks_by_method: dict
+
+
+class AuditItemResponse(BaseModel):
+    id: str
+    timestamp: datetime
+    actor_id: Optional[str] = None
+    actor_role: Optional[str] = None
+    actor_ip: Optional[str] = None
+    action: str
+    resource_type: Optional[str] = None
+    resource_id: Optional[str] = None
+    old_value: Optional[dict] = None
+    new_value: Optional[dict] = None
+    success: bool
+    error_message: Optional[str] = None
+
+
+class AuditListResponse(BaseModel):
+    items: List[AuditItemResponse]
+    total: int
+    page: int
+    limit: int

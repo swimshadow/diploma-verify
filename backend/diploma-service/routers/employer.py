@@ -1,18 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 
-from deps import get_current_user
+from deps import require_role
 
 router = APIRouter(prefix="/employer", tags=["employer"])
 
 
-async def require_employer(user: dict = Depends(get_current_user)) -> dict:
-    if user.get("role") != "employer":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
-    return user
-
-
 @router.get("/verification-hint")
-async def employer_verification_hint(user: dict = Depends(require_employer)):
+async def employer_verification_hint(user: dict = Depends(require_role("employer"))):
     """Работодатель не управляет дипломами — только публичная проверка."""
     return {
         "role": "employer",

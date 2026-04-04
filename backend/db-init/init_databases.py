@@ -24,6 +24,7 @@ DATABASES = [
     "filedb",
     "certdb",
     "notificationdb",
+    "aidb",
 ]
 
 MAX_RETRIES = 30

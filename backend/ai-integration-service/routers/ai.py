@@ -1,11 +1,15 @@
 import os
+import uuid
 
 import httpx
-from fastapi import APIRouter, BackgroundTasks, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from loguru import logger
+from sqlalchemy.orm import Session
 
+from database import get_db
 from http_client import AI_FILE_FETCH_TIMEOUT, HTTP_TIMEOUT
-from schemas import ExtractRequest, ExtractResponse
+from models import MlProcessingLog
+from schemas import AiResultRequest, AiResultResponse, ExtractRequest, ExtractResponse
 
 router = APIRouter(prefix="/ai", tags=["ai"])
 
@@ -23,7 +27,6 @@ async def run_extract_pipeline(file_id: str, diploma_id: str) -> None:
     except httpx.RequestError as e:
         logger.warning(f"File fetch error: {e}")
 
-    # Заглушка: интерфейс стабилен для замены на реальную нейросеть
     ai_extracted_data = {
         "full_name": "Иванов Иван Иванович",
         "diploma_number": "АА123456",
@@ -63,3 +66,53 @@ async def extract(payload: ExtractRequest, background_tasks: BackgroundTasks):
             detail="Failed to schedule processing",
         )
     return ExtractResponse(status="processing", diploma_id=payload.diploma_id)
+
+
+@router.post("/result", response_model=AiResultResponse)
+async def ai_result(
+    payload: AiResultRequest,
+    db: Session = Depends(get_db),
+):
+    try:
+        did = uuid.UUID(payload.diploma_id)
+    except ValueError:
+        raise HTTPException(status_code=422, detail="Invalid diploma_id")
+
+    merged_extracted = payload.extracted_data.model_dump()
+    merged_extracted["raw_text"] = payload.raw_text
+
+    patch_url = f"{UNIVERSITY_SERVICE_URL.rstrip('/')}/internal/diplomas/{did}/ai-data"
+    next_status = "pending"
+    try:
+        async with httpx.AsyncClient(timeout=HTTP_TIMEOUT) as client:
+            r = await client.patch(
+                patch_url,
+                json={
+                    "ai_extracted_data": merged_extracted,
+                    "confidence": payload.confidence,
+                },
+            )
+        if r.status_code >= 400:
+            logger.warning(f"PATCH ai-data failed: {r.status_code} {r.text}")
+            raise HTTPException(status_code=502, detail="University service rejected AI data")
+        body = r.json()
+        next_status = str(body.get("status", "pending"))
+    except httpx.RequestError as e:
+        logger.exception(f"PATCH ai-data error: {e}")
+        raise HTTPException(status_code=503, detail="University service unavailable")
+
+    auto_verified = payload.confidence > 0.85 and next_status == "verified"
+    row = MlProcessingLog(
+        diploma_id=did,
+        confidence=payload.confidence,
+        processing_time_ms=payload.processing_time_ms,
+        auto_verified=auto_verified,
+    )
+    db.add(row)
+    db.commit()
+
+    return AiResultResponse(
+        received=True,
+        diploma_id=str(did),
+        next_status=next_status,
+    )

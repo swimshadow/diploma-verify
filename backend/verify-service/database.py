@@ -39,7 +39,6 @@ def get_redis() -> redis.Redis:
 
 
 def compute_data_hash(
-    series: str,
     diploma_number: str,
     full_name: str,
     issue_date: date | str,
@@ -49,8 +48,7 @@ def compute_data_hash(
         id_str = issue_date.isoformat()
     else:
         id_str = str(issue_date)
-    ser = series or ""
-    raw = f"{ser}{diploma_number}{full_name}{id_str}{secret_salt}"
+    raw = f"{diploma_number}|{full_name}|{id_str}|{secret_salt}"
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 

@@ -1,11 +1,11 @@
 import os
 import uuid
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 import httpx
 from fastapi import APIRouter, Depends, Header, HTTPException, Response, status
 from loguru import logger
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
 
@@ -45,11 +45,48 @@ from security import (
 NOTIFICATION_SERVICE_URL = os.getenv(
     "NOTIFICATION_SERVICE_URL", "http://notification-service:8008"
 )
+DEMO_MODE = os.getenv("DEMO_MODE", "false").lower() in ("1", "true", "yes")
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
+def _login_attempt_key(email: str) -> str:
+    return f"login_attempts:{email.lower().strip()}"
+
+
+def _check_login_attempts_allowed(email: str) -> None:
+    r = get_redis()
+    raw = r.get(_login_attempt_key(email))
+    if raw is not None and int(raw) > 5:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many login attempts. Try again in 15 minutes.",
+        )
+
+
+def _record_failed_login(email: str) -> None:
+    r = get_redis()
+    key = _login_attempt_key(email)
+    attempts = r.incr(key)
+    if attempts == 1:
+        r.expire(key, 900)
+    if attempts > 5:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many login attempts. Try again in 15 minutes.",
+        )
+
+
+def _reset_login_attempts(email: str) -> None:
+    try:
+        get_redis().delete(_login_attempt_key(email))
+    except Exception as e:
+        logger.warning(f"Redis delete login_attempts failed: {e}")
+
+
 def _profile_to_dict(account: Account) -> dict:
+    if account.role == "admin":
+        return {}
     if account.role == "university" and account.university_profile:
         p = account.university_profile
         return {"name": p.name, "inn": p.inn, "ogrn": p.ogrn}
@@ -66,6 +103,8 @@ def _profile_to_dict(account: Account) -> dict:
 
 
 def _profile_id_for_account(account: Account) -> uuid.UUID:
+    if account.role == "admin":
+        return account.id
     if account.role == "university" and account.university_profile:
         return account.university_profile.id
     if account.role == "student" and account.student_profile:
@@ -125,6 +164,7 @@ async def register(payload: RegisterRequest, db: Session = Depends(get_db)):
         password_hash=hash_password(payload.password),
         role=payload.role,
         is_verified=False,
+        is_blocked=False,
     )
     db.add(account)
     db.flush()
@@ -197,6 +237,8 @@ async def register(payload: RegisterRequest, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=LoginResponse)
 async def login(payload: LoginRequest, db: Session = Depends(get_db)):
+    email_key = str(payload.email)
+    _check_login_attempts_allowed(email_key)
     account = (
         db.query(Account)
         .options(
@@ -204,14 +246,21 @@ async def login(payload: LoginRequest, db: Session = Depends(get_db)):
             joinedload(Account.student_profile),
             joinedload(Account.employer_profile),
         )
-        .filter(Account.email == str(payload.email))
+        .filter(Account.email == email_key)
         .first()
     )
     if account is None or not verify_password(payload.password, account.password_hash):
+        _record_failed_login(email_key)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials",
         )
+    if getattr(account, "is_blocked", False):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account is blocked",
+        )
+    _reset_login_attempts(email_key)
     profile_id = _profile_id_for_account(account)
     access = create_access_token(account.id, account.role, profile_id)
     refresh_plain = create_refresh_token_string()
@@ -327,3 +376,108 @@ async def me(
         role=account.role,
         profile=_profile_to_dict(account),
     )
+
+
+class DemoSetupResponse(BaseModel):
+    created: list[str]
+    skipped: list[str]
+
+
+def _ensure_demo_accounts(db: Session) -> tuple[list[str], list[str]]:
+    """Idempotent demo users (DEMO_MODE). Password for all: Demo123"""
+    demo_pw = "Demo123"
+    specs: list[tuple[str, str, dict]] = [
+        (
+            "university@demo.ru",
+            "university",
+            {
+                "name": "Демо ВУЗ",
+                "inn": "7700000000",
+                "ogrn": "1027700000000",
+            },
+        ),
+        (
+            "student@demo.ru",
+            "student",
+            {
+                "full_name": "Студент Демо Демович",
+                "date_of_birth": date(2000, 1, 15),
+            },
+        ),
+        (
+            "employer@demo.ru",
+            "employer",
+            {"company_name": "Демо работодатель", "inn": "7700000001"},
+        ),
+    ]
+    created: list[str] = []
+    skipped: list[str] = []
+    for email, role, prof in specs:
+        if db.query(Account).filter(Account.email == email).first():
+            skipped.append(email)
+            continue
+        acc = Account(
+            email=email,
+            password_hash=hash_password(demo_pw),
+            role=role,
+            is_verified=True,
+            is_blocked=False,
+        )
+        db.add(acc)
+        db.flush()
+        if role == "university":
+            p = UniversityProfileIn.model_validate(prof)
+            db.add(
+                UniversityProfile(
+                    account_id=acc.id,
+                    name=p.name,
+                    inn=p.inn,
+                    ogrn=p.ogrn,
+                )
+            )
+        elif role == "student":
+            p = StudentProfileIn.model_validate(prof)
+            db.add(
+                StudentProfile(
+                    account_id=acc.id,
+                    full_name=p.full_name,
+                    date_of_birth=p.date_of_birth,
+                )
+            )
+        else:
+            p = EmployerProfileIn.model_validate(prof)
+            db.add(
+                EmployerProfile(
+                    account_id=acc.id,
+                    company_name=p.company_name,
+                    inn=p.inn,
+                )
+            )
+        db.commit()
+        created.append(email)
+
+    admin_email = "admin@demo.ru"
+    if db.query(Account).filter(Account.email == admin_email).first():
+        skipped.append(admin_email)
+    else:
+        db.add(
+            Account(
+                email=admin_email,
+                password_hash=hash_password(demo_pw),
+                role="admin",
+                is_verified=True,
+                is_blocked=False,
+            )
+        )
+        db.commit()
+        created.append(admin_email)
+
+    return created, skipped
+
+
+@router.post("/setup-demo", response_model=DemoSetupResponse)
+async def setup_demo(db: Session = Depends(get_db)):
+    if not DEMO_MODE:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+    created, skipped = _ensure_demo_accounts(db)
+    return DemoSetupResponse(created=created, skipped=skipped)
