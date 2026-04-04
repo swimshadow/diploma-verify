@@ -1,14 +1,25 @@
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
 from sqlalchemy.orm import Session, joinedload
 
 from database import get_db
 from models import Account
 from schemas import InternalProfileResponse, VerifyTokenResponse
-from security import decode_access_token
+from security import decode_access_token, hash_password
 
 router = APIRouter(prefix="/internal", tags=["internal"])
+
+
+class CreateAdminRequest(BaseModel):
+    email: str
+    password: str
+
+
+class CreateAdminResponse(BaseModel):
+    account_id: str
+    email: str
 
 
 @router.get("/verify-token", response_model=VerifyTokenResponse)
@@ -84,4 +95,32 @@ async def profile_by_account(account_id: uuid.UUID, db: Session = Depends(get_db
         role=account.role,
         email=account.email,
         profile=_profile_dict(account),
+    )
+
+
+@router.post("/create-admin", response_model=CreateAdminResponse, status_code=status.HTTP_201_CREATED)
+async def create_admin(payload: CreateAdminRequest, db: Session = Depends(get_db)):
+    """Create an admin account"""
+    # Check if email already exists
+    existing = db.query(Account).filter(Account.email == payload.email).first()
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Email already registered",
+        )
+    
+    # Create admin account
+    account = Account(
+        email=payload.email,
+        password_hash=hash_password(payload.password),
+        role="admin",
+        is_verified=True,
+    )
+    db.add(account)
+    db.commit()
+    db.refresh(account)
+    
+    return CreateAdminResponse(
+        account_id=str(account.id),
+        email=account.email,
     )
