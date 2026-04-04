@@ -1,6 +1,7 @@
 import sys
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 
 from routers.ai import router as ai_router
@@ -13,6 +14,14 @@ app = FastAPI(
     title="AI Integration Service",
     description="Извлечение данных из сканов дипломов (прокси / заглушка)",
     version="1.0.0",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost", "http://127.0.0.1"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(health_router)

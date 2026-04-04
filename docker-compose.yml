@@ -1,8 +1,23 @@
 # Бэкенды без publish портов: снаружи только Caddy :80 (/internal недоступен с хоста).
+# Агрегатор OpenAPI (micro-swagga-label/docs_service внутри репо): http://localhost/docs
 services:
+  docs_service:
+    build: ./micro-swagga-label/docs_service
+    expose:
+      - "8000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      COMPOSE_SERVICE: docs_service
+      CACHE_TTL: ${DOCS_AGGREGATOR_CACHE_TTL:-30}
+    restart: on-failure
+
   # Swagger: http://127.0.0.1:18001–18008/docs (только localhost)
   auth-service:
     build: ./backend/auth-service
+    labels:
+      - "docs.route=/api"
+      - "docs.port=8001"
     ports:
       - "127.0.0.1:18001:8001"
     environment:
@@ -22,6 +37,9 @@ services:
 
   university-service:
     build: ./backend/university-service
+    labels:
+      - "docs.route=/api"
+      - "docs.port=8002"
     ports:
       - "127.0.0.1:18002:8002"
     environment:
@@ -43,6 +61,9 @@ services:
 
   diploma-service:
     build: ./backend/diploma-service
+    labels:
+      - "docs.route=/api"
+      - "docs.port=8003"
     ports:
       - "127.0.0.1:18003:8003"
     environment:
@@ -59,6 +80,9 @@ services:
 
   verify-service:
     build: ./backend/verify-service
+    labels:
+      - "docs.route=/api"
+      - "docs.port=8004"
     ports:
       - "127.0.0.1:18004:8004"
     environment:
@@ -79,6 +103,9 @@ services:
 
   file-service:
     build: ./backend/file-service
+    labels:
+      - "docs.route=http://127.0.0.1:18005"
+      - "docs.port=8005"
     ports:
       - "127.0.0.1:18005:8005"
     environment:
@@ -93,6 +120,9 @@ services:
 
   certificate-service:
     build: ./backend/certificate-service
+    labels:
+      - "docs.route=http://127.0.0.1:18006"
+      - "docs.port=8006"
     ports:
       - "127.0.0.1:18006:8006"
     environment:
@@ -105,6 +135,9 @@ services:
 
   ai-integration-service:
     build: ./backend/ai-integration-service
+    labels:
+      - "docs.route=http://127.0.0.1:18007"
+      - "docs.port=8007"
     ports:
       - "127.0.0.1:18007:8007"
     environment:
@@ -121,6 +154,9 @@ services:
 
   notification-service:
     build: ./backend/notification-service
+    labels:
+      - "docs.route=http://127.0.0.1:18008"
+      - "docs.port=8008"
     ports:
       - "127.0.0.1:18008:8008"
     environment:
@@ -157,6 +193,7 @@ services:
       - ./frontend:/srv
       - diploma_uploads:/uploads
     depends_on:
+      - docs_service
       - auth-service
       - university-service
       - diploma-service

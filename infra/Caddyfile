@@ -1,4 +1,10 @@
 :80 {
+    @docs path /docs /docs/*
+    handle @docs {
+        uri strip_prefix /docs
+        reverse_proxy docs_service:8000
+    }
+
     handle /api/auth/* {
         uri strip_prefix /api
         reverse_proxy auth-service:8001
