@@ -127,4 +127,19 @@ class AuthRepository {
     _log.debug(_tag, 'hasSession() → $has');
     return has;
   }
+
+  Future<Map<String, dynamic>> updateProfile(Map<String, dynamic> profile) async {
+    _log.info(_tag, 'updateProfile() → PATCH ${AppConstants.profilePath}');
+    try {
+      final response = await _dio.patch(
+        AppConstants.profilePath,
+        data: {'profile': profile},
+      );
+      _log.info(_tag, 'updateProfile() ← OK');
+      return (response.data as Map<String, dynamic>)['profile'] as Map<String, dynamic>;
+    } catch (e, st) {
+      _log.error(_tag, 'updateProfile() ОШИБКА', e, st);
+      rethrow;
+    }
+  }
 }

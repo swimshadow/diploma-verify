@@ -135,4 +135,16 @@ class AdminRepository {
     });
     _log.info(_tag, 'createAdmin() ← OK');
   }
+
+  Future<void> verifyUniversity(String accountId) async {
+    _log.info(_tag, 'verifyUniversity($accountId)');
+    await _dio.post('/api/admin/accounts/$accountId/verify');
+    _log.info(_tag, 'verifyUniversity() ← OK');
+  }
+
+  Future<void> unverifyUniversity(String accountId) async {
+    _log.info(_tag, 'unverifyUniversity($accountId)');
+    await _dio.post('/api/admin/accounts/$accountId/unverify');
+    _log.info(_tag, 'unverifyUniversity() ← OK');
+  }
 }

@@ -30,6 +30,7 @@ from schemas import (
     RegisterResponse,
     StudentProfileIn,
     UniversityProfileIn,
+    UpdateProfileRequest,
 )
 from security import (
     REFRESH_TOKEN_EXPIRE_DAYS,
@@ -89,7 +90,21 @@ def _profile_to_dict(account: Account) -> dict:
         return {}
     if account.role == "university" and account.university_profile:
         p = account.university_profile
-        return {"name": p.name, "inn": p.inn, "ogrn": p.ogrn}
+        return {
+            "name": p.name,
+            "inn": p.inn,
+            "ogrn": p.ogrn,
+            "short_name": p.short_name or "",
+            "city": p.city or "",
+            "address": p.address or "",
+            "university_type": p.university_type or "",
+            "license_number": p.license_number or "",
+            "contact_email": p.contact_email or "",
+            "phone": p.phone or "",
+            "website": p.website or "",
+            "responsible_person": p.responsible_person or "",
+            "is_verified": account.is_verified,
+        }
     if account.role == "student" and account.student_profile:
         p = account.student_profile
         return {
@@ -384,6 +399,81 @@ async def me(
         role=account.role,
         profile=_profile_to_dict(account),
     )
+
+
+@router.patch("/profile")
+async def update_profile(
+    payload: UpdateProfileRequest,
+    authorization: str = Header(..., alias="Authorization"),
+    db: Session = Depends(get_db),
+):
+    token = authorization.replace("Bearer ", "").strip()
+    data = decode_access_token(token)
+    if not data or data.get("type") != "access":
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+    try:
+        aid = uuid.UUID(data["sub"])
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+    account = (
+        db.query(Account)
+        .options(
+            joinedload(Account.university_profile),
+            joinedload(Account.student_profile),
+            joinedload(Account.employer_profile),
+        )
+        .filter(Account.id == aid)
+        .first()
+    )
+    if account is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+
+    prof = payload.profile
+    if account.role == "university" and account.university_profile:
+        p = account.university_profile
+        if "name" in prof:
+            p.name = str(prof["name"])
+        if "inn" in prof:
+            p.inn = str(prof["inn"])
+        if "ogrn" in prof:
+            p.ogrn = str(prof["ogrn"])
+        if "short_name" in prof:
+            p.short_name = str(prof["short_name"]) if prof["short_name"] else None
+        if "city" in prof:
+            p.city = str(prof["city"]) if prof["city"] else None
+        if "address" in prof:
+            p.address = str(prof["address"]) if prof["address"] else None
+        if "university_type" in prof:
+            p.university_type = str(prof["university_type"]) if prof["university_type"] else None
+        if "license_number" in prof:
+            p.license_number = str(prof["license_number"]) if prof["license_number"] else None
+        if "contact_email" in prof:
+            p.contact_email = str(prof["contact_email"]) if prof["contact_email"] else None
+        if "phone" in prof:
+            p.phone = str(prof["phone"]) if prof["phone"] else None
+        if "website" in prof:
+            p.website = str(prof["website"]) if prof["website"] else None
+        if "responsible_person" in prof:
+            p.responsible_person = str(prof["responsible_person"]) if prof["responsible_person"] else None
+    elif account.role == "student" and account.student_profile:
+        p = account.student_profile
+        if "full_name" in prof:
+            p.full_name = str(prof["full_name"])
+        if "date_of_birth" in prof:
+            p.date_of_birth = date.fromisoformat(str(prof["date_of_birth"]))
+    elif account.role == "employer" and account.employer_profile:
+        p = account.employer_profile
+        if "company_name" in prof:
+            p.company_name = str(prof["company_name"])
+        if "inn" in prof:
+            p.inn = str(prof["inn"])
+    else:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No profile to update")
+
+    db.commit()
+    db.refresh(account)
+    logger.info(f"[PROFILE] Профиль обновлён: account_id={account.id}, role={account.role}")
+    return {"status": "ok", "profile": _profile_to_dict(account)}
 
 
 class DemoSetupResponse(BaseModel):

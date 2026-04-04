@@ -78,5 +78,23 @@ def create_tables():
                 "CHECK (role IN ('university','student','employer','admin'))"
             )
         )
+        for col in [
+            "short_name TEXT",
+            "city TEXT",
+            "address TEXT",
+            "university_type TEXT",
+            "license_number TEXT",
+            "contact_email VARCHAR(320)",
+            "phone VARCHAR(64)",
+            "website TEXT",
+            "responsible_person TEXT",
+        ]:
+            col_name = col.split()[0]
+            conn.execute(
+                text(
+                    f"ALTER TABLE university_profiles "
+                    f"ADD COLUMN IF NOT EXISTS {col_name} {' '.join(col.split()[1:])}"
+                )
+            )
         conn.commit()
     logger.info("Auth service tables ready")

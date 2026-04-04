@@ -48,3 +48,13 @@
             ]
 (Background on this error at: https://sqlalche.me/e/20/f405)
 2026-04-04 23:13:38.015 | INFO     | main:startup:72 - Admin service started on port 8010
+2026-04-04 23:33:32.935 | INFO     | main:startup:61 - Admin service starting...
+2026-04-04 23:33:32.946 | WARNING  | main:startup:71 - Column may already exist: (psycopg2.errors.UndefinedTable) relation "accounts" does not exist
+
+[SQL: 
+                ALTER TABLE accounts
+                ADD COLUMN IF NOT EXISTS is_blocked
+                BOOLEAN DEFAULT FALSE
+            ]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-04-04 23:33:32.946 | INFO     | main:startup:72 - Admin service started on port 8010

@@ -242,3 +242,4 @@
 2026-04-04 23:15:20.080 | INFO     | routers.universities:upload_diploma:430 - [UPLOAD] AI extraction запущен
 2026-04-04 23:15:20.096 | INFO     | routers.universities:upload_diploma:440 - [UPLOAD] Уведомление отправлено
 2026-04-04 23:15:20.115 | INFO     | routers.universities:upload_diploma:453 - [UPLOAD] Аудит записан. Загрузка завершена успешно. diploma_id=1de80dcb-1c66-4bc4-9444-d1d0aa55baa4
+2026-04-04 23:33:33.577 | INFO     | main:create_tables:83 - University service tables ready

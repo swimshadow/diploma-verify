@@ -12,6 +12,7 @@ class AppConstants {
   static const String refreshPath = '$authPath/refresh';
   static const String logoutPath = '$authPath/logout';
   static const String mePath = '$authPath/me';
+  static const String profilePath = '$authPath/profile';
 
   // Student API (diploma-service)
   static const String studentDiplomasPath = '/api/student/diplomas';

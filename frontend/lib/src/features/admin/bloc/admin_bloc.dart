@@ -135,9 +135,12 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
     ));
   }
 
-  void _onApproveUni(AdminApproveUniversity event, Emitter<AdminState> emit) {
+  Future<void> _onApproveUni(AdminApproveUniversity event, Emitter<AdminState> emit) async {
     final current = _loaded;
     if (current == null) return;
+    try {
+      await _repository.verifyUniversity(event.universityId);
+    } catch (_) {}
     emit(AdminLoaded(
       users: current.users,
       universities: current.universities.map((u) {
@@ -157,9 +160,12 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
     ));
   }
 
-  void _onRejectUni(AdminRejectUniversity event, Emitter<AdminState> emit) {
+  Future<void> _onRejectUni(AdminRejectUniversity event, Emitter<AdminState> emit) async {
     final current = _loaded;
     if (current == null) return;
+    try {
+      await _repository.unverifyUniversity(event.universityId);
+    } catch (_) {}
     emit(AdminLoaded(
       users: current.users,
       universities: current.universities.map((u) {

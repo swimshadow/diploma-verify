@@ -227,3 +227,31 @@ async def unblock_account(
         account_id=acc.id,
         is_blocked=False
     )
+
+
+@router.post("/accounts/{account_id}/verify")
+async def verify_account(
+    account_id: uuid.UUID,
+    db: Session = Depends(get_auth_db),
+    admin: dict = Depends(get_admin_user),
+):
+    acc = db.query(Account).filter(Account.id == account_id).first()
+    if not acc:
+        raise HTTPException(404, "Account not found")
+    acc.is_verified = True
+    db.commit()
+    return {"account_id": str(acc.id), "is_verified": True}
+
+
+@router.post("/accounts/{account_id}/unverify")
+async def unverify_account(
+    account_id: uuid.UUID,
+    db: Session = Depends(get_auth_db),
+    admin: dict = Depends(get_admin_user),
+):
+    acc = db.query(Account).filter(Account.id == account_id).first()
+    if not acc:
+        raise HTTPException(404, "Account not found")
+    acc.is_verified = False
+    db.commit()
+    return {"account_id": str(acc.id), "is_verified": False}

@@ -81,3 +81,7 @@ class InternalProfileResponse(BaseModel):
     role: str
     email: str
     profile: dict[str, Any]
+
+
+class UpdateProfileRequest(BaseModel):
+    profile: dict[str, Any]
