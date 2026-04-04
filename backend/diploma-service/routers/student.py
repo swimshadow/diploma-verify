@@ -116,16 +116,89 @@ async def list_my_diplomas(
     for d in items_raw:
         if d.get("student_account_id") != str(account_id):
             continue
+        status_val = d["status"]
+        trust = _compute_trust_score(status_val, d.get("ai_confidence"), d.get("digital_signature"))
+        af_score, af_verdict, af_warnings = _compute_antifraud(
+            status_val, d.get("ai_confidence"), d.get("digital_signature")
+        )
+        # Fetch certificate ID if verified
+        cert_id = None
+        if status_val == "verified":
+            try:
+                cert_url = f"{CERTIFICATE_SERVICE_URL.rstrip('/')}/certificates/{d['id']}"
+                async with httpx.AsyncClient(timeout=HTTP_TIMEOUT) as c2:
+                    cr = await c2.get(cert_url)
+                if cr.status_code == 200:
+                    cert_id = cr.json().get("qr_token")
+            except httpx.RequestError:
+                pass
         out.append(
             StudentDiplomaItem(
                 id=d["id"],
                 full_name=d["full_name"],
                 diploma_number=d["diploma_number"],
+                series=d.get("series"),
+                degree=d.get("degree", ""),
+                specialization=d.get("specialization", ""),
                 issue_date=date.fromisoformat(str(d["issue_date"])),
-                status=d["status"],
+                university_name=d.get("university_name", ""),
+                status=status_val,
+                trust_score=trust,
+                certificate_id=cert_id,
+                file_id=d.get("file_id"),
+                antifraud_score=af_score,
+                antifraud_verdict=af_verdict,
+                antifraud_warnings=af_warnings,
+                ai_confidence=d.get("ai_confidence"),
+                digital_signature=d.get("digital_signature"),
+                created_at=d.get("created_at"),
             )
         )
     return StudentDiplomaListResponse(diplomas=out)
+
+
+def _compute_trust_score(status: str, ai_conf: float | None, sig: str | None) -> float:
+    if status == "revoked":
+        return 0.0
+    score = 0.0
+    if status == "verified":
+        score += 0.5
+    elif status == "pending":
+        score += 0.1
+    if ai_conf is not None:
+        score += ai_conf * 0.3
+    if sig:
+        score += 0.2
+    return min(round(score, 2), 1.0)
+
+
+def _compute_antifraud(
+    status: str, ai_conf: float | None, sig: str | None
+) -> tuple[float, str, list[str]]:
+    warnings: list[str] = []
+    score = 0.5
+    if status == "verified" and sig:
+        score += 0.3
+    if status == "revoked":
+        score = 0.1
+        warnings.append("Диплом отозван")
+    if ai_conf is not None:
+        if ai_conf >= 0.85:
+            score += 0.2
+        elif ai_conf < 0.5:
+            warnings.append("Низкая уверенность AI-распознавания")
+    else:
+        warnings.append("AI-проверка не выполнена")
+    if not sig:
+        warnings.append("Отсутствует цифровая подпись")
+    score = min(round(score, 2), 1.0)
+    if score >= 0.7:
+        verdict = "Подлинный документ"
+    elif score >= 0.4:
+        verdict = "Требуется дополнительная проверка"
+    else:
+        verdict = "Подозрение на подделку"
+    return score, verdict, warnings
 
 
 @router.get("/{diploma_id}/certificate")

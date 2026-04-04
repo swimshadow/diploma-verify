@@ -461,9 +461,16 @@ def internal_search(
             id=str(r.id),
             full_name=r.full_name,
             diploma_number=r.diploma_number,
+            series=r.series,
+            degree=r.degree,
+            specialization=r.specialization,
             issue_date=r.issue_date,
+            university_name=r.university_name,
             status=r.status,
             student_account_id=str(r.student_account_id) if r.student_account_id else None,
+            digital_signature=r.digital_signature,
+            ai_confidence=r.ai_confidence,
+            created_at=r.created_at.isoformat() if r.created_at else None,
         )
         for r in rows
     ]

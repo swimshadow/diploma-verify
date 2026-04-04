@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../../../core/constants/app_constants.dart';
 import '../../bloc/diploma_bloc.dart';
 import '../../bloc/diploma_state.dart';
 import '../../data/models/diploma_model.dart';
@@ -214,7 +215,7 @@ class _DetailView extends StatelessWidget {
                         child: OutlinedButton.icon(
                           onPressed: () {
                             Share.share(
-                                'Проверить мой диплом: https://diplomaverify.ru/verify/${diploma.certificateId}',
+                                'Проверить мой диплом: ${AppConstants.publicBaseUrl}/verify/${diploma.certificateId}',
                             );
                           },
                           icon: const Icon(Icons.share),

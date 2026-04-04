@@ -70,9 +70,16 @@ class SearchDiplomaItem(BaseModel):
     id: str
     full_name: str
     diploma_number: str
+    series: Optional[str] = None
+    degree: str
+    specialization: str
     issue_date: date
+    university_name: str
     status: str
     student_account_id: Optional[str] = None
+    digital_signature: Optional[str] = None
+    ai_confidence: Optional[float] = None
+    created_at: Optional[str] = None
 
 
 class SearchDiplomaResponse(BaseModel):

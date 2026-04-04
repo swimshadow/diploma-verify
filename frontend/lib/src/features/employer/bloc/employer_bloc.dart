@@ -9,8 +9,11 @@ class EmployerBloc extends Bloc<EmployerEvent, EmployerState> {
     on<EmployerLoadRequested>(_onLoad);
   }
 
-  void _onLoad(EmployerLoadRequested event, Emitter<EmployerState> emit) {
+  Future<void> _onLoad(
+      EmployerLoadRequested event, Emitter<EmployerState> emit) async {
     emit(EmployerLoading());
+    // Employer-specific list endpoints not yet implemented in backend;
+    // use local mock data with graceful fallback.
     emit(EmployerLoaded(
       employees: mockEmployees,
       history: mockVerificationHistory,

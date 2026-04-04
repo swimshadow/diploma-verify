@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../../core/constants/app_constants.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
 
 class ApiIntegrationScreen extends StatelessWidget {
@@ -123,13 +124,13 @@ class ApiIntegrationScreen extends StatelessWidget {
                         const SizedBox(height: 16),
                         _WebhookRow(
                           event: 'diploma.verified',
-                          url: 'https://yourapp.com/webhooks/diploma',
+                          url: '${AppConstants.publicBaseUrl}/webhooks/diploma',
                           active: true,
                         ),
                         const Divider(height: 24),
                         _WebhookRow(
                           event: 'diploma.rejected',
-                          url: 'https://yourapp.com/webhooks/diploma',
+                          url: '${AppConstants.publicBaseUrl}/webhooks/diploma',
                           active: true,
                         ),
                         const Divider(height: 24),

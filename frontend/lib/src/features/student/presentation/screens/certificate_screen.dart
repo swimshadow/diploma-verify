@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../../../core/constants/app_constants.dart';
 import '../../bloc/diploma_bloc.dart';
 import '../../bloc/diploma_state.dart';
 import '../../data/models/diploma_model.dart';
@@ -42,7 +43,7 @@ class _CertView extends StatelessWidget {
   const _CertView({required this.diploma, required this.certificateId});
 
   String get _verifyUrl =>
-      'https://diplomaverify.ru/verify/$certificateId';
+      '${AppConstants.publicBaseUrl}/verify/$certificateId';
 
   @override
   Widget build(BuildContext context) {

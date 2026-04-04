@@ -11,18 +11,22 @@ import 'src/features/student/bloc/chat_bloc.dart';
 import 'src/features/student/bloc/chat_event.dart';
 import 'src/features/student/bloc/diploma_bloc.dart';
 import 'src/features/student/bloc/diploma_event.dart';
+import 'src/features/student/data/diploma_repository.dart';
 import 'src/features/employer/bloc/employer_bloc.dart';
 import 'src/features/employer/bloc/employer_event.dart';
 import 'src/features/employer/bloc/verify_bloc.dart';
 import 'src/features/employer/bloc/employer_chat_bloc.dart';
 import 'src/features/employer/bloc/employer_chat_event.dart';
+import 'src/features/employer/data/verify_repository.dart';
 import 'src/features/university/bloc/university_bloc.dart';
 import 'src/features/university/bloc/university_event.dart';
 import 'src/features/university/bloc/import_bloc.dart';
+import 'src/features/university/data/university_repository.dart';
 import 'src/features/admin/bloc/admin_bloc.dart';
 import 'src/features/admin/bloc/admin_event.dart';
 import 'src/features/notifications/bloc/notification_bloc.dart';
 import 'src/features/notifications/bloc/notification_event_state.dart';
+import 'src/features/notifications/data/notification_repository.dart';
 
 class App extends StatefulWidget {
   const App({super.key});
@@ -48,15 +52,21 @@ class _AppState extends State<App> {
   void initState() {
     super.initState();
     _authBloc = AuthBloc(repository: getIt<AuthRepository>());
-    _diplomaBloc = DiplomaBloc()..add(DiplomaLoadRequested());
+    _diplomaBloc = DiplomaBloc(repository: getIt<DiplomaRepository>())
+      ..add(DiplomaLoadRequested());
     _chatBloc = ChatBloc()..add(ChatLoadConversations());
     _employerBloc = EmployerBloc()..add(EmployerLoadRequested());
-    _verifyBloc = VerifyBloc();
-    _employerChatBloc = EmployerChatBloc()..add(EmployerChatLoadConversations());
-    _universityBloc = UniversityBloc()..add(UniversityLoadRequested());
+    _verifyBloc = VerifyBloc(repository: getIt<VerifyRepository>());
+    _employerChatBloc = EmployerChatBloc()
+      ..add(EmployerChatLoadConversations());
+    _universityBloc =
+        UniversityBloc(repository: getIt<UniversityRepository>())
+          ..add(UniversityLoadRequested());
     _importBloc = ImportBloc();
     _adminBloc = AdminBloc()..add(AdminLoadRequested());
-    _notificationBloc = NotificationBloc()..add(NotificationLoadRequested());
+    _notificationBloc =
+        NotificationBloc(repository: getIt<NotificationRepository>())
+          ..add(NotificationLoadRequested());
     _router = createRouter(_authBloc);
   }
 

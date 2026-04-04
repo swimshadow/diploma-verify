@@ -3,29 +3,51 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../data/mock_data.dart';
 import '../data/models/registry_diploma_model.dart';
 import '../data/models/certificate_model.dart';
+import '../data/university_repository.dart';
 import 'university_event.dart';
 import 'university_state.dart';
 
 class UniversityBloc extends Bloc<UniversityEvent, UniversityState> {
-  UniversityBloc() : super(UniversityInitial()) {
+  final UniversityRepository _repository;
+
+  UniversityBloc({required UniversityRepository repository})
+      : _repository = repository,
+        super(UniversityInitial()) {
     on<UniversityLoadRequested>(_onLoad);
     on<UniversityRevokeDiploma>(_onRevoke);
     on<UniversityReissueCertificate>(_onReissue);
   }
 
-  void _onLoad(UniversityLoadRequested event, Emitter<UniversityState> emit) {
+  Future<void> _onLoad(
+      UniversityLoadRequested event, Emitter<UniversityState> emit) async {
     emit(UniversityLoading());
-    emit(UniversityLoaded(
-      diplomas: mockRegistryDiplomas,
-      certificates: mockCertificates,
-      importJobs: mockImportJobs,
-    ));
+    try {
+      final raw = await _repository.fetchDiplomas();
+      final diplomas = raw.map(_mapDiploma).toList();
+      emit(UniversityLoaded(
+        diplomas: diplomas,
+        certificates: mockCertificates,
+        importJobs: mockImportJobs,
+      ));
+    } catch (_) {
+      emit(UniversityLoaded(
+        diplomas: mockRegistryDiplomas,
+        certificates: mockCertificates,
+        importJobs: mockImportJobs,
+      ));
+    }
   }
 
-  void _onRevoke(
-      UniversityRevokeDiploma event, Emitter<UniversityState> emit) {
+  Future<void> _onRevoke(
+      UniversityRevokeDiploma event, Emitter<UniversityState> emit) async {
     final current = state;
     if (current is! UniversityLoaded) return;
+
+    try {
+      await _repository.revokeDiploma(event.diplomaId);
+    } catch (_) {
+      // continue with local update
+    }
 
     final updated = current.diplomas.map((d) {
       if (d.id == event.diplomaId) {
@@ -82,5 +104,41 @@ class UniversityBloc extends Bloc<UniversityEvent, UniversityState> {
       certificates: updated,
       importJobs: current.importJobs,
     ));
+  }
+
+  static RegistryDiplomaStatus _parseStatus(String? s) {
+    switch (s) {
+      case 'active':
+      case 'verified':
+        return RegistryDiplomaStatus.active;
+      case 'revoked':
+        return RegistryDiplomaStatus.revoked;
+      default:
+        return RegistryDiplomaStatus.pendingReview;
+    }
+  }
+
+  static RegistryDiploma _mapDiploma(Map<String, dynamic> j) {
+    return RegistryDiploma(
+      id: j['id']?.toString() ?? '',
+      holderFullName: (j['full_name'] ?? j['holder_full_name'] ?? '').toString(),
+      faculty: (j['faculty'] ?? '').toString(),
+      speciality: (j['specialization'] ?? j['speciality'] ?? '').toString(),
+      educationLevel: (j['degree'] ?? j['education_level'] ?? '').toString(),
+      diplomaSeries: (j['series'] ?? j['diploma_series'] ?? '').toString(),
+      diplomaNumber: (j['diploma_number'] ?? '').toString(),
+      issueDate: DateTime.tryParse(j['issue_date'] ?? '') ?? DateTime.now(),
+      gpa: (j['gpa'] as num?)?.toDouble() ?? 0.0,
+      status: _parseStatus(j['status']?.toString()),
+      certificateId: j['certificate_id']?.toString(),
+      trustScore: (j['trust_score'] as num?)?.toDouble() ?? 0.0,
+      createdAt: DateTime.tryParse(j['created_at'] ?? '') ?? DateTime.now(),
+      antifraudScore: (j['antifraud_score'] as num?)?.toDouble() ?? 0.0,
+      antifraudVerdict: (j['antifraud_verdict'] ?? '').toString(),
+      antifraudWarnings: (j['antifraud_warnings'] as List?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
+    );
   }
 }

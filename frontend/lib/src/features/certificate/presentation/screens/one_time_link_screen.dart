@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../../core/constants/app_constants.dart';
 import '../../../student/bloc/diploma_bloc.dart';
 import '../../../student/bloc/diploma_state.dart';
 import '../../../student/data/models/diploma_model.dart';
@@ -25,7 +26,7 @@ class _OneTimeLinkScreenState extends State<OneTimeLinkScreen> {
   bool _copied = false;
 
   String get _link => _generatedToken != null
-      ? 'https://diplomaverify.ru/share/$_generatedToken'
+      ? '${AppConstants.publicBaseUrl}/share/$_generatedToken'
       : '';
 
   void _generate() {
