@@ -2,3 +2,33 @@
 2026-04-04 18:42:07.340 | INFO     | routers.student:list_my_diplomas:47 - [STUDENT] Профиль: full_name=qwert asdf zxcv, dob=2000-01-10
 2026-04-04 18:42:07.358 | INFO     | routers.student:list_my_diplomas:113 - [STUDENT] Найдено дипломов: 0
 2026-04-04 18:42:07.358 | INFO     | routers.student:list_my_diplomas:156 - [STUDENT] Возвращаем 0 дипломов для user=None
+2026-04-04 21:38:15.437 | INFO     | routers.student:list_my_diplomas:29 - [STUDENT] Запрос списка дипломов: user=None
+2026-04-04 21:38:15.446 | INFO     | routers.student:list_my_diplomas:47 - [STUDENT] Профиль: full_name=Тестов Тест Тестович, dob=2000-01-01
+2026-04-04 21:38:15.460 | INFO     | routers.student:list_my_diplomas:113 - [STUDENT] Найдено дипломов: 1
+2026-04-04 21:38:15.473 | INFO     | routers.student:list_my_diplomas:156 - [STUDENT] Возвращаем 1 дипломов для user=None
+2026-04-04 21:38:15.492 | INFO     | routers.student:get_certificate:210 - [STUDENT] Запрос сертификата: diploma_id=a40b408e-1fe7-4cb5-91fb-7defab778158, user=None
+2026-04-04 21:38:26.329 | INFO     | routers.student:list_my_diplomas:29 - [STUDENT] Запрос списка дипломов: user=None
+2026-04-04 21:38:26.343 | INFO     | routers.student:list_my_diplomas:47 - [STUDENT] Профиль: full_name=Тестов Тест Тестович, dob=2000-01-01
+2026-04-04 21:38:26.354 | INFO     | routers.student:list_my_diplomas:113 - [STUDENT] Найдено дипломов: 2
+2026-04-04 21:38:26.363 | INFO     | routers.student:list_my_diplomas:156 - [STUDENT] Возвращаем 1 дипломов для user=None
+2026-04-04 21:38:26.381 | INFO     | routers.student:get_certificate:210 - [STUDENT] Запрос сертификата: diploma_id=3022b695-9e31-4b06-b146-a9a332d1c434, user=None
+2026-04-04 21:39:10.388 | INFO     | routers.student:list_my_diplomas:29 - [STUDENT] Запрос списка дипломов: user=None
+2026-04-04 21:39:10.397 | INFO     | routers.student:list_my_diplomas:47 - [STUDENT] Профиль: full_name=Тестов Тест Тестович, dob=2000-01-01
+2026-04-04 21:39:10.416 | INFO     | routers.student:list_my_diplomas:113 - [STUDENT] Найдено дипломов: 3
+2026-04-04 21:39:10.425 | INFO     | routers.student:list_my_diplomas:156 - [STUDENT] Возвращаем 1 дипломов для user=None
+2026-04-04 21:39:10.442 | INFO     | routers.student:get_certificate:210 - [STUDENT] Запрос сертификата: diploma_id=9ea66090-3143-41c5-b950-ba2da0350c56, user=None
+2026-04-04 21:45:15.272 | INFO     | routers.student:list_my_diplomas:29 - [STUDENT] Запрос списка дипломов: user=None
+2026-04-04 21:45:15.280 | INFO     | routers.student:list_my_diplomas:47 - [STUDENT] Профиль: full_name=Тестов Тест Тестович, dob=2000-01-01
+2026-04-04 21:45:15.293 | INFO     | routers.student:list_my_diplomas:113 - [STUDENT] Найдено дипломов: 4
+2026-04-04 21:45:15.302 | INFO     | routers.student:list_my_diplomas:156 - [STUDENT] Возвращаем 1 дипломов для user=None
+2026-04-04 21:45:15.323 | INFO     | routers.student:get_certificate:210 - [STUDENT] Запрос сертификата: diploma_id=d6a846a3-e25b-4701-97ad-5ac968653ec1, user=None
+2026-04-04 21:47:55.102 | INFO     | routers.student:list_my_diplomas:29 - [STUDENT] Запрос списка дипломов: user=None
+2026-04-04 21:47:55.111 | INFO     | routers.student:list_my_diplomas:47 - [STUDENT] Профиль: full_name=Тестов Тест Тестович, dob=2000-01-01
+2026-04-04 21:47:55.126 | INFO     | routers.student:list_my_diplomas:113 - [STUDENT] Найдено дипломов: 5
+2026-04-04 21:47:55.135 | INFO     | routers.student:list_my_diplomas:156 - [STUDENT] Возвращаем 1 дипломов для user=None
+2026-04-04 21:47:55.152 | INFO     | routers.student:get_certificate:210 - [STUDENT] Запрос сертификата: diploma_id=18c6cf12-eaa4-46f7-9963-ae31ebe45f08, user=None
+2026-04-04 21:53:18.481 | INFO     | routers.student:list_my_diplomas:29 - [STUDENT] Запрос списка дипломов: user=None
+2026-04-04 21:53:18.489 | INFO     | routers.student:list_my_diplomas:47 - [STUDENT] Профиль: full_name=Тестов Тест Тестович, dob=2000-01-01
+2026-04-04 21:53:18.503 | INFO     | routers.student:list_my_diplomas:113 - [STUDENT] Найдено дипломов: 6
+2026-04-04 21:53:18.511 | INFO     | routers.student:list_my_diplomas:156 - [STUDENT] Возвращаем 1 дипломов для user=None
+2026-04-04 21:53:18.528 | INFO     | routers.student:get_certificate:210 - [STUDENT] Запрос сертификата: diploma_id=a7aeab0f-a5e1-4454-8551-710850d72cb5, user=None

@@ -1589,3 +1589,27 @@ LINE 1: ...tifications (id, account_id, type, subject, body, is_read, r...
 [SQL: INSERT INTO notifications (id, account_id, type, subject, body, is_read, route, sent, sent_at) VALUES (%(id)s::UUID, %(account_id)s::UUID, %(type)s, %(subject)s, %(body)s, %(is_read)s, %(route)s, %(sent)s, %(sent_at)s) RETURNING notifications.created_at]
 [parameters: {'id': UUID('89b5be1a-c562-4470-859a-5479fa498abb'), 'account_id': UUID('8c9c761e-59f8-416b-a378-a2f048bb65da'), 'type': 'welcome', 'subject': 'Добро пожаловать', 'body': 'Регистрация завершена для dan@g.comq', 'is_read': False, 'route': None, 'sent': False, 'sent_at': None}]
 (Background on this error at: https://sqlalche.me/e/20/f405)
+2026-04-04 21:38:13.210 | INFO     | routers.internal:send_notification:105 - Notification sent: type=welcome account_id=953f4941-8b55-4d62-a633-6bc81f1ac06a subject=Добро пожаловать
+2026-04-04 21:38:13.422 | INFO     | routers.internal:send_notification:105 - Notification sent: type=welcome account_id=def17d2e-6e31-44c5-b6fe-904094d8154f subject=Добро пожаловать
+2026-04-04 21:38:14.024 | INFO     | routers.internal:send_notification:105 - Notification sent: type=diploma_uploaded account_id=953f4941-8b55-4d62-a633-6bc81f1ac06a subject=Диплом загружен
+2026-04-04 21:38:15.750 | INFO     | routers.internal:send_notification:105 - Notification sent: type=diploma_revoked account_id=953f4941-8b55-4d62-a633-6bc81f1ac06a subject=Диплом отозван
+2026-04-04 21:38:25.259 | INFO     | routers.internal:send_notification:105 - Notification sent: type=welcome account_id=2d9f6216-211d-4504-a90a-f6000ccf52ab subject=Добро пожаловать
+2026-04-04 21:38:25.473 | INFO     | routers.internal:send_notification:105 - Notification sent: type=welcome account_id=61f01dbc-b3e9-48b6-9826-803846262e6f subject=Добро пожаловать
+2026-04-04 21:38:25.977 | INFO     | routers.internal:send_notification:105 - Notification sent: type=diploma_uploaded account_id=2d9f6216-211d-4504-a90a-f6000ccf52ab subject=Диплом загружен
+2026-04-04 21:38:26.612 | INFO     | routers.internal:send_notification:105 - Notification sent: type=diploma_revoked account_id=2d9f6216-211d-4504-a90a-f6000ccf52ab subject=Диплом отозван
+2026-04-04 21:39:09.354 | INFO     | routers.internal:send_notification:105 - Notification sent: type=welcome account_id=11c02bc4-df6f-4e3b-892a-e1a694c3657c subject=Добро пожаловать
+2026-04-04 21:39:09.565 | INFO     | routers.internal:send_notification:105 - Notification sent: type=welcome account_id=f6124181-3f10-40e2-87a0-a72e180e3f19 subject=Добро пожаловать
+2026-04-04 21:39:10.078 | INFO     | routers.internal:send_notification:105 - Notification sent: type=diploma_uploaded account_id=11c02bc4-df6f-4e3b-892a-e1a694c3657c subject=Диплом загружен
+2026-04-04 21:39:10.675 | INFO     | routers.internal:send_notification:105 - Notification sent: type=diploma_revoked account_id=11c02bc4-df6f-4e3b-892a-e1a694c3657c subject=Диплом отозван
+2026-04-04 21:45:14.018 | INFO     | routers.internal:send_notification:105 - Notification sent: type=welcome account_id=a6ef1b93-0add-452c-a2f3-44b961154d26 subject=Добро пожаловать
+2026-04-04 21:45:14.230 | INFO     | routers.internal:send_notification:105 - Notification sent: type=welcome account_id=f91881aa-1034-439a-800b-fac06c8d2e48 subject=Добро пожаловать
+2026-04-04 21:45:14.955 | INFO     | routers.internal:send_notification:105 - Notification sent: type=diploma_uploaded account_id=a6ef1b93-0add-452c-a2f3-44b961154d26 subject=Диплом загружен
+2026-04-04 21:45:15.786 | INFO     | routers.internal:send_notification:105 - Notification sent: type=diploma_revoked account_id=a6ef1b93-0add-452c-a2f3-44b961154d26 subject=Диплом отозван
+2026-04-04 21:47:53.885 | INFO     | routers.internal:send_notification:105 - Notification sent: type=welcome account_id=4246aef1-31d4-4e17-a36b-f849a9e1130f subject=Добро пожаловать
+2026-04-04 21:47:54.098 | INFO     | routers.internal:send_notification:105 - Notification sent: type=welcome account_id=e0fae2d3-dc47-47b6-b99c-54360519927a subject=Добро пожаловать
+2026-04-04 21:47:54.793 | INFO     | routers.internal:send_notification:105 - Notification sent: type=diploma_uploaded account_id=4246aef1-31d4-4e17-a36b-f849a9e1130f subject=Диплом загружен
+2026-04-04 21:47:55.629 | INFO     | routers.internal:send_notification:105 - Notification sent: type=diploma_revoked account_id=4246aef1-31d4-4e17-a36b-f849a9e1130f subject=Диплом отозван
+2026-04-04 21:53:17.262 | INFO     | routers.internal:send_notification:105 - Notification sent: type=welcome account_id=049ca916-2830-44f1-9dc0-1bea656483dc subject=Добро пожаловать
+2026-04-04 21:53:17.471 | INFO     | routers.internal:send_notification:105 - Notification sent: type=welcome account_id=b0b192a7-9b7b-4b49-aa58-47f6eacead8a subject=Добро пожаловать
+2026-04-04 21:53:18.178 | INFO     | routers.internal:send_notification:105 - Notification sent: type=diploma_uploaded account_id=049ca916-2830-44f1-9dc0-1bea656483dc subject=Диплом загружен
+2026-04-04 21:53:19.000 | INFO     | routers.internal:send_notification:105 - Notification sent: type=diploma_revoked account_id=049ca916-2830-44f1-9dc0-1bea656483dc subject=Диплом отозван

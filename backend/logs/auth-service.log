@@ -25,3 +25,75 @@
 2026-04-04 18:42:07.155 | INFO     | routers.auth:login:290 - [LOGIN] Вход успешен: account_id=8c9c761e-59f8-416b-a378-a2f048bb65da, role=student
 2026-04-04 19:34:24.108 | INFO     | main:create_tables:80 - Auth service tables ready
 2026-04-04 20:12:40.211 | INFO     | main:create_tables:80 - Auth service tables ready
+2026-04-04 21:33:39.498 | INFO     | main:create_tables:82 - Auth service tables ready
+2026-04-04 21:38:12.970 | INFO     | routers.auth:register:144 - [REGISTER] Начало регистрации: email=testuni1775338692@example.com, role=university
+2026-04-04 21:38:13.177 | INFO     | routers.auth:register:226 - [REGISTER] Регистрация успешна: account_id=953f4941-8b55-4d62-a633-6bc81f1ac06a, role=university
+2026-04-04 21:38:13.222 | INFO     | routers.auth:register:144 - [REGISTER] Начало регистрации: email=testemp1775338692@example.com, role=employer
+2026-04-04 21:38:13.412 | INFO     | routers.auth:register:226 - [REGISTER] Регистрация успешна: account_id=def17d2e-6e31-44c5-b6fe-904094d8154f, role=employer
+2026-04-04 21:38:13.437 | INFO     | routers.auth:login:244 - [LOGIN] Попытка входа: email=testuni1775338692@example.com
+2026-04-04 21:38:13.636 | INFO     | routers.auth:login:290 - [LOGIN] Вход успешен: account_id=953f4941-8b55-4d62-a633-6bc81f1ac06a, role=university
+2026-04-04 21:38:13.681 | INFO     | routers.auth:login:244 - [LOGIN] Попытка входа: email=admin@demo.ru
+2026-04-04 21:38:13.683 | WARNING  | routers.auth:login:258 - [LOGIN] Неверные учётные данные: admin@demo.ru
+2026-04-04 21:38:15.203 | INFO     | routers.auth:login:244 - [LOGIN] Попытка входа: email=teststudent1775338692@example.com
+2026-04-04 21:38:15.392 | INFO     | routers.auth:login:290 - [LOGIN] Вход успешен: account_id=0d755f3d-0484-4b1d-9619-e650e57b41aa, role=student
+2026-04-04 21:38:25.059 | INFO     | routers.auth:register:144 - [REGISTER] Начало регистрации: email=testuni1775338704@example.com, role=university
+2026-04-04 21:38:25.249 | INFO     | routers.auth:register:226 - [REGISTER] Регистрация успешна: account_id=2d9f6216-211d-4504-a90a-f6000ccf52ab, role=university
+2026-04-04 21:38:25.273 | INFO     | routers.auth:register:144 - [REGISTER] Начало регистрации: email=testemp1775338704@example.com, role=employer
+2026-04-04 21:38:25.462 | INFO     | routers.auth:register:226 - [REGISTER] Регистрация успешна: account_id=61f01dbc-b3e9-48b6-9826-803846262e6f, role=employer
+2026-04-04 21:38:25.487 | INFO     | routers.auth:login:244 - [LOGIN] Попытка входа: email=testuni1775338704@example.com
+2026-04-04 21:38:25.673 | INFO     | routers.auth:login:290 - [LOGIN] Вход успешен: account_id=2d9f6216-211d-4504-a90a-f6000ccf52ab, role=university
+2026-04-04 21:38:25.713 | INFO     | routers.auth:login:244 - [LOGIN] Попытка входа: email=admin@demo.ru
+2026-04-04 21:38:25.714 | WARNING  | routers.auth:login:258 - [LOGIN] Неверные учётные данные: admin@demo.ru
+2026-04-04 21:38:26.118 | INFO     | routers.auth:login:244 - [LOGIN] Попытка входа: email=teststudent1775338704@example.com
+2026-04-04 21:38:26.307 | INFO     | routers.auth:login:290 - [LOGIN] Вход успешен: account_id=367fd3d2-5278-4a4d-b8ab-b20549efaa5a, role=student
+2026-04-04 21:38:26.685 | INFO     | routers.auth:login:244 - [LOGIN] Попытка входа: email=testuni1775338704@example.com
+2026-04-04 21:38:26.867 | WARNING  | routers.auth:login:258 - [LOGIN] Неверные учётные данные: testuni1775338704@example.com
+2026-04-04 21:39:09.149 | INFO     | routers.auth:register:144 - [REGISTER] Начало регистрации: email=testuni1775338749@example.com, role=university
+2026-04-04 21:39:09.343 | INFO     | routers.auth:register:226 - [REGISTER] Регистрация успешна: account_id=11c02bc4-df6f-4e3b-892a-e1a694c3657c, role=university
+2026-04-04 21:39:09.367 | INFO     | routers.auth:register:144 - [REGISTER] Начало регистрации: email=testemp1775338749@example.com, role=employer
+2026-04-04 21:39:09.555 | INFO     | routers.auth:register:226 - [REGISTER] Регистрация успешна: account_id=f6124181-3f10-40e2-87a0-a72e180e3f19, role=employer
+2026-04-04 21:39:09.579 | INFO     | routers.auth:login:244 - [LOGIN] Попытка входа: email=testuni1775338749@example.com
+2026-04-04 21:39:09.767 | INFO     | routers.auth:login:290 - [LOGIN] Вход успешен: account_id=11c02bc4-df6f-4e3b-892a-e1a694c3657c, role=university
+2026-04-04 21:39:09.804 | INFO     | routers.auth:login:244 - [LOGIN] Попытка входа: email=admin@demo.ru
+2026-04-04 21:39:09.805 | WARNING  | routers.auth:login:258 - [LOGIN] Неверные учётные данные: admin@demo.ru
+2026-04-04 21:39:10.177 | INFO     | routers.auth:login:244 - [LOGIN] Попытка входа: email=teststudent1775338749@example.com
+2026-04-04 21:39:10.367 | INFO     | routers.auth:login:290 - [LOGIN] Вход успешен: account_id=1307d852-d081-4b55-b21d-a8f388860810, role=student
+2026-04-04 21:39:10.756 | INFO     | routers.auth:login:244 - [LOGIN] Попытка входа: email=testuni1775338749@example.com
+2026-04-04 21:39:10.940 | WARNING  | routers.auth:login:258 - [LOGIN] Неверные учётные данные: testuni1775338749@example.com
+2026-04-04 21:42:49.587 | INFO     | main:create_tables:82 - Auth service tables ready
+2026-04-04 21:45:13.788 | INFO     | routers.auth:register:144 - [REGISTER] Начало регистрации: email=testuni1775339113@example.com, role=university
+2026-04-04 21:45:13.984 | INFO     | routers.auth:register:226 - [REGISTER] Регистрация успешна: account_id=a6ef1b93-0add-452c-a2f3-44b961154d26, role=university
+2026-04-04 21:45:14.031 | INFO     | routers.auth:register:144 - [REGISTER] Начало регистрации: email=testemp1775339113@example.com, role=employer
+2026-04-04 21:45:14.219 | INFO     | routers.auth:register:226 - [REGISTER] Регистрация успешна: account_id=f91881aa-1034-439a-800b-fac06c8d2e48, role=employer
+2026-04-04 21:45:14.245 | INFO     | routers.auth:login:244 - [LOGIN] Попытка входа: email=testuni1775339113@example.com
+2026-04-04 21:45:14.445 | INFO     | routers.auth:login:290 - [LOGIN] Вход успешен: account_id=a6ef1b93-0add-452c-a2f3-44b961154d26, role=university
+2026-04-04 21:45:14.491 | INFO     | routers.auth:login:244 - [LOGIN] Попытка входа: email=admin@demo.ru
+2026-04-04 21:45:14.680 | INFO     | routers.auth:login:290 - [LOGIN] Вход успешен: account_id=4aaa14e3-c85c-4f5b-879b-f4ff86d08db8, role=admin
+2026-04-04 21:45:15.061 | INFO     | routers.auth:login:244 - [LOGIN] Попытка входа: email=teststudent1775339113@example.com
+2026-04-04 21:45:15.250 | INFO     | routers.auth:login:290 - [LOGIN] Вход успешен: account_id=4f404ce0-b04f-4351-9f38-78059f18403c, role=student
+2026-04-04 21:45:15.859 | INFO     | routers.auth:login:244 - [LOGIN] Попытка входа: email=testuni1775339113@example.com
+2026-04-04 21:45:16.044 | WARNING  | routers.auth:login:258 - [LOGIN] Неверные учётные данные: testuni1775339113@example.com
+2026-04-04 21:47:53.689 | INFO     | routers.auth:register:144 - [REGISTER] Начало регистрации: email=testuni1775339273@example.com, role=university
+2026-04-04 21:47:53.875 | INFO     | routers.auth:register:226 - [REGISTER] Регистрация успешна: account_id=4246aef1-31d4-4e17-a36b-f849a9e1130f, role=university
+2026-04-04 21:47:53.899 | INFO     | routers.auth:register:144 - [REGISTER] Начало регистрации: email=testemp1775339273@example.com, role=employer
+2026-04-04 21:47:54.087 | INFO     | routers.auth:register:226 - [REGISTER] Регистрация успешна: account_id=e0fae2d3-dc47-47b6-b99c-54360519927a, role=employer
+2026-04-04 21:47:54.109 | INFO     | routers.auth:login:244 - [LOGIN] Попытка входа: email=testuni1775339273@example.com
+2026-04-04 21:47:54.297 | INFO     | routers.auth:login:290 - [LOGIN] Вход успешен: account_id=4246aef1-31d4-4e17-a36b-f849a9e1130f, role=university
+2026-04-04 21:47:54.341 | INFO     | routers.auth:login:244 - [LOGIN] Попытка входа: email=admin@demo.ru
+2026-04-04 21:47:54.527 | INFO     | routers.auth:login:290 - [LOGIN] Вход успешен: account_id=4aaa14e3-c85c-4f5b-879b-f4ff86d08db8, role=admin
+2026-04-04 21:47:54.891 | INFO     | routers.auth:login:244 - [LOGIN] Попытка входа: email=teststudent1775339273@example.com
+2026-04-04 21:47:55.080 | INFO     | routers.auth:login:290 - [LOGIN] Вход успешен: account_id=bb819888-d468-45c0-878e-e4392cdaa27c, role=student
+2026-04-04 21:47:55.702 | INFO     | routers.auth:login:244 - [LOGIN] Попытка входа: email=testuni1775339273@example.com
+2026-04-04 21:47:55.884 | WARNING  | routers.auth:login:258 - [LOGIN] Неверные учётные данные: testuni1775339273@example.com
+2026-04-04 21:53:17.065 | INFO     | routers.auth:register:144 - [REGISTER] Начало регистрации: email=testuni1775339596@example.com, role=university
+2026-04-04 21:53:17.251 | INFO     | routers.auth:register:226 - [REGISTER] Регистрация успешна: account_id=049ca916-2830-44f1-9dc0-1bea656483dc, role=university
+2026-04-04 21:53:17.275 | INFO     | routers.auth:register:144 - [REGISTER] Начало регистрации: email=testemp1775339596@example.com, role=employer
+2026-04-04 21:53:17.460 | INFO     | routers.auth:register:226 - [REGISTER] Регистрация успешна: account_id=b0b192a7-9b7b-4b49-aa58-47f6eacead8a, role=employer
+2026-04-04 21:53:17.483 | INFO     | routers.auth:login:244 - [LOGIN] Попытка входа: email=testuni1775339596@example.com
+2026-04-04 21:53:17.673 | INFO     | routers.auth:login:290 - [LOGIN] Вход успешен: account_id=049ca916-2830-44f1-9dc0-1bea656483dc, role=university
+2026-04-04 21:53:17.713 | INFO     | routers.auth:login:244 - [LOGIN] Попытка входа: email=admin@demo.ru
+2026-04-04 21:53:17.900 | INFO     | routers.auth:login:290 - [LOGIN] Вход успешен: account_id=4aaa14e3-c85c-4f5b-879b-f4ff86d08db8, role=admin
+2026-04-04 21:53:18.272 | INFO     | routers.auth:login:244 - [LOGIN] Попытка входа: email=teststudent1775339596@example.com
+2026-04-04 21:53:18.459 | INFO     | routers.auth:login:290 - [LOGIN] Вход успешен: account_id=536227c0-e4d1-4dd3-bbeb-8f2a1eec5368, role=student
+2026-04-04 21:53:19.074 | INFO     | routers.auth:login:244 - [LOGIN] Попытка входа: email=testuni1775339596@example.com
+2026-04-04 21:53:19.257 | WARNING  | routers.auth:login:258 - [LOGIN] Неверные учётные данные: testuni1775339596@example.com

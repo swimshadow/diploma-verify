@@ -86,10 +86,10 @@ async def logs_stats(
     failed_checks = len([l for l in all_logs if l.result == False])
 
     today = datetime.utcnow().date()
-    checks_today = len([l for l in all_logs if l.checked_at.date() == today])
+    checks_today = len([l for l in all_logs if l.checked_at and l.checked_at.replace(tzinfo=None).date() == today])
 
     week_ago = datetime.utcnow() - timedelta(days=7)
-    checks_this_week = len([l for l in all_logs if l.checked_at >= week_ago])
+    checks_this_week = len([l for l in all_logs if l.checked_at and l.checked_at.replace(tzinfo=None) >= week_ago])
 
     # Most checked diplomas
     diploma_check_counts = {}

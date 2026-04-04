@@ -1,6 +1,6 @@
 import os
 import uuid
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from typing import Optional
 
 import httpx
@@ -80,9 +80,9 @@ async def list_diplomas(
     if university_id:
         query = query.filter(Diploma.university_account_id == university_id)
     if date_from:
-        query = query.filter(Diploma.created_at >= date_from)
+        query = query.filter(Diploma.created_at >= datetime.combine(date_from, datetime.min.time()))
     if date_to:
-        query = query.filter(Diploma.created_at <= date_to)
+        query = query.filter(Diploma.created_at <= datetime.combine(date_to, datetime.max.time()))
 
     total = query.count()
     diplomas = query.offset((page - 1) * limit).limit(limit).all()
@@ -106,6 +106,43 @@ async def list_diplomas(
         ))
 
     return DiplomaListResponse(diplomas=items, total=total, page=page, limit=limit)
+
+
+@router.get("/diplomas/stats", response_model=DiplomasStatsResponse)
+async def diplomas_stats(
+    db: Session = Depends(get_university_db),
+    admin: dict = Depends(get_admin_user),
+):
+    total = db.query(Diploma).count()
+    by_status = {}
+    for status in ["pending", "verified", "revoked"]:
+        by_status[status] = db.query(Diploma).filter(Diploma.status == status).count()
+
+    today = datetime.now(timezone.utc).date()
+    verified_today = db.query(Diploma).filter(
+        Diploma.status == "verified",
+        Diploma.created_at >= datetime.combine(today, datetime.min.time())
+    ).count()
+
+    week_ago = datetime.now(timezone.utc) - timedelta(days=7)
+    verified_this_week = db.query(Diploma).filter(
+        Diploma.status == "verified",
+        Diploma.created_at >= week_ago
+    ).count()
+
+    month_ago = datetime.now(timezone.utc) - timedelta(days=30)
+    verified_this_month = db.query(Diploma).filter(
+        Diploma.status == "verified",
+        Diploma.created_at >= month_ago
+    ).count()
+
+    return DiplomasStatsResponse(
+        total=total,
+        by_status=by_status,
+        verified_today=verified_today,
+        verified_this_week=verified_this_week,
+        verified_this_month=verified_this_month
+    )
 
 
 @router.get("/diplomas/{diploma_id}", response_model=DiplomaDetailResponse)
@@ -192,40 +229,3 @@ async def force_revoke(
         new_value={"status": "revoked", "moderator_note": body.reason},
     )
     return {"ok": True, "diploma_id": str(diploma_id)}
-
-
-@router.get("/diplomas/stats", response_model=DiplomasStatsResponse)
-async def diplomas_stats(
-    db: Session = Depends(get_university_db),
-    admin: dict = Depends(get_admin_user),
-):
-    total = db.query(Diploma).count()
-    by_status = {}
-    for status in ["pending", "verified", "revoked"]:
-        by_status[status] = db.query(Diploma).filter(Diploma.status == status).count()
-
-    today = datetime.utcnow().date()
-    verified_today = db.query(Diploma).filter(
-        Diploma.status == "verified",
-        Diploma.created_at >= today
-    ).count()
-
-    week_ago = datetime.utcnow() - timedelta(days=7)
-    verified_this_week = db.query(Diploma).filter(
-        Diploma.status == "verified",
-        Diploma.created_at >= week_ago
-    ).count()
-
-    month_ago = datetime.utcnow() - timedelta(days=30)
-    verified_this_month = db.query(Diploma).filter(
-        Diploma.status == "verified",
-        Diploma.created_at >= month_ago
-    ).count()
-
-    return DiplomasStatsResponse(
-        total=total,
-        by_status=by_status,
-        verified_today=verified_today,
-        verified_this_week=verified_this_week,
-        verified_this_month=verified_this_month
-    )

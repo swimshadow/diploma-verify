@@ -125,6 +125,33 @@ async def list_accounts(
     return AccountListResponse(accounts=items, total=total, page=page, limit=limit)
 
 
+@router.get("/accounts/stats", response_model=AccountsStatsResponse)
+async def accounts_stats(
+    db: Session = Depends(get_auth_db),
+    admin: dict = Depends(get_admin_user),
+):
+    total = db.query(Account).count()
+    by_role = {}
+    for role in ["university", "student", "employer"]:
+        by_role[role] = db.query(Account).filter(Account.role == role).count()
+
+    blocked = db.query(Account).filter(Account.is_blocked == True).count()
+
+    today = datetime.utcnow().date()
+    registered_today = db.query(Account).filter(Account.created_at >= today).count()
+
+    week_ago = datetime.utcnow() - timedelta(days=7)
+    registered_this_week = db.query(Account).filter(Account.created_at >= week_ago).count()
+
+    return AccountsStatsResponse(
+        total=total,
+        by_role=by_role,
+        blocked=blocked,
+        registered_today=registered_today,
+        registered_this_week=registered_this_week
+    )
+
+
 @router.get("/accounts/{account_id}", response_model=AccountDetailResponse)
 async def get_account(
     account_id: uuid.UUID,
@@ -199,31 +226,4 @@ async def unblock_account(
     return BlockResponse(
         account_id=acc.id,
         is_blocked=False
-    )
-
-
-@router.get("/accounts/stats", response_model=AccountsStatsResponse)
-async def accounts_stats(
-    db: Session = Depends(get_auth_db),
-    admin: dict = Depends(get_admin_user),
-):
-    total = db.query(Account).count()
-    by_role = {}
-    for role in ["university", "student", "employer"]:
-        by_role[role] = db.query(Account).filter(Account.role == role).count()
-
-    blocked = db.query(Account).filter(Account.is_blocked == True).count()
-
-    today = datetime.utcnow().date()
-    registered_today = db.query(Account).filter(Account.created_at >= today).count()
-
-    week_ago = datetime.utcnow() - timedelta(days=7)
-    registered_this_week = db.query(Account).filter(Account.created_at >= week_ago).count()
-
-    return AccountsStatsResponse(
-        total=total,
-        by_role=by_role,
-        blocked=blocked,
-        registered_today=registered_today,
-        registered_this_week=registered_this_week
     )

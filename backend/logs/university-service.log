@@ -54,3 +54,154 @@
 2026-04-04 18:40:54.367 | INFO     | routers.universities:upload_diploma:427 - [UPLOAD] Аудит записан. Загрузка завершена успешно. diploma_id=277728a3-9998-4e14-b0d3-7c9d10e53774
 2026-04-04 19:34:24.605 | INFO     | main:create_tables:83 - University service tables ready
 2026-04-04 20:12:40.855 | INFO     | main:create_tables:83 - University service tables ready
+2026-04-04 21:33:39.955 | INFO     | main:create_tables:83 - University service tables ready
+2026-04-04 21:38:13.735 | INFO     | routers.universities:upload_diploma:293 - [UPLOAD] Начало загрузки диплома. user=953f4941-8b55-4d62-a633-6bc81f1ac06a
+2026-04-04 21:38:13.735 | INFO     | routers.universities:upload_diploma:294 - [UPLOAD] Файл: name=test_diploma_wtot.pdf, content_type=application/pdf, size=30
+2026-04-04 21:38:13.735 | INFO     | routers.universities:upload_diploma:295 - [UPLOAD] Metadata (raw): {"full_name":"Тестов Тест Тестович","diploma_number":"CURL-1775338692","series":"ТСТ","degree":"Бакалавр","specialization":"Тестирование","issue_date":"2024-06-30","date_of_birth":"2000-01-01","student_email":"teststudent1775338692@example.com","student_password":"Demo123!"}
+2026-04-04 21:38:13.735 | INFO     | routers.universities:upload_diploma:298 - [UPLOAD] Metadata parsed: full_name=Тестов Тест Тестович, diploma_number=CURL-1775338692, degree=Бакалавр
+2026-04-04 21:38:13.736 | INFO     | routers.universities:upload_diploma:307 - [UPLOAD] Валидация файла: fname=test_diploma_wtot.pdf, content_type=application/pdf
+2026-04-04 21:38:13.746 | INFO     | routers.universities:upload_diploma:316 - [UPLOAD] Университет: Тестовый ВУЗ (953f4941-8b55-4d62-a633-6bc81f1ac06a)
+2026-04-04 21:38:13.746 | INFO     | routers.universities:upload_diploma:324 - [UPLOAD] Data hash computed: 9621b36e878e59de...
+2026-04-04 21:38:13.747 | INFO     | routers.universities:upload_diploma:326 - [UPLOAD] Прочитано 30 bytes из файла
+2026-04-04 21:38:13.747 | INFO     | routers.universities:upload_diploma:328 - [UPLOAD] Загрузка файла в file-service: http://file-service:8005/files/upload
+2026-04-04 21:38:13.765 | INFO     | routers.universities:upload_diploma:353 - [UPLOAD] Файл загружен, file_id=6b0bcfc5-a054-4669-990c-deac2f10b193
+2026-04-04 21:38:13.765 | INFO     | routers.universities:upload_diploma:374 - [UPLOAD] Без шифрования полей
+2026-04-04 21:38:13.772 | INFO     | routers.universities:upload_diploma:394 - [UPLOAD] Диплом создан в БД: id=a40b408e-1fe7-4cb5-91fb-7defab778158, status=pending
+2026-04-04 21:38:13.773 | INFO     | routers.universities:upload_diploma:398 - [UPLOAD] Регистрация студента: email=teststudent1775338692@example.com
+2026-04-04 21:38:13.980 | INFO     | routers.universities:upload_diploma:414 - [UPLOAD] Студент зарегистрирован и привязан: 0d755f3d-0484-4b1d-9619-e650e57b41aa
+2026-04-04 21:38:13.980 | INFO     | routers.universities:upload_diploma:423 - [UPLOAD] Запуск AI extraction: http://ai-integration-service:8007/ai/extract
+2026-04-04 21:38:14.013 | INFO     | routers.universities:upload_diploma:430 - [UPLOAD] AI extraction запущен
+2026-04-04 21:38:14.026 | INFO     | routers.universities:upload_diploma:440 - [UPLOAD] Уведомление отправлено
+2026-04-04 21:38:14.041 | INFO     | routers.universities:upload_diploma:453 - [UPLOAD] Аудит записан. Загрузка завершена успешно. diploma_id=a40b408e-1fe7-4cb5-91fb-7defab778158
+2026-04-04 21:38:14.120 | INFO     | routers.universities:verify_manual:523 - [VERIFY] Начало верификации diploma_id=a40b408e-1fe7-4cb5-91fb-7defab778158, user=953f4941-8b55-4d62-a633-6bc81f1ac06a
+2026-04-04 21:38:14.121 | INFO     | routers.universities:verify_manual:536 - [VERIFY] Диплом найден: status=verified
+2026-04-04 21:38:14.122 | INFO     | routers.universities:verify_manual:544 - [VERIFY] Диплом уже верифицирован: a40b408e-1fe7-4cb5-91fb-7defab778158
+2026-04-04 21:38:15.724 | INFO     | routers.universities:revoke_diploma:575 - [REVOKE] Начало отзыва diploma_id=a40b408e-1fe7-4cb5-91fb-7defab778158, user=953f4941-8b55-4d62-a633-6bc81f1ac06a
+2026-04-04 21:38:15.728 | INFO     | routers.universities:revoke_diploma:594 - [REVOKE] Диплом отозван: a40b408e-1fe7-4cb5-91fb-7defab778158, prev_status=verified
+2026-04-04 21:38:15.738 | WARNING  | routers.universities:_post_certificate_deactivate:263 - Certificate deactivate failed: 404 {"detail":"Not found"}
+2026-04-04 21:38:15.738 | INFO     | routers.universities:revoke_diploma:596 - [REVOKE] Сертификат деактивирован
+2026-04-04 21:38:25.739 | INFO     | routers.universities:upload_diploma:293 - [UPLOAD] Начало загрузки диплома. user=2d9f6216-211d-4504-a90a-f6000ccf52ab
+2026-04-04 21:38:25.739 | INFO     | routers.universities:upload_diploma:294 - [UPLOAD] Файл: name=test_diploma_zRjn.pdf, content_type=application/pdf, size=30
+2026-04-04 21:38:25.739 | INFO     | routers.universities:upload_diploma:295 - [UPLOAD] Metadata (raw): {"full_name":"Тестов Тест Тестович","diploma_number":"CURL-1775338704","series":"ТСТ","degree":"Бакалавр","specialization":"Тестирование","issue_date":"2024-06-30","date_of_birth":"2000-01-01","student_email":"teststudent1775338704@example.com","student_password":"Demo123!"}
+2026-04-04 21:38:25.739 | INFO     | routers.universities:upload_diploma:298 - [UPLOAD] Metadata parsed: full_name=Тестов Тест Тестович, diploma_number=CURL-1775338704, degree=Бакалавр
+2026-04-04 21:38:25.739 | INFO     | routers.universities:upload_diploma:307 - [UPLOAD] Валидация файла: fname=test_diploma_zrjn.pdf, content_type=application/pdf
+2026-04-04 21:38:25.747 | INFO     | routers.universities:upload_diploma:316 - [UPLOAD] Университет: Тестовый ВУЗ (2d9f6216-211d-4504-a90a-f6000ccf52ab)
+2026-04-04 21:38:25.747 | INFO     | routers.universities:upload_diploma:324 - [UPLOAD] Data hash computed: 8df156dbd535bb5d...
+2026-04-04 21:38:25.747 | INFO     | routers.universities:upload_diploma:326 - [UPLOAD] Прочитано 30 bytes из файла
+2026-04-04 21:38:25.747 | INFO     | routers.universities:upload_diploma:328 - [UPLOAD] Загрузка файла в file-service: http://file-service:8005/files/upload
+2026-04-04 21:38:25.757 | INFO     | routers.universities:upload_diploma:353 - [UPLOAD] Файл загружен, file_id=5413f5ee-7572-443e-80ef-519e76f5c071
+2026-04-04 21:38:25.757 | INFO     | routers.universities:upload_diploma:374 - [UPLOAD] Без шифрования полей
+2026-04-04 21:38:25.759 | INFO     | routers.universities:upload_diploma:394 - [UPLOAD] Диплом создан в БД: id=3022b695-9e31-4b06-b146-a9a332d1c434, status=pending
+2026-04-04 21:38:25.759 | INFO     | routers.universities:upload_diploma:398 - [UPLOAD] Регистрация студента: email=teststudent1775338704@example.com
+2026-04-04 21:38:25.957 | INFO     | routers.universities:upload_diploma:414 - [UPLOAD] Студент зарегистрирован и привязан: 367fd3d2-5278-4a4d-b8ab-b20549efaa5a
+2026-04-04 21:38:25.957 | INFO     | routers.universities:upload_diploma:423 - [UPLOAD] Запуск AI extraction: http://ai-integration-service:8007/ai/extract
+2026-04-04 21:38:25.969 | INFO     | routers.universities:upload_diploma:430 - [UPLOAD] AI extraction запущен
+2026-04-04 21:38:25.978 | INFO     | routers.universities:upload_diploma:440 - [UPLOAD] Уведомление отправлено
+2026-04-04 21:38:25.989 | INFO     | routers.universities:upload_diploma:453 - [UPLOAD] Аудит записан. Загрузка завершена успешно. diploma_id=3022b695-9e31-4b06-b146-a9a332d1c434
+2026-04-04 21:38:26.100 | INFO     | routers.universities:verify_manual:523 - [VERIFY] Начало верификации diploma_id=3022b695-9e31-4b06-b146-a9a332d1c434, user=2d9f6216-211d-4504-a90a-f6000ccf52ab
+2026-04-04 21:38:26.101 | INFO     | routers.universities:verify_manual:536 - [VERIFY] Диплом найден: status=verified
+2026-04-04 21:38:26.101 | INFO     | routers.universities:verify_manual:544 - [VERIFY] Диплом уже верифицирован: 3022b695-9e31-4b06-b146-a9a332d1c434
+2026-04-04 21:38:26.586 | INFO     | routers.universities:revoke_diploma:575 - [REVOKE] Начало отзыва diploma_id=3022b695-9e31-4b06-b146-a9a332d1c434, user=2d9f6216-211d-4504-a90a-f6000ccf52ab
+2026-04-04 21:38:26.590 | INFO     | routers.universities:revoke_diploma:594 - [REVOKE] Диплом отозван: 3022b695-9e31-4b06-b146-a9a332d1c434, prev_status=verified
+2026-04-04 21:38:26.600 | WARNING  | routers.universities:_post_certificate_deactivate:263 - Certificate deactivate failed: 404 {"detail":"Not found"}
+2026-04-04 21:38:26.600 | INFO     | routers.universities:revoke_diploma:596 - [REVOKE] Сертификат деактивирован
+2026-04-04 21:39:09.831 | INFO     | routers.universities:upload_diploma:293 - [UPLOAD] Начало загрузки диплома. user=11c02bc4-df6f-4e3b-892a-e1a694c3657c
+2026-04-04 21:39:09.831 | INFO     | routers.universities:upload_diploma:294 - [UPLOAD] Файл: name=test_diploma_XuBP.pdf, content_type=application/pdf, size=30
+2026-04-04 21:39:09.831 | INFO     | routers.universities:upload_diploma:295 - [UPLOAD] Metadata (raw): {"full_name":"Тестов Тест Тестович","diploma_number":"CURL-1775338749","series":"ТСТ","degree":"Бакалавр","specialization":"Тестирование","issue_date":"2024-06-30","date_of_birth":"2000-01-01","student_email":"teststudent1775338749@example.com","student_password":"Demo123!"}
+2026-04-04 21:39:09.831 | INFO     | routers.universities:upload_diploma:298 - [UPLOAD] Metadata parsed: full_name=Тестов Тест Тестович, diploma_number=CURL-1775338749, degree=Бакалавр
+2026-04-04 21:39:09.831 | INFO     | routers.universities:upload_diploma:307 - [UPLOAD] Валидация файла: fname=test_diploma_xubp.pdf, content_type=application/pdf
+2026-04-04 21:39:09.841 | INFO     | routers.universities:upload_diploma:316 - [UPLOAD] Университет: Тестовый ВУЗ (11c02bc4-df6f-4e3b-892a-e1a694c3657c)
+2026-04-04 21:39:09.841 | INFO     | routers.universities:upload_diploma:324 - [UPLOAD] Data hash computed: 005e197df8f4dec6...
+2026-04-04 21:39:09.841 | INFO     | routers.universities:upload_diploma:326 - [UPLOAD] Прочитано 30 bytes из файла
+2026-04-04 21:39:09.841 | INFO     | routers.universities:upload_diploma:328 - [UPLOAD] Загрузка файла в file-service: http://file-service:8005/files/upload
+2026-04-04 21:39:09.852 | INFO     | routers.universities:upload_diploma:353 - [UPLOAD] Файл загружен, file_id=30c45e82-3af0-48eb-a039-fd0ba17852c9
+2026-04-04 21:39:09.852 | INFO     | routers.universities:upload_diploma:374 - [UPLOAD] Без шифрования полей
+2026-04-04 21:39:09.855 | INFO     | routers.universities:upload_diploma:394 - [UPLOAD] Диплом создан в БД: id=9ea66090-3143-41c5-b950-ba2da0350c56, status=pending
+2026-04-04 21:39:09.855 | INFO     | routers.universities:upload_diploma:398 - [UPLOAD] Регистрация студента: email=teststudent1775338749@example.com
+2026-04-04 21:39:10.053 | INFO     | routers.universities:upload_diploma:414 - [UPLOAD] Студент зарегистрирован и привязан: 1307d852-d081-4b55-b21d-a8f388860810
+2026-04-04 21:39:10.053 | INFO     | routers.universities:upload_diploma:423 - [UPLOAD] Запуск AI extraction: http://ai-integration-service:8007/ai/extract
+2026-04-04 21:39:10.068 | INFO     | routers.universities:upload_diploma:430 - [UPLOAD] AI extraction запущен
+2026-04-04 21:39:10.079 | INFO     | routers.universities:upload_diploma:440 - [UPLOAD] Уведомление отправлено
+2026-04-04 21:39:10.091 | INFO     | routers.universities:upload_diploma:453 - [UPLOAD] Аудит записан. Загрузка завершена успешно. diploma_id=9ea66090-3143-41c5-b950-ba2da0350c56
+2026-04-04 21:39:10.155 | INFO     | routers.universities:verify_manual:523 - [VERIFY] Начало верификации diploma_id=9ea66090-3143-41c5-b950-ba2da0350c56, user=11c02bc4-df6f-4e3b-892a-e1a694c3657c
+2026-04-04 21:39:10.156 | INFO     | routers.universities:verify_manual:536 - [VERIFY] Диплом найден: status=verified
+2026-04-04 21:39:10.157 | INFO     | routers.universities:verify_manual:544 - [VERIFY] Диплом уже верифицирован: 9ea66090-3143-41c5-b950-ba2da0350c56
+2026-04-04 21:39:10.650 | INFO     | routers.universities:revoke_diploma:575 - [REVOKE] Начало отзыва diploma_id=9ea66090-3143-41c5-b950-ba2da0350c56, user=11c02bc4-df6f-4e3b-892a-e1a694c3657c
+2026-04-04 21:39:10.654 | INFO     | routers.universities:revoke_diploma:594 - [REVOKE] Диплом отозван: 9ea66090-3143-41c5-b950-ba2da0350c56, prev_status=verified
+2026-04-04 21:39:10.663 | WARNING  | routers.universities:_post_certificate_deactivate:263 - Certificate deactivate failed: 404 {"detail":"Not found"}
+2026-04-04 21:39:10.663 | INFO     | routers.universities:revoke_diploma:596 - [REVOKE] Сертификат деактивирован
+2026-04-04 21:45:14.705 | INFO     | routers.universities:upload_diploma:293 - [UPLOAD] Начало загрузки диплома. user=a6ef1b93-0add-452c-a2f3-44b961154d26
+2026-04-04 21:45:14.706 | INFO     | routers.universities:upload_diploma:294 - [UPLOAD] Файл: name=test_diploma_0z5N.pdf, content_type=application/pdf, size=30
+2026-04-04 21:45:14.706 | INFO     | routers.universities:upload_diploma:295 - [UPLOAD] Metadata (raw): {"full_name":"Тестов Тест Тестович","diploma_number":"CURL-1775339113","series":"ТСТ","degree":"Бакалавр","specialization":"Тестирование","issue_date":"2024-06-30","date_of_birth":"2000-01-01","student_email":"teststudent1775339113@example.com","student_password":"Demo123!"}
+2026-04-04 21:45:14.706 | INFO     | routers.universities:upload_diploma:298 - [UPLOAD] Metadata parsed: full_name=Тестов Тест Тестович, diploma_number=CURL-1775339113, degree=Бакалавр
+2026-04-04 21:45:14.706 | INFO     | routers.universities:upload_diploma:307 - [UPLOAD] Валидация файла: fname=test_diploma_0z5n.pdf, content_type=application/pdf
+2026-04-04 21:45:14.715 | INFO     | routers.universities:upload_diploma:316 - [UPLOAD] Университет: Тестовый ВУЗ (a6ef1b93-0add-452c-a2f3-44b961154d26)
+2026-04-04 21:45:14.716 | INFO     | routers.universities:upload_diploma:324 - [UPLOAD] Data hash computed: f52b9bedd7c5e02d...
+2026-04-04 21:45:14.716 | INFO     | routers.universities:upload_diploma:326 - [UPLOAD] Прочитано 30 bytes из файла
+2026-04-04 21:45:14.716 | INFO     | routers.universities:upload_diploma:328 - [UPLOAD] Загрузка файла в file-service: http://file-service:8005/files/upload
+2026-04-04 21:45:14.728 | INFO     | routers.universities:upload_diploma:353 - [UPLOAD] Файл загружен, file_id=5b016e4d-7ced-4f4f-af08-10da910a6d26
+2026-04-04 21:45:14.728 | INFO     | routers.universities:upload_diploma:374 - [UPLOAD] Без шифрования полей
+2026-04-04 21:45:14.730 | INFO     | routers.universities:upload_diploma:394 - [UPLOAD] Диплом создан в БД: id=d6a846a3-e25b-4701-97ad-5ac968653ec1, status=pending
+2026-04-04 21:45:14.731 | INFO     | routers.universities:upload_diploma:398 - [UPLOAD] Регистрация студента: email=teststudent1775339113@example.com
+2026-04-04 21:45:14.932 | INFO     | routers.universities:upload_diploma:414 - [UPLOAD] Студент зарегистрирован и привязан: 4f404ce0-b04f-4351-9f38-78059f18403c
+2026-04-04 21:45:14.932 | INFO     | routers.universities:upload_diploma:423 - [UPLOAD] Запуск AI extraction: http://ai-integration-service:8007/ai/extract
+2026-04-04 21:45:14.945 | INFO     | routers.universities:upload_diploma:430 - [UPLOAD] AI extraction запущен
+2026-04-04 21:45:14.956 | INFO     | routers.universities:upload_diploma:440 - [UPLOAD] Уведомление отправлено
+2026-04-04 21:45:14.969 | INFO     | routers.universities:upload_diploma:453 - [UPLOAD] Аудит записан. Загрузка завершена успешно. diploma_id=d6a846a3-e25b-4701-97ad-5ac968653ec1
+2026-04-04 21:45:15.042 | INFO     | routers.universities:verify_manual:523 - [VERIFY] Начало верификации diploma_id=d6a846a3-e25b-4701-97ad-5ac968653ec1, user=a6ef1b93-0add-452c-a2f3-44b961154d26
+2026-04-04 21:45:15.043 | INFO     | routers.universities:verify_manual:536 - [VERIFY] Диплом найден: status=verified
+2026-04-04 21:45:15.043 | INFO     | routers.universities:verify_manual:544 - [VERIFY] Диплом уже верифицирован: d6a846a3-e25b-4701-97ad-5ac968653ec1
+2026-04-04 21:45:15.764 | INFO     | routers.universities:revoke_diploma:575 - [REVOKE] Начало отзыва diploma_id=d6a846a3-e25b-4701-97ad-5ac968653ec1, user=a6ef1b93-0add-452c-a2f3-44b961154d26
+2026-04-04 21:45:15.767 | INFO     | routers.universities:revoke_diploma:594 - [REVOKE] Диплом отозван: d6a846a3-e25b-4701-97ad-5ac968653ec1, prev_status=verified
+2026-04-04 21:45:15.776 | WARNING  | routers.universities:_post_certificate_deactivate:263 - Certificate deactivate failed: 404 {"detail":"Not found"}
+2026-04-04 21:45:15.776 | INFO     | routers.universities:revoke_diploma:596 - [REVOKE] Сертификат деактивирован
+2026-04-04 21:47:54.552 | INFO     | routers.universities:upload_diploma:293 - [UPLOAD] Начало загрузки диплома. user=4246aef1-31d4-4e17-a36b-f849a9e1130f
+2026-04-04 21:47:54.552 | INFO     | routers.universities:upload_diploma:294 - [UPLOAD] Файл: name=test_diploma_d2Vk.pdf, content_type=application/pdf, size=30
+2026-04-04 21:47:54.552 | INFO     | routers.universities:upload_diploma:295 - [UPLOAD] Metadata (raw): {"full_name":"Тестов Тест Тестович","diploma_number":"CURL-1775339273","series":"ТСТ","degree":"Бакалавр","specialization":"Тестирование","issue_date":"2024-06-30","date_of_birth":"2000-01-01","student_email":"teststudent1775339273@example.com","student_password":"Demo123!"}
+2026-04-04 21:47:54.552 | INFO     | routers.universities:upload_diploma:298 - [UPLOAD] Metadata parsed: full_name=Тестов Тест Тестович, diploma_number=CURL-1775339273, degree=Бакалавр
+2026-04-04 21:47:54.552 | INFO     | routers.universities:upload_diploma:307 - [UPLOAD] Валидация файла: fname=test_diploma_d2vk.pdf, content_type=application/pdf
+2026-04-04 21:47:54.560 | INFO     | routers.universities:upload_diploma:316 - [UPLOAD] Университет: Тестовый ВУЗ (4246aef1-31d4-4e17-a36b-f849a9e1130f)
+2026-04-04 21:47:54.560 | INFO     | routers.universities:upload_diploma:324 - [UPLOAD] Data hash computed: 1175eafafecea96d...
+2026-04-04 21:47:54.560 | INFO     | routers.universities:upload_diploma:326 - [UPLOAD] Прочитано 30 bytes из файла
+2026-04-04 21:47:54.560 | INFO     | routers.universities:upload_diploma:328 - [UPLOAD] Загрузка файла в file-service: http://file-service:8005/files/upload
+2026-04-04 21:47:54.572 | INFO     | routers.universities:upload_diploma:353 - [UPLOAD] Файл загружен, file_id=8af0513c-2b89-4cf2-bd4a-4f06e6e98a62
+2026-04-04 21:47:54.572 | INFO     | routers.universities:upload_diploma:374 - [UPLOAD] Без шифрования полей
+2026-04-04 21:47:54.575 | INFO     | routers.universities:upload_diploma:394 - [UPLOAD] Диплом создан в БД: id=18c6cf12-eaa4-46f7-9963-ae31ebe45f08, status=pending
+2026-04-04 21:47:54.575 | INFO     | routers.universities:upload_diploma:398 - [UPLOAD] Регистрация студента: email=teststudent1775339273@example.com
+2026-04-04 21:47:54.770 | INFO     | routers.universities:upload_diploma:414 - [UPLOAD] Студент зарегистрирован и привязан: bb819888-d468-45c0-878e-e4392cdaa27c
+2026-04-04 21:47:54.770 | INFO     | routers.universities:upload_diploma:423 - [UPLOAD] Запуск AI extraction: http://ai-integration-service:8007/ai/extract
+2026-04-04 21:47:54.785 | INFO     | routers.universities:upload_diploma:430 - [UPLOAD] AI extraction запущен
+2026-04-04 21:47:54.795 | INFO     | routers.universities:upload_diploma:440 - [UPLOAD] Уведомление отправлено
+2026-04-04 21:47:54.805 | INFO     | routers.universities:upload_diploma:453 - [UPLOAD] Аудит записан. Загрузка завершена успешно. diploma_id=18c6cf12-eaa4-46f7-9963-ae31ebe45f08
+2026-04-04 21:47:54.871 | INFO     | routers.universities:verify_manual:523 - [VERIFY] Начало верификации diploma_id=18c6cf12-eaa4-46f7-9963-ae31ebe45f08, user=4246aef1-31d4-4e17-a36b-f849a9e1130f
+2026-04-04 21:47:54.873 | INFO     | routers.universities:verify_manual:536 - [VERIFY] Диплом найден: status=verified
+2026-04-04 21:47:54.873 | INFO     | routers.universities:verify_manual:544 - [VERIFY] Диплом уже верифицирован: 18c6cf12-eaa4-46f7-9963-ae31ebe45f08
+2026-04-04 21:47:55.600 | INFO     | routers.universities:revoke_diploma:575 - [REVOKE] Начало отзыва diploma_id=18c6cf12-eaa4-46f7-9963-ae31ebe45f08, user=4246aef1-31d4-4e17-a36b-f849a9e1130f
+2026-04-04 21:47:55.604 | INFO     | routers.universities:revoke_diploma:594 - [REVOKE] Диплом отозван: 18c6cf12-eaa4-46f7-9963-ae31ebe45f08, prev_status=verified
+2026-04-04 21:47:55.616 | WARNING  | routers.universities:_post_certificate_deactivate:263 - Certificate deactivate failed: 404 {"detail":"Not found"}
+2026-04-04 21:47:55.617 | INFO     | routers.universities:revoke_diploma:596 - [REVOKE] Сертификат деактивирован
+2026-04-04 21:53:17.924 | INFO     | routers.universities:upload_diploma:293 - [UPLOAD] Начало загрузки диплома. user=049ca916-2830-44f1-9dc0-1bea656483dc
+2026-04-04 21:53:17.924 | INFO     | routers.universities:upload_diploma:294 - [UPLOAD] Файл: name=test_diploma_MdND.pdf, content_type=application/pdf, size=30
+2026-04-04 21:53:17.924 | INFO     | routers.universities:upload_diploma:295 - [UPLOAD] Metadata (raw): {"full_name":"Тестов Тест Тестович","diploma_number":"CURL-1775339596","series":"ТСТ","degree":"Бакалавр","specialization":"Тестирование","issue_date":"2024-06-30","date_of_birth":"2000-01-01","student_email":"teststudent1775339596@example.com","student_password":"Demo123!"}
+2026-04-04 21:53:17.924 | INFO     | routers.universities:upload_diploma:298 - [UPLOAD] Metadata parsed: full_name=Тестов Тест Тестович, diploma_number=CURL-1775339596, degree=Бакалавр
+2026-04-04 21:53:17.924 | INFO     | routers.universities:upload_diploma:307 - [UPLOAD] Валидация файла: fname=test_diploma_mdnd.pdf, content_type=application/pdf
+2026-04-04 21:53:17.934 | INFO     | routers.universities:upload_diploma:316 - [UPLOAD] Университет: Тестовый ВУЗ (049ca916-2830-44f1-9dc0-1bea656483dc)
+2026-04-04 21:53:17.934 | INFO     | routers.universities:upload_diploma:324 - [UPLOAD] Data hash computed: 3997f0ae316f270c...
+2026-04-04 21:53:17.934 | INFO     | routers.universities:upload_diploma:326 - [UPLOAD] Прочитано 30 bytes из файла
+2026-04-04 21:53:17.934 | INFO     | routers.universities:upload_diploma:328 - [UPLOAD] Загрузка файла в file-service: http://file-service:8005/files/upload
+2026-04-04 21:53:17.948 | INFO     | routers.universities:upload_diploma:353 - [UPLOAD] Файл загружен, file_id=6e511fed-a019-4c82-8761-4d62b43c38ea
+2026-04-04 21:53:17.948 | INFO     | routers.universities:upload_diploma:374 - [UPLOAD] Без шифрования полей
+2026-04-04 21:53:17.952 | INFO     | routers.universities:upload_diploma:394 - [UPLOAD] Диплом создан в БД: id=a7aeab0f-a5e1-4454-8551-710850d72cb5, status=pending
+2026-04-04 21:53:17.952 | INFO     | routers.universities:upload_diploma:398 - [UPLOAD] Регистрация студента: email=teststudent1775339596@example.com
+2026-04-04 21:53:18.151 | INFO     | routers.universities:upload_diploma:414 - [UPLOAD] Студент зарегистрирован и привязан: 536227c0-e4d1-4dd3-bbeb-8f2a1eec5368
+2026-04-04 21:53:18.151 | INFO     | routers.universities:upload_diploma:423 - [UPLOAD] Запуск AI extraction: http://ai-integration-service:8007/ai/extract
+2026-04-04 21:53:18.168 | INFO     | routers.universities:upload_diploma:430 - [UPLOAD] AI extraction запущен
+2026-04-04 21:53:18.179 | INFO     | routers.universities:upload_diploma:440 - [UPLOAD] Уведомление отправлено
+2026-04-04 21:53:18.188 | INFO     | routers.universities:upload_diploma:453 - [UPLOAD] Аудит записан. Загрузка завершена успешно. diploma_id=a7aeab0f-a5e1-4454-8551-710850d72cb5
+2026-04-04 21:53:18.252 | INFO     | routers.universities:verify_manual:523 - [VERIFY] Начало верификации diploma_id=a7aeab0f-a5e1-4454-8551-710850d72cb5, user=049ca916-2830-44f1-9dc0-1bea656483dc
+2026-04-04 21:53:18.253 | INFO     | routers.universities:verify_manual:536 - [VERIFY] Диплом найден: status=verified
+2026-04-04 21:53:18.253 | INFO     | routers.universities:verify_manual:544 - [VERIFY] Диплом уже верифицирован: a7aeab0f-a5e1-4454-8551-710850d72cb5
+2026-04-04 21:53:18.976 | INFO     | routers.universities:revoke_diploma:575 - [REVOKE] Начало отзыва diploma_id=a7aeab0f-a5e1-4454-8551-710850d72cb5, user=049ca916-2830-44f1-9dc0-1bea656483dc
+2026-04-04 21:53:18.980 | INFO     | routers.universities:revoke_diploma:594 - [REVOKE] Диплом отозван: a7aeab0f-a5e1-4454-8551-710850d72cb5, prev_status=verified
+2026-04-04 21:53:18.990 | WARNING  | routers.universities:_post_certificate_deactivate:263 - Certificate deactivate failed: 404 {"detail":"Not found"}
+2026-04-04 21:53:18.990 | INFO     | routers.universities:revoke_diploma:596 - [REVOKE] Сертификат деактивирован

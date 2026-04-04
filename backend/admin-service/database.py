@@ -41,15 +41,15 @@ def get_db() -> Generator:
 
 # Обратная совместимость
 def get_auth_db() -> Generator:
-    return get_db()
+    yield from get_db()
 
 
 def get_university_db() -> Generator:
-    return get_db()
+    yield from get_db()
 
 
 def get_verify_db() -> Generator:
-    return get_db()
+    yield from get_db()
 
 
 # ===== AUTHDB models =====
@@ -127,7 +127,6 @@ class Diploma(Base):
     ai_confidence = Column(Float, nullable=True)
     moderator_note = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
 # ===== VERIFYDB models =====
