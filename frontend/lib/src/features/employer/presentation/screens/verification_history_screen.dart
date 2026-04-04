@@ -60,19 +60,17 @@ class _HistoryList extends StatelessWidget {
                             .withValues(alpha: 0.5)),
                     columns: const [
                       DataColumn(label: Text('Дата')),
-                      DataColumn(label: Text('Диплом')),
-                      DataColumn(label: Text('Владелец')),
+                      DataColumn(label: Text('ID диплома')),
                       DataColumn(label: Text('Способ')),
                       DataColumn(label: Text('Результат')),
-                      DataColumn(label: Text('Confidence')),
                     ],
                     rows: history
                         .map((h) => DataRow(cells: [
                               DataCell(Text(
                                   dateFormat.format(h.checkedAt),
                                   style: theme.textTheme.bodySmall)),
-                              DataCell(Text(h.diplomaTitle)),
-                              DataCell(Text(h.holderName)),
+                              DataCell(Text(h.diplomaId ?? '—',
+                                  style: theme.textTheme.bodySmall)),
                               DataCell(_MethodBadge(method: h.method)),
                               DataCell(
                                 Row(
@@ -91,7 +89,7 @@ class _HistoryList extends StatelessWidget {
                                     Text(
                                       h.isAuthentic
                                           ? 'Подлинный'
-                                          : 'Подозрительный',
+                                          : 'Невалидный',
                                       style: TextStyle(
                                         color: h.isAuthentic
                                             ? Colors.green
@@ -102,10 +100,6 @@ class _HistoryList extends StatelessWidget {
                                     ),
                                   ],
                                 ),
-                              ),
-                              DataCell(
-                                _ConfidenceBar(
-                                    score: h.confidenceScore),
                               ),
                             ]))
                         .toList(),
@@ -143,47 +137,6 @@ class _MethodBadge extends StatelessWidget {
           fontWeight: FontWeight.w500,
         ),
       ),
-    );
-  }
-}
-
-class _ConfidenceBar extends StatelessWidget {
-  final double score;
-  const _ConfidenceBar({required this.score});
-
-  @override
-  Widget build(BuildContext context) {
-    final color = score >= 0.7
-        ? Colors.green
-        : score >= 0.4
-            ? Colors.orange
-            : Colors.red;
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SizedBox(
-          width: 60,
-          height: 6,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(3),
-            child: LinearProgressIndicator(
-              value: score,
-              backgroundColor: Colors.grey.shade200,
-              color: color,
-            ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Text(
-          '${(score * 100).toInt()}%',
-          style: TextStyle(
-            color: color,
-            fontWeight: FontWeight.w600,
-            fontSize: 12,
-          ),
-        ),
-      ],
     );
   }
 }

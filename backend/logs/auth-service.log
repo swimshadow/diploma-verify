@@ -97,3 +97,14 @@
 2026-04-04 21:53:18.459 | INFO     | routers.auth:login:290 - [LOGIN] Вход успешен: account_id=536227c0-e4d1-4dd3-bbeb-8f2a1eec5368, role=student
 2026-04-04 21:53:19.074 | INFO     | routers.auth:login:244 - [LOGIN] Попытка входа: email=testuni1775339596@example.com
 2026-04-04 21:53:19.257 | WARNING  | routers.auth:login:258 - [LOGIN] Неверные учётные данные: testuni1775339596@example.com
+2026-04-04 22:53:27.622 | INFO     | routers.auth:register:144 - [REGISTER] Начало регистрации: email=dan@g.com, role=university
+2026-04-04 22:53:27.850 | INFO     | routers.auth:register:226 - [REGISTER] Регистрация успешна: account_id=eafb07e4-e027-4dab-8036-5358f9837de3, role=university
+2026-04-04 22:53:35.038 | INFO     | routers.auth:login:244 - [LOGIN] Попытка входа: email=dan@g.com
+2026-04-04 22:53:35.237 | INFO     | routers.auth:login:290 - [LOGIN] Вход успешен: account_id=eafb07e4-e027-4dab-8036-5358f9837de3, role=university
+2026-04-04 23:05:21.362 | INFO     | routers.auth:register:144 - [REGISTER] Начало регистрации: email=dan@g.com, role=university
+2026-04-04 23:05:21.366 | WARNING  | routers.auth:register:146 - [REGISTER] Email уже зарегистрирован: dan@g.com
+2026-04-04 23:13:38.126 | INFO     | main:create_tables:82 - Auth service tables ready
+2026-04-04 23:14:16.090 | INFO     | routers.auth:register:144 - [REGISTER] Начало регистрации: email=dan@g.com, role=university
+2026-04-04 23:14:16.291 | INFO     | routers.auth:register:226 - [REGISTER] Регистрация успешна: account_id=3ada352e-b96b-4599-9cae-216cf8d45915, role=university
+2026-04-04 23:14:16.368 | INFO     | routers.auth:login:244 - [LOGIN] Попытка входа: email=dan@g.com
+2026-04-04 23:14:16.570 | INFO     | routers.auth:login:290 - [LOGIN] Вход успешен: account_id=3ada352e-b96b-4599-9cae-216cf8d45915, role=university

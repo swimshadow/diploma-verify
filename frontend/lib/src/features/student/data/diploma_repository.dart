@@ -25,19 +25,6 @@ class DiplomaRepository {
     }
   }
 
-  Future<Map<String, dynamic>> fetchDiplomaDetail(String diplomaId) async {
-    _log.info(_tag, 'fetchDiplomaDetail($diplomaId)');
-    try {
-      final response =
-          await _dio.get('${AppConstants.studentDiplomasPath}/$diplomaId');
-      _log.info(_tag, 'fetchDiplomaDetail() ← OK');
-      return response.data as Map<String, dynamic>;
-    } catch (e, st) {
-      _log.error(_tag, 'fetchDiplomaDetail() ОШИБКА', e, st);
-      rethrow;
-    }
-  }
-
   Future<Map<String, dynamic>> fetchCertificate(String diplomaId) async {
     _log.info(_tag, 'fetchCertificate($diplomaId)');
     try {

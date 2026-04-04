@@ -70,18 +70,16 @@ class VerifyBloc extends Bloc<VerifyEvent, VerifyState> {
           (j['specialization'] ?? j['speciality'] ?? '').toString(),
       diplomaNumber: (j['diploma_number'] ?? '').toString(),
       issueDate:
-          DateTime.tryParse(j['issue_date'] ?? '') ?? DateTime.now(),
-      isAuthentic: (j['is_authentic'] ?? j['status'] == 'verified') == true,
-      trustScore: (j['trust_score'] as num?)?.toDouble() ?? 0.0,
-      antifraudScore: (j['antifraud_score'] as num?)?.toDouble() ?? 0.0,
-      antifraudVerdict: (j['antifraud_verdict'] ?? '').toString(),
-      warnings: (j['antifraud_warnings'] as List?)
-              ?.map((e) => e.toString())
-              .toList() ??
-          const [],
+          DateTime.tryParse(j['issue_date']?.toString() ?? '') ?? DateTime.now(),
+      isAuthentic: j['valid'] == true,
+      signatureVerified: j['signature_verified'] == true,
+      blockchainVerified: j['blockchain_verified'] == true,
+      blockchainBlock: (j['blockchain_block'] as num?)?.toInt(),
+      chainIntact: j['chain_intact'] == true,
+      timestampProof: j['timestamp_proof']?.toString(),
+      reason: j['reason']?.toString(),
       method: method,
-      verifiedAt:
-          DateTime.tryParse(j['verified_at'] ?? '') ?? DateTime.now(),
+      verifiedAt: DateTime.now(),
     );
   }
 }

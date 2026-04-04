@@ -58,14 +58,19 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
 
   static NotificationType _parseType(String? t) {
     switch (t) {
+      case 'diploma_uploaded':
+      case 'diploma_verified':
+      case 'diploma_revoked':
       case 'diploma_status':
         return NotificationType.diplomaStatusChange;
       case 'new_message':
         return NotificationType.newMessage;
+      case 'diploma_checked':
       case 'verification':
         return NotificationType.verificationComplete;
       case 'moderation':
         return NotificationType.moderationDecision;
+      case 'welcome':
       default:
         return NotificationType.systemAlert;
     }
@@ -75,9 +80,9 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
     return AppNotification(
       id: j['id']?.toString() ?? '',
       type: _parseType(j['type']?.toString()),
-      title: (j['title'] ?? '').toString(),
+      title: (j['subject'] ?? j['title'] ?? '').toString(),
       body: (j['body'] ?? j['message'] ?? '').toString(),
-      createdAt: DateTime.tryParse(j['created_at'] ?? '') ?? DateTime.now(),
+      createdAt: DateTime.tryParse(j['created_at']?.toString() ?? '') ?? DateTime.now(),
       isRead: j['is_read'] == true,
       route: j['route']?.toString(),
     );

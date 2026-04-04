@@ -39,10 +39,12 @@ class VerificationResult extends Equatable {
   final String diplomaNumber;
   final DateTime issueDate;
   final bool isAuthentic;
-  final double trustScore;
-  final double antifraudScore;
-  final String antifraudVerdict;
-  final List<String> warnings;
+  final bool signatureVerified;
+  final bool blockchainVerified;
+  final int? blockchainBlock;
+  final bool chainIntact;
+  final String? timestampProof;
+  final String? reason;
   final VerifyMethod method;
   final DateTime verifiedAt;
 
@@ -55,34 +57,32 @@ class VerificationResult extends Equatable {
     required this.diplomaNumber,
     required this.issueDate,
     required this.isAuthentic,
-    required this.trustScore,
-    required this.antifraudScore,
-    required this.antifraudVerdict,
-    required this.warnings,
+    this.signatureVerified = false,
+    this.blockchainVerified = false,
+    this.blockchainBlock,
+    this.chainIntact = false,
+    this.timestampProof,
+    this.reason,
     required this.method,
     required this.verifiedAt,
   });
 
   @override
-  List<Object?> get props => [id, trustScore, antifraudScore];
+  List<Object?> get props => [id, isAuthentic, signatureVerified];
 }
 
 class VerificationHistoryEntry extends Equatable {
   final String id;
-  final String diplomaTitle;
-  final String holderName;
+  final String? diplomaId;
   final VerifyMethod method;
   final bool isAuthentic;
-  final double confidenceScore;
   final DateTime checkedAt;
 
   const VerificationHistoryEntry({
     required this.id,
-    required this.diplomaTitle,
-    required this.holderName,
+    this.diplomaId,
     required this.method,
     required this.isAuthentic,
-    required this.confidenceScore,
     required this.checkedAt,
   });
 

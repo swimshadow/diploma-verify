@@ -47,13 +47,11 @@ class EmployerBloc extends Bloc<EmployerEvent, EmployerState> {
   static VerificationHistoryEntry _mapHistoryEntry(Map<String, dynamic> j) {
     return VerificationHistoryEntry(
       id: j['id']?.toString() ?? '',
-      diplomaTitle: (j['diploma_number'] ?? j['diploma_title'] ?? '').toString(),
-      holderName: (j['full_name'] ?? j['holder_name'] ?? '').toString(),
+      diplomaId: j['diploma_id']?.toString(),
       method: _parseMethod(j['check_method']?.toString()),
-      isAuthentic: j['result'] == 'valid' || j['is_authentic'] == true,
-      confidenceScore: (j['trust_score'] as num?)?.toDouble() ?? 0.0,
+      isAuthentic: j['result'] == true,
       checkedAt:
-          DateTime.tryParse(j['verified_at'] ?? j['created_at'] ?? '') ??
+          DateTime.tryParse(j['checked_at']?.toString() ?? '') ??
               DateTime.now(),
     );
   }

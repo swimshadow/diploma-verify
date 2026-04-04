@@ -167,11 +167,11 @@ class _DashboardBody extends StatelessWidget {
                             size: 20,
                           ),
                         ),
-                        title: Text(h.diplomaTitle),
+                        title: Text(h.method.label),
                         subtitle: Text(
-                            '${h.holderName} · ${h.method.label}'),
+                            h.diplomaId ?? 'Проверка'),
                         trailing: Text(
-                          '${(h.confidenceScore * 100).toInt()}%',
+                          h.isAuthentic ? 'Валиден' : 'Невалиден',
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: h.isAuthentic

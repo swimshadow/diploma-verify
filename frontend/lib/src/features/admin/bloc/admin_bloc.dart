@@ -230,15 +230,17 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
   // ── Mappers ──
 
   static PlatformUser _mapUser(Map<String, dynamic> j) {
+    final profile = j['profile'] as Map<String, dynamic>? ?? {};
+    final fullName = (profile['full_name'] ?? profile['name'] ?? profile['company_name'] ?? j['email'] ?? '').toString();
     return PlatformUser(
       id: j['id']?.toString() ?? '',
       email: (j['email'] ?? '').toString(),
-      fullName: (j['full_name'] ?? j['email'] ?? '').toString(),
+      fullName: fullName,
       role: (j['role'] ?? 'student').toString(),
       isBlocked: j['is_blocked'] == true,
       createdAt:
-          DateTime.tryParse(j['created_at'] ?? '') ?? DateTime.now(),
-      lastLoginAt: DateTime.tryParse(j['last_login_at'] ?? ''),
+          DateTime.tryParse(j['created_at']?.toString() ?? '') ?? DateTime.now(),
+      lastLoginAt: DateTime.tryParse(j['last_login_at']?.toString() ?? ''),
     );
   }
 
@@ -268,7 +270,7 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
       ocrText: j['ocr_text']?.toString(),
       fileUrl: j['file_url']?.toString(),
       uploadedAt:
-          DateTime.tryParse(j['created_at'] ?? '') ?? DateTime.now(),
+          DateTime.tryParse(j['created_at']?.toString() ?? '') ?? DateTime.now(),
     );
   }
 
@@ -304,7 +306,7 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
       targetDescription:
           (j['resource_type'] ?? j['target'] ?? '').toString(),
       timestamp:
-          DateTime.tryParse(j['timestamp'] ?? j['created_at'] ?? '') ??
+          DateTime.tryParse(j['timestamp']?.toString() ?? j['created_at']?.toString() ?? '') ??
               DateTime.now(),
       details: j['new_value']?.toString(),
     );

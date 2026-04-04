@@ -140,77 +140,66 @@ class _ResultView extends StatelessWidget {
 
                 const SizedBox(height: 20),
 
-                // ── Trust Score + Anti-fraud ──
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: _ScoreCard(
-                        title: 'Trust Score',
-                        score: result.trustScore,
-                        color: _trustColor(result.trustScore),
-                        description: _trustDescription(result.trustScore),
-                      ),
+                // ── Verification Checks ──
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Проверки',
+                            style: theme.textTheme.titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w600)),
+                        const SizedBox(height: 16),
+                        _CheckRow(
+                          label: 'Цифровая подпись',
+                          passed: result.signatureVerified,
+                        ),
+                        _CheckRow(
+                          label: 'Блокчейн',
+                          passed: result.blockchainVerified,
+                          subtitle: result.blockchainBlock != null
+                              ? 'Блок #${result.blockchainBlock}'
+                              : null,
+                        ),
+                        _CheckRow(
+                          label: 'Целостность цепочки',
+                          passed: result.chainIntact,
+                        ),
+                        if (result.timestampProof != null)
+                          _InfoRow(
+                              label: 'Метка времени',
+                              value: result.timestampProof!),
+                      ],
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _ScoreCard(
-                        title: 'Антифрод',
-                        score: result.antifraudScore,
-                        color: _antifraudColor(result.antifraudScore),
-                        description: result.antifraudVerdict,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
 
-                // ── Warnings ──
-                if (result.warnings.isNotEmpty) ...[
+                // ── Reason (if invalid) ──
+                if (result.reason != null && result.reason!.isNotEmpty) ...[
                   const SizedBox(height: 20),
                   Card(
                     color: Colors.orange.withValues(alpha: 0.06),
                     child: Padding(
                       padding: const EdgeInsets.all(20),
-                      child: Column(
+                      child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            children: [
-                              const Icon(Icons.warning_amber,
-                                  color: Colors.orange, size: 22),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Предупреждения',
-                                style: theme.textTheme.titleMedium
-                                    ?.copyWith(
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.orange.shade800),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          ...result.warnings.map(
-                            (w) => Padding(
-                              padding:
-                                  const EdgeInsets.only(bottom: 8),
-                              child: Row(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
-                                children: [
-                                  Icon(Icons.circle,
-                                      size: 6,
-                                      color: Colors.orange.shade700),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(w,
-                                        style: theme
-                                            .textTheme.bodyMedium
-                                            ?.copyWith(
-                                                color: Colors
-                                                    .orange.shade900)),
-                                  ),
-                                ],
-                              ),
+                          const Icon(Icons.info_outline,
+                              color: Colors.orange, size: 22),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Причина',
+                                    style: theme.textTheme.titleSmall
+                                        ?.copyWith(
+                                            fontWeight: FontWeight.w600)),
+                                const SizedBox(height: 4),
+                                Text(result.reason!,
+                                    style: theme.textTheme.bodyMedium),
+                              ],
                             ),
                           ),
                         ],
@@ -243,23 +232,6 @@ class _ResultView extends StatelessWidget {
     );
   }
 
-  Color _trustColor(double score) {
-    if (score >= 0.7) return Colors.green;
-    if (score >= 0.4) return Colors.orange;
-    return Colors.red;
-  }
-
-  String _trustDescription(double score) {
-    if (score >= 0.7) return 'Высокий уровень доверия';
-    if (score >= 0.4) return 'Средний уровень доверия';
-    return 'Низкий уровень доверия';
-  }
-
-  Color _antifraudColor(double score) {
-    if (score >= 0.7) return Colors.green;
-    if (score >= 0.4) return Colors.orange;
-    return Colors.red;
-  }
 }
 
 class _InfoRow extends StatelessWidget {
@@ -292,61 +264,52 @@ class _InfoRow extends StatelessWidget {
   }
 }
 
-class _ScoreCard extends StatelessWidget {
-  final String title;
-  final double score;
-  final Color color;
-  final String description;
+class _CheckRow extends StatelessWidget {
+  final String label;
+  final bool passed;
+  final String? subtitle;
 
-  const _ScoreCard({
-    required this.title,
-    required this.score,
-    required this.color,
-    required this.description,
+  const _CheckRow({
+    required this.label,
+    required this.passed,
+    this.subtitle,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            Text(title,
-                style: theme.textTheme.titleSmall
-                    ?.copyWith(fontWeight: FontWeight.w600)),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: 72,
-              height: 72,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  CircularProgressIndicator(
-                    value: score,
-                    strokeWidth: 6,
-                    backgroundColor:
-                        theme.colorScheme.surfaceContainerHighest,
-                    color: color,
-                  ),
-                  Text(
-                    '${(score * 100).toInt()}%',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold, color: color),
-                  ),
-                ],
-              ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        children: [
+          Icon(
+            passed ? Icons.check_circle : Icons.cancel,
+            size: 20,
+            color: passed ? Colors.green : Colors.red,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label,
+                    style: theme.textTheme.bodyMedium
+                        ?.copyWith(fontWeight: FontWeight.w500)),
+                if (subtitle != null)
+                  Text(subtitle!,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant)),
+              ],
             ),
-            const SizedBox(height: 12),
-            Text(
-              description,
-              style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant),
-              textAlign: TextAlign.center,
+          ),
+          Text(
+            passed ? 'Пройдена' : 'Не пройдена',
+            style: theme.textTheme.bodySmall?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: passed ? Colors.green : Colors.red,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

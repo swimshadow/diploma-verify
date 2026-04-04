@@ -75,8 +75,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         role: event.role,
         profile: event.profile,
       );
-      _log.info(_tag, '_onRegisterRequested → AuthRegistered');
-      emit(AuthRegistered());
+      _log.info(_tag, '_onRegisterRequested → регистрация OK, автовход…');
+      await _repository.login(email: event.email, password: event.password);
+      final user = await _repository.me();
+      _log.info(_tag, '_onRegisterRequested → AuthAuthenticated: role=${user.role}');
+      emit(AuthAuthenticated(user));
     } on DioException catch (e) {
       final msg = _extractError(e);
       _log.error(_tag, '_onRegisterRequested ОШИБКА: $msg', e);
@@ -104,6 +107,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         return detail.map((d) => d['msg'] ?? d.toString()).join('; ');
       }
       return detail.toString();
+    }
+    final statusCode = e.response?.statusCode;
+    if (statusCode == 409) {
+      return 'Этот email уже зарегистрирован';
     }
     if (e.type == DioExceptionType.connectionTimeout ||
         e.type == DioExceptionType.receiveTimeout) {

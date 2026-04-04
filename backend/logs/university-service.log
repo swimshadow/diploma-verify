@@ -205,3 +205,40 @@
 2026-04-04 21:53:18.980 | INFO     | routers.universities:revoke_diploma:594 - [REVOKE] Диплом отозван: a7aeab0f-a5e1-4454-8551-710850d72cb5, prev_status=verified
 2026-04-04 21:53:18.990 | WARNING  | routers.universities:_post_certificate_deactivate:263 - Certificate deactivate failed: 404 {"detail":"Not found"}
 2026-04-04 21:53:18.990 | INFO     | routers.universities:revoke_diploma:596 - [REVOKE] Сертификат деактивирован
+2026-04-04 22:55:42.637 | INFO     | routers.universities:upload_diploma:293 - [UPLOAD] Начало загрузки диплома. user=eafb07e4-e027-4dab-8036-5358f9837de3
+2026-04-04 22:55:42.637 | INFO     | routers.universities:upload_diploma:294 - [UPLOAD] Файл: name=________________________ ______________________ ____________________________(1).pdf, content_type=application/pdf, size=356218
+2026-04-04 22:55:42.637 | INFO     | routers.universities:upload_diploma:295 - [UPLOAD] Metadata (raw): {"full_name":"dan@g.com","diploma_number":"5434543","series":"234","degree":"Бакалавр","specialization":"dan@g.com","issue_date":"2026-04-03","student_email":"dan@s.com","student_password":"dan@s.com"}
+2026-04-04 22:55:42.639 | INFO     | routers.universities:upload_diploma:298 - [UPLOAD] Metadata parsed: full_name=dan@g.com, diploma_number=5434543, degree=Бакалавр
+2026-04-04 22:55:42.640 | INFO     | routers.universities:upload_diploma:307 - [UPLOAD] Валидация файла: fname=________________________ ______________________ ____________________________(1).pdf, content_type=application/pdf
+2026-04-04 22:55:42.650 | INFO     | routers.universities:upload_diploma:316 - [UPLOAD] Университет: dan@g.com (eafb07e4-e027-4dab-8036-5358f9837de3)
+2026-04-04 22:55:42.650 | INFO     | routers.universities:upload_diploma:324 - [UPLOAD] Data hash computed: 9efd9b8affda7381...
+2026-04-04 22:55:42.650 | INFO     | routers.universities:upload_diploma:326 - [UPLOAD] Прочитано 356218 bytes из файла
+2026-04-04 22:55:42.650 | INFO     | routers.universities:upload_diploma:328 - [UPLOAD] Загрузка файла в file-service: http://file-service:8005/files/upload
+2026-04-04 22:55:42.671 | INFO     | routers.universities:upload_diploma:353 - [UPLOAD] Файл загружен, file_id=7b8e204d-16ea-406c-8f19-2995bd3dd30c
+2026-04-04 22:55:42.671 | INFO     | routers.universities:upload_diploma:374 - [UPLOAD] Без шифрования полей
+2026-04-04 22:55:42.673 | INFO     | routers.universities:upload_diploma:394 - [UPLOAD] Диплом создан в БД: id=4acf6ba5-7e09-4d70-a6ff-7802b54e4b8b, status=pending
+2026-04-04 22:55:42.673 | INFO     | routers.universities:upload_diploma:398 - [UPLOAD] Регистрация студента: email=dan@s.com
+2026-04-04 22:55:42.881 | INFO     | routers.universities:upload_diploma:414 - [UPLOAD] Студент зарегистрирован и привязан: 375ca879-75ff-466c-b6b6-fa5b37d82768
+2026-04-04 22:55:42.881 | INFO     | routers.universities:upload_diploma:423 - [UPLOAD] Запуск AI extraction: http://ai-integration-service:8007/ai/extract
+2026-04-04 22:55:42.895 | INFO     | routers.universities:upload_diploma:430 - [UPLOAD] AI extraction запущен
+2026-04-04 22:55:42.906 | INFO     | routers.universities:upload_diploma:440 - [UPLOAD] Уведомление отправлено
+2026-04-04 22:55:42.918 | INFO     | routers.universities:upload_diploma:453 - [UPLOAD] Аудит записан. Загрузка завершена успешно. diploma_id=4acf6ba5-7e09-4d70-a6ff-7802b54e4b8b
+2026-04-04 23:13:38.587 | INFO     | main:create_tables:83 - University service tables ready
+2026-04-04 23:15:19.796 | INFO     | routers.universities:upload_diploma:293 - [UPLOAD] Начало загрузки диплома. user=3ada352e-b96b-4599-9cae-216cf8d45915
+2026-04-04 23:15:19.796 | INFO     | routers.universities:upload_diploma:294 - [UPLOAD] Файл: name=Практические заданияя.pdf, content_type=application/pdf, size=112125
+2026-04-04 23:15:19.796 | INFO     | routers.universities:upload_diploma:295 - [UPLOAD] Metadata (raw): {"full_name":"dan@g.com dan@g.com dan@g.com","diploma_number":"5434543","series":"434","degree":"Бакалавр","specialization":"dan@g.com","issue_date":"2026-04-01","student_email":"danS@g.com","student_password":"danS@g.com"}
+2026-04-04 23:15:19.796 | INFO     | routers.universities:upload_diploma:298 - [UPLOAD] Metadata parsed: full_name=dan@g.com dan@g.com dan@g.com, diploma_number=5434543, degree=Бакалавр
+2026-04-04 23:15:19.796 | INFO     | routers.universities:upload_diploma:307 - [UPLOAD] Валидация файла: fname=практические заданияя.pdf, content_type=application/pdf
+2026-04-04 23:15:19.806 | INFO     | routers.universities:upload_diploma:316 - [UPLOAD] Университет: dan@g.com (3ada352e-b96b-4599-9cae-216cf8d45915)
+2026-04-04 23:15:19.806 | INFO     | routers.universities:upload_diploma:324 - [UPLOAD] Data hash computed: 539dbaf4f2014f7b...
+2026-04-04 23:15:19.806 | INFO     | routers.universities:upload_diploma:326 - [UPLOAD] Прочитано 112125 bytes из файла
+2026-04-04 23:15:19.806 | INFO     | routers.universities:upload_diploma:328 - [UPLOAD] Загрузка файла в file-service: http://file-service:8005/files/upload
+2026-04-04 23:15:19.827 | INFO     | routers.universities:upload_diploma:353 - [UPLOAD] Файл загружен, file_id=b86769f1-e914-4a92-8227-796d01f38749
+2026-04-04 23:15:19.827 | INFO     | routers.universities:upload_diploma:374 - [UPLOAD] Без шифрования полей
+2026-04-04 23:15:19.835 | INFO     | routers.universities:upload_diploma:394 - [UPLOAD] Диплом создан в БД: id=1de80dcb-1c66-4bc4-9444-d1d0aa55baa4, status=pending
+2026-04-04 23:15:19.835 | INFO     | routers.universities:upload_diploma:398 - [UPLOAD] Регистрация студента: email=danS@g.com
+2026-04-04 23:15:20.042 | INFO     | routers.universities:upload_diploma:414 - [UPLOAD] Студент зарегистрирован и привязан: 299043d1-7700-43a3-a965-d6b598aa3350
+2026-04-04 23:15:20.042 | INFO     | routers.universities:upload_diploma:423 - [UPLOAD] Запуск AI extraction: http://ai-integration-service:8007/ai/extract
+2026-04-04 23:15:20.080 | INFO     | routers.universities:upload_diploma:430 - [UPLOAD] AI extraction запущен
+2026-04-04 23:15:20.096 | INFO     | routers.universities:upload_diploma:440 - [UPLOAD] Уведомление отправлено
+2026-04-04 23:15:20.115 | INFO     | routers.universities:upload_diploma:453 - [UPLOAD] Аудит записан. Загрузка завершена успешно. diploma_id=1de80dcb-1c66-4bc4-9444-d1d0aa55baa4

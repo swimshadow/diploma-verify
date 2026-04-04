@@ -2,9 +2,12 @@ import 'dart:convert';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/di/service_locator.dart';
 import '../../../../core/logging/app_logger.dart';
+import '../../bloc/university_bloc.dart';
+import '../../bloc/university_event.dart';
 import '../../data/university_repository.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
 
@@ -22,7 +25,9 @@ class _UniversityDiplomaUploadScreenState
     extends State<UniversityDiplomaUploadScreen> {
   final _log = AppLogger.instance;
   final _formKey = GlobalKey<FormState>();
-  final _fullNameCtrl = TextEditingController();
+  final _surnameCtrl = TextEditingController();
+  final _firstNameCtrl = TextEditingController();
+  final _patronymicCtrl = TextEditingController();
   final _specialityCtrl = TextEditingController();
   final _seriesCtrl = TextEditingController();
   final _numberCtrl = TextEditingController();
@@ -48,7 +53,9 @@ class _UniversityDiplomaUploadScreenState
 
   @override
   void dispose() {
-    _fullNameCtrl.dispose();
+    _surnameCtrl.dispose();
+    _firstNameCtrl.dispose();
+    _patronymicCtrl.dispose();
     _specialityCtrl.dispose();
     _seriesCtrl.dispose();
     _numberCtrl.dispose();
@@ -146,14 +153,36 @@ class _UniversityDiplomaUploadScreenState
                   const SizedBox(height: 20),
 
                   TextFormField(
-                    controller: _fullNameCtrl,
+                    controller: _surnameCtrl,
                     decoration: const InputDecoration(
-                      labelText: 'ФИО выпускника *',
+                      labelText: 'Фамилия *',
                       prefixIcon: Icon(Icons.person_outlined),
                       border: OutlineInputBorder(),
                     ),
                     validator: (v) =>
                         (v == null || v.trim().isEmpty) ? 'Обязательное поле' : null,
+                  ),
+                  const SizedBox(height: 16),
+
+                  TextFormField(
+                    controller: _firstNameCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Имя *',
+                      prefixIcon: Icon(Icons.person_outlined),
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (v) =>
+                        (v == null || v.trim().isEmpty) ? 'Обязательное поле' : null,
+                  ),
+                  const SizedBox(height: 16),
+
+                  TextFormField(
+                    controller: _patronymicCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Отчество',
+                      prefixIcon: Icon(Icons.person_outlined),
+                      border: OutlineInputBorder(),
+                    ),
                   ),
                   const SizedBox(height: 16),
 
@@ -170,7 +199,7 @@ class _UniversityDiplomaUploadScreenState
                   const SizedBox(height: 16),
 
                   DropdownButtonFormField<String>(
-                    value: _educationLevel,
+                    initialValue: _educationLevel,
                     decoration: const InputDecoration(
                       labelText: 'Уровень образования *',
                       prefixIcon: Icon(Icons.school_outlined),
@@ -404,8 +433,14 @@ class _UniversityDiplomaUploadScreenState
       return;
     }
 
+    final fullName = [
+      _surnameCtrl.text.trim(),
+      _firstNameCtrl.text.trim(),
+      if (_patronymicCtrl.text.trim().isNotEmpty) _patronymicCtrl.text.trim(),
+    ].join(' ');
+
     final metadata = {
-      'full_name': _fullNameCtrl.text.trim(),
+      'full_name': fullName,
       'diploma_number': _numberCtrl.text.trim(),
       'series': _seriesCtrl.text.trim(),
       'degree': _educationLevel,
@@ -433,6 +468,7 @@ class _UniversityDiplomaUploadScreenState
       );
       _log.info(_tag, 'Диплом загружен, ID: $diplomaId');
       if (!mounted) return;
+      context.read<UniversityBloc>().add(UniversityLoadRequested());
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Диплом успешно добавлен в реестр'),

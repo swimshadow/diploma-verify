@@ -1613,3 +1613,7 @@ LINE 1: ...tifications (id, account_id, type, subject, body, is_read, r...
 2026-04-04 21:53:17.471 | INFO     | routers.internal:send_notification:105 - Notification sent: type=welcome account_id=b0b192a7-9b7b-4b49-aa58-47f6eacead8a subject=Добро пожаловать
 2026-04-04 21:53:18.178 | INFO     | routers.internal:send_notification:105 - Notification sent: type=diploma_uploaded account_id=049ca916-2830-44f1-9dc0-1bea656483dc subject=Диплом загружен
 2026-04-04 21:53:19.000 | INFO     | routers.internal:send_notification:105 - Notification sent: type=diploma_revoked account_id=049ca916-2830-44f1-9dc0-1bea656483dc subject=Диплом отозван
+2026-04-04 22:53:27.899 | INFO     | routers.internal:send_notification:105 - Notification sent: type=welcome account_id=eafb07e4-e027-4dab-8036-5358f9837de3 subject=Добро пожаловать
+2026-04-04 22:55:42.905 | INFO     | routers.internal:send_notification:105 - Notification sent: type=diploma_uploaded account_id=eafb07e4-e027-4dab-8036-5358f9837de3 subject=Диплом загружен
+2026-04-04 23:14:16.328 | INFO     | routers.internal:send_notification:105 - Notification sent: type=welcome account_id=3ada352e-b96b-4599-9cae-216cf8d45915 subject=Добро пожаловать
+2026-04-04 23:15:20.094 | INFO     | routers.internal:send_notification:105 - Notification sent: type=diploma_uploaded account_id=3ada352e-b96b-4599-9cae-216cf8d45915 subject=Диплом загружен
