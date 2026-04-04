@@ -24,6 +24,7 @@ class SendRequest(BaseModel):
     type: str = Field(..., max_length=64)
     subject: str
     body: str
+    route: str | None = None
 
 
 class NotificationItem(BaseModel):
@@ -32,6 +33,8 @@ class NotificationItem(BaseModel):
     type: str
     subject: str
     body: str
+    is_read: bool
+    route: str | None
     sent: bool
     sent_at: str | None
     created_at: str

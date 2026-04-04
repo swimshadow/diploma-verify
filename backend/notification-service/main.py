@@ -8,6 +8,7 @@ from database import engine
 from models import Base
 from routers.health import router as health_router
 from routers.internal import router as internal_router
+from routers.notifications import router as notifications_router
 
 logger.remove()
 logger.add(sys.stdout, level="INFO")
@@ -28,6 +29,7 @@ app.add_middleware(
 
 app.include_router(health_router)
 app.include_router(internal_router)
+app.include_router(notifications_router)
 
 
 @app.on_event("startup")

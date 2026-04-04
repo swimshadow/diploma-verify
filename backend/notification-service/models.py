@@ -16,6 +16,8 @@ class Notification(Base):
     type = Column(String(64), nullable=False)
     subject = Column(String(500), nullable=False)
     body = Column(Text, nullable=False)
+    is_read = Column(Boolean, nullable=False, default=False)
+    route = Column(String(500), nullable=True)
     sent = Column(Boolean, nullable=False, default=False)
     sent_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(

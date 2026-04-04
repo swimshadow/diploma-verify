@@ -45,6 +45,10 @@
         uri strip_prefix /api
         reverse_proxy notification-service:8008
     }
+    handle /api/notifications/* {
+        uri strip_prefix /api
+        reverse_proxy notification-service:8008
+    }
     handle /verify/* {
         reverse_proxy verify-service:8004
     }

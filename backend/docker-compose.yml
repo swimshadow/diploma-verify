@@ -196,6 +196,8 @@ services:
       - "127.0.0.1:18008:8008"
     environment:
       DATABASE_URL: postgresql://hack:hack@postgres:5432/notificationdb
+      AUTH_SERVICE_URL: http://auth-service:8001
+      HTTP_CLIENT_TIMEOUT: ${HTTP_CLIENT_TIMEOUT:-10}
     depends_on:
       db-init:
         condition: service_completed_successfully

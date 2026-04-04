@@ -33,6 +33,7 @@ def send_notification(payload: SendRequest, db: Session = Depends(get_db)):
         type=payload.type,
         subject=payload.subject,
         body=payload.body,
+        route=payload.route,
         sent=False,
     )
     try:
@@ -77,6 +78,8 @@ def list_notifications(account_id: uuid.UUID, db: Session = Depends(get_db)):
             type=r.type,
             subject=r.subject,
             body=r.body,
+            is_read=bool(r.is_read),
+            route=r.route,
             sent=bool(r.sent),
             sent_at=r.sent_at.isoformat() if r.sent_at else None,
             created_at=r.created_at.isoformat() if r.created_at else "",
@@ -84,3 +87,31 @@ def list_notifications(account_id: uuid.UUID, db: Session = Depends(get_db)):
         for r in rows
     ]
     return NotificationListResponse(notifications=items)
+
+
+@router.patch("/notifications/{notification_id}/read")
+def mark_read(notification_id: uuid.UUID, db: Session = Depends(get_db)):
+    row = db.query(Notification).filter(Notification.id == notification_id).first()
+    if not row:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+    row.is_read = True
+    try:
+        db.commit()
+    except SQLAlchemyError:
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="DB error")
+    return {"ok": True}
+
+
+@router.patch("/notifications/{account_id}/read-all")
+def mark_all_read(account_id: uuid.UUID, db: Session = Depends(get_db)):
+    try:
+        db.query(Notification).filter(
+            Notification.account_id == account_id,
+            Notification.is_read.is_(False),
+        ).update({Notification.is_read: True})
+        db.commit()
+    except SQLAlchemyError:
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="DB error")
+    return {"ok": True}
