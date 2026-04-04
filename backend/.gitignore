@@ -8,10 +8,6 @@ __pycache__/
 .ruff_cache/
 .venv/
 venv/
-ENV/
-.env
-.env.*
-!.env.example
 docker-compose.override.yml
 /.idea/
 /.vscode/
