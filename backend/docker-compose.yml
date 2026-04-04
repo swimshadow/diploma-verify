@@ -2,7 +2,7 @@
 # Агрегатор OpenAPI (micro-swagga-label/docs_service внутри репо): http://localhost/docs
 services:
   docs_service:
-    build: ./micro-swagga-label/docs_service
+    build: ./docs_service
     expose:
       - "8000"
     volumes:
@@ -10,11 +10,33 @@ services:
     environment:
       COMPOSE_SERVICE: docs_service
       CACHE_TTL: ${DOCS_AGGREGATOR_CACHE_TTL:-30}
+    depends_on:
+      auth-service:
+        condition: service_started
+      university-service:
+        condition: service_started
+      diploma-service:
+        condition: service_started
+      verify-service:
+        condition: service_started
+      file-service:
+        condition: service_started
+      certificate-service:
+        condition: service_started
+      ai-integration-service:
+        condition: service_started
+      notification-service:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     restart: on-failure
 
   # Swagger: http://127.0.0.1:18001–18008/docs (только localhost)
   auth-service:
-    build: ./backend/auth-service
+    build: ./auth-service
     labels:
       - "docs.route=/api"
       - "docs.port=8001"
@@ -29,14 +51,14 @@ services:
       REFRESH_TOKEN_EXPIRE_DAYS: ${REFRESH_TOKEN_EXPIRE_DAYS:-30}
       NOTIFICATION_SERVICE_URL: http://notification-service:8008
     depends_on:
-      postgres:
-        condition: service_healthy
+      db-init:
+        condition: service_completed_successfully
       redis:
         condition: service_started
     restart: on-failure
 
   university-service:
-    build: ./backend/university-service
+    build: ./university-service
     labels:
       - "docs.route=/api"
       - "docs.port=8002"
@@ -53,14 +75,14 @@ services:
       HTTP_CLIENT_TIMEOUT: ${HTTP_CLIENT_TIMEOUT:-10}
       UPLOAD_HTTP_TIMEOUT: ${UPLOAD_HTTP_TIMEOUT:-120}
     depends_on:
-      postgres:
-        condition: service_healthy
+      db-init:
+        condition: service_completed_successfully
       auth-service:
         condition: service_started
     restart: on-failure
 
   diploma-service:
-    build: ./backend/diploma-service
+    build: ./diploma-service
     labels:
       - "docs.route=/api"
       - "docs.port=8003"
@@ -79,7 +101,7 @@ services:
     restart: on-failure
 
   verify-service:
-    build: ./backend/verify-service
+    build: ./verify-service
     labels:
       - "docs.route=/api"
       - "docs.port=8004"
@@ -93,8 +115,8 @@ services:
       CERTIFICATE_SERVICE_URL: http://certificate-service:8006
       HTTP_CLIENT_TIMEOUT: ${HTTP_CLIENT_TIMEOUT:-10}
     depends_on:
-      postgres:
-        condition: service_healthy
+      db-init:
+        condition: service_completed_successfully
       redis:
         condition: service_started
       university-service:
@@ -102,9 +124,9 @@ services:
     restart: on-failure
 
   file-service:
-    build: ./backend/file-service
+    build: ./file-service
     labels:
-      - "docs.route=http://127.0.0.1:18005"
+      - "docs.route=/api"
       - "docs.port=8005"
     ports:
       - "127.0.0.1:18005:8005"
@@ -114,29 +136,29 @@ services:
     volumes:
       - diploma_uploads:/uploads
     depends_on:
-      postgres:
-        condition: service_healthy
+      db-init:
+        condition: service_completed_successfully
     restart: on-failure
 
   certificate-service:
-    build: ./backend/certificate-service
+    build: ./certificate-service
     labels:
-      - "docs.route=http://127.0.0.1:18006"
+      - "docs.route=/api"
       - "docs.port=8006"
     ports:
       - "127.0.0.1:18006:8006"
     environment:
       DATABASE_URL: postgresql://hack:hack@postgres:5432/certdb
-      VERIFY_PUBLIC_BASE_URL: ${VERIFY_PUBLIC_BASE_URL:-http://localhost}
+      VERIFY_PUBLIC_BASE_URL: ${VERIFY_PUBLIC_BASE_URL:-http://localhost:8000}
     depends_on:
-      postgres:
-        condition: service_healthy
+      db-init:
+        condition: service_completed_successfully
     restart: on-failure
 
   ai-integration-service:
-    build: ./backend/ai-integration-service
+    build: ./ai-integration-service
     labels:
-      - "docs.route=http://127.0.0.1:18007"
+      - "docs.route=/api"
       - "docs.port=8007"
     ports:
       - "127.0.0.1:18007:8007"
@@ -153,17 +175,17 @@ services:
     restart: on-failure
 
   notification-service:
-    build: ./backend/notification-service
+    build: ./notification-service
     labels:
-      - "docs.route=http://127.0.0.1:18008"
+      - "docs.route=/api"
       - "docs.port=8008"
     ports:
       - "127.0.0.1:18008:8008"
     environment:
       DATABASE_URL: postgresql://hack:hack@postgres:5432/notificationdb
     depends_on:
-      postgres:
-        condition: service_healthy
+      db-init:
+        condition: service_completed_successfully
     restart: on-failure
 
   postgres:
@@ -174,12 +196,24 @@ services:
       POSTGRES_DB: diplomadb
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./infra/postgres-init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U hack -d diplomadb"]
       interval: 3s
       timeout: 5s
       retries: 15
+
+  db-init:
+    build: ./db-init
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: hack
+      POSTGRES_PASSWORD: hack
+      POSTGRES_DB: diplomadb
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
 
   redis:
     image: redis:7-alpine
@@ -187,10 +221,10 @@ services:
   caddy:
     image: caddy:2-alpine
     ports:
-      - "80:80"
+      - "8000:80"
     volumes:
-      - ./infra/Caddyfile:/etc/caddy/Caddyfile
-      - ./frontend:/srv
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ../frontend:/srv:ro
       - diploma_uploads:/uploads
     depends_on:
       - docs_service

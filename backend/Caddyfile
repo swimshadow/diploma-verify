@@ -25,7 +25,22 @@
         uri strip_prefix /api
         reverse_proxy verify-service:8004
     }
-    # file-service и certificate-service только внутри Docker-сети (без публичного /api)
+    handle /api/files/* {
+        uri strip_prefix /api
+        reverse_proxy file-service:8005
+    }
+    handle /api/certificates/* {
+        uri strip_prefix /api
+        reverse_proxy certificate-service:8006
+    }
+    handle /api/ai/* {
+        uri strip_prefix /api
+        reverse_proxy ai-integration-service:8007
+    }
+    handle /api/internal/* {
+        uri strip_prefix /api
+        reverse_proxy notification-service:8008
+    }
     handle /verify/* {
         reverse_proxy verify-service:8004
     }
