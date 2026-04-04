@@ -20,3 +20,5 @@
             ]
 (Background on this error at: https://sqlalche.me/e/20/f405)
 2026-04-04 19:34:24.003 | INFO     | main:startup:72 - Admin service started on port 8010
+2026-04-04 20:12:40.232 | INFO     | main:startup:61 - Admin service starting...
+2026-04-04 20:12:40.241 | INFO     | main:startup:72 - Admin service started on port 8010
