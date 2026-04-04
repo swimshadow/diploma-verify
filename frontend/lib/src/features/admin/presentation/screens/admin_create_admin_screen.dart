@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/di/service_locator.dart';
+import '../../../admin/data/admin_repository.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
 
 class AdminCreateAdminScreen extends StatefulWidget {
@@ -35,23 +37,35 @@ class _AdminCreateAdminScreenState
 
     setState(() => _loading = true);
 
-    // Simulate API call
-    Future.delayed(const Duration(seconds: 1), () {
+    getIt<AdminRepository>()
+        .createAdmin(
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+      secretKey: '',
+    )
+        .then((_) {
       if (!mounted) return;
       setState(() => _loading = false);
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-              'Администратор ${_emailController.text} создан'),
+          content:
+              Text('Администратор ${_emailController.text} создан'),
           backgroundColor: Colors.green,
         ),
       );
-
       _emailController.clear();
       _fullNameController.clear();
       _passwordController.clear();
       _confirmPasswordController.clear();
+    }).catchError((e) {
+      if (!mounted) return;
+      setState(() => _loading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Ошибка: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     });
   }
 

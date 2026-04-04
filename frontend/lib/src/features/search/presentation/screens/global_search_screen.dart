@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../data/models/search_model.dart';
-import '../../data/mock_data.dart';
+import '../../../../core/di/service_locator.dart';
+import '../../../admin/data/admin_repository.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
 
 class GlobalSearchScreen extends StatefulWidget {
@@ -16,27 +19,91 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
   final _controller = TextEditingController();
   SearchResultType? _typeFilter;
   List<SearchResult> _results = [];
+  bool _loading = false;
+  Timer? _debounce;
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _controller.dispose();
     super.dispose();
   }
 
-  void _search(String query) {
+  void _onQueryChanged(String query) {
+    _debounce?.cancel();
+    if (query.trim().isEmpty) {
+      setState(() {
+        _results = [];
+        _loading = false;
+      });
+      return;
+    }
+    _debounce = Timer(const Duration(milliseconds: 400), () {
+      _search(query);
+    });
+  }
+
+  Future<void> _search(String query) async {
     final q = query.trim().toLowerCase();
     if (q.isEmpty) {
       setState(() => _results = []);
       return;
     }
-    setState(() {
-      _results = searchableItems.where((item) {
-        if (_typeFilter != null && item.type != _typeFilter) return false;
-        return item.title.toLowerCase().contains(q) ||
-            item.subtitle.toLowerCase().contains(q) ||
-            item.id.toLowerCase().contains(q);
-      }).toList();
-    });
+    setState(() => _loading = true);
+    try {
+      final repo = getIt<AdminRepository>();
+      final results = <SearchResult>[];
+
+      // Search accounts
+      if (_typeFilter == null ||
+          _typeFilter == SearchResultType.user ||
+          _typeFilter == SearchResultType.university) {
+        final accounts = await repo.fetchAccounts();
+        for (final a in accounts) {
+          final email = (a['email'] ?? '').toString().toLowerCase();
+          final role = (a['role'] ?? '').toString().toLowerCase();
+          final id = (a['id'] ?? a['account_id'] ?? '').toString();
+          if (email.contains(q) || id.contains(q)) {
+            final type = role == 'university'
+                ? SearchResultType.university
+                : SearchResultType.user;
+            if (_typeFilter != null && _typeFilter != type) continue;
+            results.add(SearchResult(
+              id: id,
+              type: type,
+              title: email,
+              subtitle: role,
+            ));
+          }
+        }
+      }
+
+      // Search diplomas
+      if (_typeFilter == null || _typeFilter == SearchResultType.diploma) {
+        final diplomas = await repo.fetchDiplomas();
+        for (final d in diplomas) {
+          final title =
+              (d['full_name'] ?? d['title'] ?? '').toString().toLowerCase();
+          final number =
+              (d['diploma_number'] ?? d['number'] ?? '').toString().toLowerCase();
+          final id = (d['id'] ?? d['diploma_id'] ?? '').toString();
+          if (title.contains(q) || number.contains(q) || id.contains(q)) {
+            results.add(SearchResult(
+              id: id,
+              type: SearchResultType.diploma,
+              title: d['full_name']?.toString() ?? d['title']?.toString() ?? id,
+              subtitle: d['diploma_number']?.toString() ?? '',
+            ));
+          }
+        }
+      }
+
+      if (mounted) setState(() => _results = results);
+    } catch (_) {
+      if (mounted) setState(() => _results = []);
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   @override
@@ -69,7 +136,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              onChanged: _search,
+              onChanged: _onQueryChanged,
             ),
           ),
 
@@ -84,7 +151,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
                   selected: _typeFilter == null,
                   onTap: () {
                     setState(() => _typeFilter = null);
-                    _search(_controller.text);
+                    _onQueryChanged(_controller.text);
                   },
                 ),
                 _FilterChip(
@@ -93,7 +160,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
                   selected: _typeFilter == SearchResultType.diploma,
                   onTap: () {
                     setState(() => _typeFilter = SearchResultType.diploma);
-                    _search(_controller.text);
+                    _onQueryChanged(_controller.text);
                   },
                 ),
                 _FilterChip(
@@ -102,7 +169,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
                   selected: _typeFilter == SearchResultType.employee,
                   onTap: () {
                     setState(() => _typeFilter = SearchResultType.employee);
-                    _search(_controller.text);
+                    _onQueryChanged(_controller.text);
                   },
                 ),
                 _FilterChip(
@@ -111,7 +178,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
                   selected: _typeFilter == SearchResultType.university,
                   onTap: () {
                     setState(() => _typeFilter = SearchResultType.university);
-                    _search(_controller.text);
+                    _onQueryChanged(_controller.text);
                   },
                 ),
                 _FilterChip(
@@ -120,7 +187,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
                   selected: _typeFilter == SearchResultType.user,
                   onTap: () {
                     setState(() => _typeFilter = SearchResultType.user);
-                    _search(_controller.text);
+                    _onQueryChanged(_controller.text);
                   },
                 ),
               ],
@@ -132,7 +199,9 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
           Expanded(
             child: _controller.text.isEmpty
                 ? _EmptyHint(theme: theme)
-                : _results.isEmpty
+                : _loading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _results.isEmpty
                     ? Center(
                         child: Text('Ничего не найдено',
                             style: theme.textTheme.bodyLarge?.copyWith(

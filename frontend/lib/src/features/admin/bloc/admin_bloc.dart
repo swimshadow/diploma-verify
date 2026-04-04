@@ -1,12 +1,16 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../data/mock_data.dart';
+import '../data/admin_repository.dart';
 import '../data/models/admin_models.dart';
 import 'admin_event.dart';
 import 'admin_state.dart';
 
 class AdminBloc extends Bloc<AdminEvent, AdminState> {
-  AdminBloc() : super(AdminInitial()) {
+  final AdminRepository _repository;
+
+  AdminBloc({required AdminRepository repository})
+      : _repository = repository,
+        super(AdminInitial()) {
     on<AdminLoadRequested>(_onLoad);
     on<AdminBlockUser>(_onBlock);
     on<AdminUnblockUser>(_onUnblock);
@@ -18,15 +22,41 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
     on<AdminRetryDiploma>(_onRetryDiploma);
   }
 
-  void _onLoad(AdminLoadRequested event, Emitter<AdminState> emit) {
+  Future<void> _onLoad(
+      AdminLoadRequested event, Emitter<AdminState> emit) async {
     emit(AdminLoading());
-    emit(AdminLoaded(
-      users: mockPlatformUsers,
-      universities: mockModerationUniversities,
-      diplomas: mockAdminDiplomas,
-      services: mockServiceHealth,
-      logs: mockAuditLogs,
-    ));
+    try {
+      final rawAccounts = await _repository.fetchAccounts();
+      final rawDiplomas = await _repository.fetchDiplomas();
+      final rawLogs = await _repository.fetchAuditLogs();
+
+      final users = rawAccounts.map(_mapUser).toList();
+      final universities = users
+          .where((u) => u.role == 'university')
+          .map((u) => ModerationUniversity(
+                id: u.id,
+                name: u.fullName,
+                city: '',
+                contactEmail: u.email,
+                status: u.isBlocked
+                    ? ModerationStatus.rejected
+                    : ModerationStatus.approved,
+                appliedAt: u.createdAt,
+              ))
+          .toList();
+      final diplomas = rawDiplomas.map(_mapDiploma).toList();
+      final logs = rawLogs.map(_mapLog).toList();
+
+      emit(AdminLoaded(
+        users: users,
+        universities: universities,
+        diplomas: diplomas,
+        services: const [],
+        logs: logs,
+      ));
+    } catch (e) {
+      emit(AdminFailure(e.toString()));
+    }
   }
 
   AdminLoaded? get _loaded {
@@ -34,9 +64,13 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
     return s is AdminLoaded ? s : null;
   }
 
-  void _onBlock(AdminBlockUser event, Emitter<AdminState> emit) {
+  Future<void> _onBlock(
+      AdminBlockUser event, Emitter<AdminState> emit) async {
     final current = _loaded;
     if (current == null) return;
+    try {
+      await _repository.blockUser(event.userId);
+    } catch (_) {}
     emit(AdminLoaded(
       users: current.users.map((u) {
         if (u.id == event.userId) {
@@ -55,9 +89,13 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
     ));
   }
 
-  void _onUnblock(AdminUnblockUser event, Emitter<AdminState> emit) {
+  Future<void> _onUnblock(
+      AdminUnblockUser event, Emitter<AdminState> emit) async {
     final current = _loaded;
     if (current == null) return;
+    try {
+      await _repository.unblockUser(event.userId);
+    } catch (_) {}
     emit(AdminLoaded(
       users: current.users.map((u) {
         if (u.id == event.userId) {
@@ -143,32 +181,42 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
   }
 
   void _onVerifyDiploma(AdminVerifyDiploma event, Emitter<AdminState> emit) {
-    _updateDiplomaStatus(event.diplomaId, AdminDiplomaStatus.verified, emit);
+    _updateDiplomaStatus(event.diplomaId, AdminDiplomaStatus.verified, emit,
+        apiCall: () =>
+            _repository.forceVerifyDiploma(event.diplomaId, 'Admin verified'));
   }
 
   void _onRejectDiploma(AdminRejectDiploma event, Emitter<AdminState> emit) {
-    _updateDiplomaStatus(event.diplomaId, AdminDiplomaStatus.rejected, emit);
+    _updateDiplomaStatus(event.diplomaId, AdminDiplomaStatus.rejected, emit,
+        apiCall: () =>
+            _repository.forceRevokeDiploma(event.diplomaId, 'Admin rejected'));
   }
 
   void _onRetryDiploma(AdminRetryDiploma event, Emitter<AdminState> emit) {
-    _updateDiplomaStatus(event.diplomaId, AdminDiplomaStatus.pendingReview, emit);
+    _updateDiplomaStatus(
+        event.diplomaId, AdminDiplomaStatus.pendingReview, emit);
   }
 
   void _updateDiplomaStatus(
-      String id, AdminDiplomaStatus status, Emitter<AdminState> emit) {
+      String id, AdminDiplomaStatus status, Emitter<AdminState> emit,
+      {Future<void> Function()? apiCall}) {
     final current = _loaded;
     if (current == null) return;
+    apiCall?.call(); // fire-and-forget
     emit(AdminLoaded(
       users: current.users,
       universities: current.universities,
       diplomas: current.diplomas.map((d) {
         if (d.id == id) {
           return AdminDiploma(
-            id: d.id, holderName: d.holderName,
+            id: d.id,
+            holderName: d.holderName,
             universityName: d.universityName,
             diplomaNumber: d.diplomaNumber,
-            status: status, trustScore: d.trustScore,
-            ocrText: d.ocrText, fileUrl: d.fileUrl,
+            status: status,
+            trustScore: d.trustScore,
+            ocrText: d.ocrText,
+            fileUrl: d.fileUrl,
             uploadedAt: d.uploadedAt,
           );
         }
@@ -177,5 +225,88 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
       services: current.services,
       logs: current.logs,
     ));
+  }
+
+  // ── Mappers ──
+
+  static PlatformUser _mapUser(Map<String, dynamic> j) {
+    return PlatformUser(
+      id: j['id']?.toString() ?? '',
+      email: (j['email'] ?? '').toString(),
+      fullName: (j['full_name'] ?? j['email'] ?? '').toString(),
+      role: (j['role'] ?? 'student').toString(),
+      isBlocked: j['is_blocked'] == true,
+      createdAt:
+          DateTime.tryParse(j['created_at'] ?? '') ?? DateTime.now(),
+      lastLoginAt: DateTime.tryParse(j['last_login_at'] ?? ''),
+    );
+  }
+
+  static AdminDiplomaStatus _parseDiplomaStatus(String? s) {
+    switch (s) {
+      case 'verified':
+        return AdminDiplomaStatus.verified;
+      case 'rejected':
+      case 'revoked':
+        return AdminDiplomaStatus.rejected;
+      case 'disputed':
+        return AdminDiplomaStatus.disputed;
+      default:
+        return AdminDiplomaStatus.pendingReview;
+    }
+  }
+
+  static AdminDiploma _mapDiploma(Map<String, dynamic> j) {
+    return AdminDiploma(
+      id: j['id']?.toString() ?? '',
+      holderName: (j['full_name'] ?? j['holder_name'] ?? '').toString(),
+      universityName:
+          (j['university_name'] ?? j['university'] ?? '').toString(),
+      diplomaNumber: (j['diploma_number'] ?? '').toString(),
+      status: _parseDiplomaStatus(j['status']?.toString()),
+      trustScore: (j['trust_score'] as num?)?.toDouble() ?? 0.0,
+      ocrText: j['ocr_text']?.toString(),
+      fileUrl: j['file_url']?.toString(),
+      uploadedAt:
+          DateTime.tryParse(j['created_at'] ?? '') ?? DateTime.now(),
+    );
+  }
+
+  static LogAction _parseAction(String? s) {
+    switch (s) {
+      case 'login':
+        return LogAction.login;
+      case 'logout':
+        return LogAction.logout;
+      case 'role_change':
+        return LogAction.roleChange;
+      case 'status_change':
+        return LogAction.statusChange;
+      case 'block':
+        return LogAction.block;
+      case 'unblock':
+        return LogAction.unblock;
+      case 'diploma_review':
+        return LogAction.diplomaReview;
+      case 'moderation_decision':
+      case 'moderation':
+        return LogAction.moderationDecision;
+      default:
+        return LogAction.statusChange;
+    }
+  }
+
+  static AuditLog _mapLog(Map<String, dynamic> j) {
+    return AuditLog(
+      id: j['id']?.toString() ?? '',
+      action: _parseAction(j['action']?.toString()),
+      actorEmail: (j['actor_id'] ?? j['actor_email'] ?? '').toString(),
+      targetDescription:
+          (j['resource_type'] ?? j['target'] ?? '').toString(),
+      timestamp:
+          DateTime.tryParse(j['timestamp'] ?? j['created_at'] ?? '') ??
+              DateTime.now(),
+      details: j['new_value']?.toString(),
+    );
   }
 }

@@ -2,7 +2,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 
 import '../data/diploma_repository.dart';
-import '../data/mock_data.dart';
 import '../data/models/diploma_model.dart';
 import 'diploma_event.dart';
 import 'diploma_state.dart';
@@ -26,8 +25,8 @@ class DiplomaBloc extends Bloc<DiplomaEvent, DiplomaState> {
     try {
       final raw = await _repository.fetchMyDiplomas();
       _diplomas = raw.map(_mapDiploma).toList();
-    } catch (_) {
-      _diplomas = List.of(mockDiplomas);
+    } catch (e) {
+      _diplomas = [];
     }
     emit(DiplomaLoaded(
       allDiplomas: _diplomas,

@@ -1,5 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/di/service_locator.dart';
+import '../../data/university_repository.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
 
 class UniversityDiplomaUploadScreen extends StatefulWidget {
@@ -216,7 +220,7 @@ class _UniversityDiplomaUploadScreenState
     );
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_issueDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -224,13 +228,42 @@ class _UniversityDiplomaUploadScreenState
       );
       return;
     }
-    // Mock save
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Диплом успешно добавлен в реестр'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-    context.pop();
+
+    final metadata = {
+      'full_name': _fullNameCtrl.text.trim(),
+      'faculty': _facultyCtrl.text.trim(),
+      'speciality': _specialityCtrl.text.trim(),
+      'education_level': _educationLevel,
+      'series': _seriesCtrl.text.trim(),
+      'number': _numberCtrl.text.trim(),
+      'gpa': double.tryParse(_gpaCtrl.text.trim()) ?? 0,
+      'issue_date': _issueDate!.toIso8601String(),
+    };
+
+    try {
+      final repo = getIt<UniversityRepository>();
+      final metaBytes = utf8.encode(jsonEncode(metadata));
+      await repo.uploadDiploma(
+        fileBytes: metaBytes,
+        fileName: '${_seriesCtrl.text.trim()}_${_numberCtrl.text.trim()}.json',
+        metadata: metadata,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Диплом успешно добавлен в реестр'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      context.pop();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Ошибка: $e'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 }

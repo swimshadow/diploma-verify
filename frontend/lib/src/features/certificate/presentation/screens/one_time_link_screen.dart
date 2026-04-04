@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:uuid/uuid.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/di/service_locator.dart';
+import '../../../certificate/data/certificate_repository.dart';
 import '../../../student/bloc/diploma_bloc.dart';
 import '../../../student/bloc/diploma_state.dart';
 import '../../../student/data/models/diploma_model.dart';
@@ -31,15 +32,23 @@ class _OneTimeLinkScreenState extends State<OneTimeLinkScreen> {
 
   void _generate() {
     setState(() => _loading = true);
-    // Simulate API call
-    Future.delayed(const Duration(milliseconds: 800), () {
+    getIt<CertificateRepository>()
+        .generate(widget.diplomaId)
+        .then((data) {
       if (!mounted) return;
       setState(() {
-        _generatedToken = const Uuid().v4().replaceAll('-', '').substring(0, 16);
-        _expiresAt = DateTime.now().add(Duration(hours: _expirationHours));
+        _generatedToken = (data['qr_token'] ?? data['token'] ?? '').toString();
+        _expiresAt = DateTime.tryParse(data['expires_at'] ?? '') ??
+            DateTime.now().add(Duration(hours: _expirationHours));
         _loading = false;
         _copied = false;
       });
+    }).catchError((e) {
+      if (!mounted) return;
+      setState(() => _loading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Ошибка: $e')),
+      );
     });
   }
 

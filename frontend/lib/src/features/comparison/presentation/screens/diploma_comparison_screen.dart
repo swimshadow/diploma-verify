@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:dio/dio.dart';
 
+import '../../../../core/constants/app_constants.dart';
+import '../../../../core/di/service_locator.dart';
+import '../../../../core/network/dio_client.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
 
 /// Compares a paper diploma image (left) with OCR-recognized digital fields (right).
@@ -26,22 +30,60 @@ class _DiplomaComparisonScreenState extends State<DiplomaComparisonScreen> {
       _processing = true;
       _ocrResult = null;
     });
-    // Simulate OCR processing
-    await Future.delayed(const Duration(seconds: 2));
-    if (!mounted) return;
-    setState(() {
-      _processing = false;
-      _ocrResult = _OcrResult(
-        fullName: 'Иванов Иван Иванович',
-        university: 'МГУ им. М.В. Ломоносова',
-        speciality: 'Программная инженерия',
-        diplomaNumber: 'БА-2024-001234',
-        issueDate: '28.06.2024',
-        educationLevel: 'Бакалавр',
-        confidence: 0.92,
-        mismatches: ['Номер диплома: мелкий шрифт, точность 87%'],
+
+    try {
+      final dio = getIt<DioClient>().dio;
+      // 1. Upload file
+      final bytes = await file.readAsBytes();
+      final formData = FormData.fromMap({
+        'file': MultipartFile.fromBytes(bytes, filename: file.name),
+      });
+      final uploadResp = await dio.post(
+        '${AppConstants.filesPath}/upload',
+        data: formData,
+        options: Options(contentType: 'multipart/form-data'),
       );
-    });
+      final fileId = uploadResp.data['id']?.toString() ?? '';
+
+      // 2. Trigger AI extraction
+      await dio.post(AppConstants.aiExtractPath, data: {
+        'file_id': fileId,
+        'diploma_id': fileId,
+      });
+
+      // 3. Wait briefly for result
+      await Future.delayed(const Duration(seconds: 3));
+      if (!mounted) return;
+
+      setState(() {
+        _processing = false;
+        _ocrResult = _OcrResult(
+          fullName: uploadResp.data['full_name']?.toString() ?? 'Распознавание...',
+          university: uploadResp.data['university']?.toString() ?? '',
+          speciality: uploadResp.data['specialization']?.toString() ?? '',
+          diplomaNumber: uploadResp.data['diploma_number']?.toString() ?? '',
+          issueDate: uploadResp.data['issue_date']?.toString() ?? '',
+          educationLevel: uploadResp.data['degree']?.toString() ?? '',
+          confidence: (uploadResp.data['confidence'] as num?)?.toDouble() ?? 0.0,
+          mismatches: const [],
+        );
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _processing = false;
+        _ocrResult = _OcrResult(
+          fullName: 'Ошибка распознавания',
+          university: '',
+          speciality: '',
+          diplomaNumber: '',
+          issueDate: '',
+          educationLevel: '',
+          confidence: 0.0,
+          mismatches: [e.toString()],
+        );
+      });
+    }
   }
 
   @override

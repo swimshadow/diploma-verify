@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
-import '../../data/mock_data.dart';
+import '../../bloc/verify_bloc.dart';
+import '../../bloc/verify_state.dart';
 import '../../data/models/verification_model.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
 
@@ -11,9 +13,13 @@ class VerifyResultScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final result = mockVerificationResults
-        .where((r) => r.id == resultId)
-        .firstOrNull;
+    final verifyState = context.read<VerifyBloc>().state;
+    final VerificationResult? result;
+    if (verifyState is VerifySuccess && verifyState.result.id == resultId) {
+      result = verifyState.result;
+    } else {
+      result = null;
+    }
 
     if (result == null) {
       return Scaffold(

@@ -50,11 +50,14 @@ import '../../features/search/presentation/screens/global_search_screen.dart';
 import '../../features/certificate/presentation/screens/one_time_link_screen.dart';
 import '../../features/comparison/presentation/screens/diploma_comparison_screen.dart';
 import '../../features/demo/presentation/screens/demo_mode_screen.dart';
+import '../logging/log_viewer_screen.dart';
+import '../logging/logging_navigator_observer.dart';
 import 'route_names.dart';
 
 GoRouter createRouter(AuthBloc authBloc) {
   return GoRouter(
     initialLocation: '/splash',
+    observers: [LoggingNavigatorObserver()],
     refreshListenable: _GoRouterAuthRefresh(authBloc),
     redirect: (context, state) {
       final authState = authBloc.state;
@@ -327,6 +330,11 @@ GoRouter createRouter(AuthBloc authBloc) {
         path: '/demo-login',
         name: RouteNames.demoLogin,
         builder: (_, _) => const DemoModeScreen(),
+      ),
+      GoRoute(
+        path: '/dev/logs',
+        name: 'dev-logs',
+        builder: (_, _) => const LogViewerScreen(),
       ),
     ],
   );

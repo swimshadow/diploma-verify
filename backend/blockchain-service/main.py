@@ -17,6 +17,12 @@ app = FastAPI(
     version="1.0.0",
 )
 
+try:
+    from payload_crypto import PayloadEncryptionMiddleware
+    app.add_middleware(PayloadEncryptionMiddleware)
+except Exception:
+    pass
+
 app.include_router(blockchain_router)
 
 

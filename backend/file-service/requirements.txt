@@ -6,3 +6,4 @@ python-multipart
 aiofiles
 python-dotenv
 loguru
+cryptography

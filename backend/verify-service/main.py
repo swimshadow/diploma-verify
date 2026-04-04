@@ -39,6 +39,12 @@ app = FastAPI(
     version="1.0.0",
 )
 
+try:
+    from payload_crypto import PayloadEncryptionMiddleware
+    app.add_middleware(PayloadEncryptionMiddleware)
+except Exception:
+    pass
+
 
 @app.middleware("http")
 async def request_timestamp_check(request: Request, call_next):

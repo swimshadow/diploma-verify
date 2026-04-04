@@ -51,8 +51,10 @@ services:
       REFRESH_TOKEN_EXPIRE_DAYS: ${REFRESH_TOKEN_EXPIRE_DAYS:-30}
       NOTIFICATION_SERVICE_URL: http://notification-service:8008
       DEMO_MODE: ${DEMO_MODE:-true}
+      PAYLOAD_ENCRYPTION_KEY: ${PAYLOAD_ENCRYPTION_KEY:-RGlwbG9tYVZlcmlmeUFFUzI1NlNlY3JldEtleTB4T0s=}
     volumes:
       - ./logs:/logs
+      - ./shared/payload_crypto.py:/app/payload_crypto.py:ro
     depends_on:
       db-init:
         condition: service_completed_successfully
@@ -85,8 +87,10 @@ services:
       UPLOAD_HTTP_TIMEOUT: ${UPLOAD_HTTP_TIMEOUT:-120}
       BLOCKCHAIN_SERVICE_URL: http://blockchain-service:8009
       ENCRYPTION_KEY: ${ENCRYPTION_KEY:-}
+      PAYLOAD_ENCRYPTION_KEY: ${PAYLOAD_ENCRYPTION_KEY:-RGlwbG9tYVZlcmlmeUFFUzI1NlNlY3JldEtleTB4T0s=}
     volumes:
       - ./logs:/logs
+      - ./shared/payload_crypto.py:/app/payload_crypto.py:ro
     depends_on:
       db-init:
         condition: service_completed_successfully
@@ -112,8 +116,10 @@ services:
       UNIVERSITY_SERVICE_URL: http://university-service:8002
       CERTIFICATE_SERVICE_URL: http://certificate-service:8006
       HTTP_CLIENT_TIMEOUT: ${HTTP_CLIENT_TIMEOUT:-10}
+      PAYLOAD_ENCRYPTION_KEY: ${PAYLOAD_ENCRYPTION_KEY:-RGlwbG9tYVZlcmlmeUFFUzI1NlNlY3JldEtleTB4T0s=}
     volumes:
       - ./logs:/logs
+      - ./shared/payload_crypto.py:/app/payload_crypto.py:ro
     depends_on:
       auth-service:
         condition: service_started
@@ -143,8 +149,10 @@ services:
       HTTP_CLIENT_TIMEOUT: ${HTTP_CLIENT_TIMEOUT:-10}
       BLOCKCHAIN_SERVICE_URL: http://blockchain-service:8009
       NOTIFICATION_SERVICE_URL: http://notification-service:8008
+      PAYLOAD_ENCRYPTION_KEY: ${PAYLOAD_ENCRYPTION_KEY:-RGlwbG9tYVZlcmlmeUFFUzI1NlNlY3JldEtleTB4T0s=}
     volumes:
       - ./logs:/logs
+      - ./shared/payload_crypto.py:/app/payload_crypto.py:ro
     depends_on:
       db-init:
         condition: service_completed_successfully
@@ -166,8 +174,10 @@ services:
       - "8009:8009"
     environment:
       DATABASE_URL: ${DATABASE_URL:-postgresql://hack:hack@postgres:5432/diplomadb}
+      PAYLOAD_ENCRYPTION_KEY: ${PAYLOAD_ENCRYPTION_KEY:-RGlwbG9tYVZlcmlmeUFFUzI1NlNlY3JldEtleTB4T0s=}
     volumes:
       - ./logs:/logs
+      - ./shared/payload_crypto.py:/app/payload_crypto.py:ro
     depends_on:
       postgres:
         condition: service_started
@@ -189,9 +199,11 @@ services:
     environment:
       DATABASE_URL: postgresql://hack:hack@postgres:5432/filedb
       FILE_INTERNAL_DELETE_TOKEN: ${FILE_INTERNAL_DELETE_TOKEN:-}
+      PAYLOAD_ENCRYPTION_KEY: ${PAYLOAD_ENCRYPTION_KEY:-RGlwbG9tYVZlcmlmeUFFUzI1NlNlY3JldEtleTB4T0s=}
     volumes:
       - diploma_uploads:/uploads
       - ./logs:/logs
+      - ./shared/payload_crypto.py:/app/payload_crypto.py:ro
     depends_on:
       db-init:
         condition: service_completed_successfully
@@ -213,8 +225,10 @@ services:
     environment:
       DATABASE_URL: postgresql://hack:hack@postgres:5432/certdb
       VERIFY_PUBLIC_BASE_URL: ${VERIFY_PUBLIC_BASE_URL:-http://localhost:8000}
+      PAYLOAD_ENCRYPTION_KEY: ${PAYLOAD_ENCRYPTION_KEY:-RGlwbG9tYVZlcmlmeUFFUzI1NlNlY3JldEtleTB4T0s=}
     volumes:
       - ./logs:/logs
+      - ./shared/payload_crypto.py:/app/payload_crypto.py:ro
     depends_on:
       db-init:
         condition: service_completed_successfully
@@ -239,8 +253,10 @@ services:
       UNIVERSITY_SERVICE_URL: http://university-service:8002
       HTTP_CLIENT_TIMEOUT: ${HTTP_CLIENT_TIMEOUT:-10}
       AI_FILE_FETCH_TIMEOUT: ${AI_FILE_FETCH_TIMEOUT:-120}
+      PAYLOAD_ENCRYPTION_KEY: ${PAYLOAD_ENCRYPTION_KEY:-RGlwbG9tYVZlcmlmeUFFUzI1NlNlY3JldEtleTB4T0s=}
     volumes:
       - ./logs:/logs
+      - ./shared/payload_crypto.py:/app/payload_crypto.py:ro
     depends_on:
       db-init:
         condition: service_completed_successfully
@@ -267,8 +283,10 @@ services:
       DATABASE_URL: postgresql://hack:hack@postgres:5432/notificationdb
       AUTH_SERVICE_URL: http://auth-service:8001
       HTTP_CLIENT_TIMEOUT: ${HTTP_CLIENT_TIMEOUT:-10}
+      PAYLOAD_ENCRYPTION_KEY: ${PAYLOAD_ENCRYPTION_KEY:-RGlwbG9tYVZlcmlmeUFFUzI1NlNlY3JldEtleTB4T0s=}
     volumes:
       - ./logs:/logs
+      - ./shared/payload_crypto.py:/app/payload_crypto.py:ro
     depends_on:
       db-init:
         condition: service_completed_successfully
@@ -321,8 +339,10 @@ services:
       ADMIN_SETUP_KEY: ${ADMIN_SETUP_KEY}
       NOTIFICATION_SERVICE_URL: http://notification-service:8008
       UNIVERSITY_SERVICE_URL: http://university-service:8002
+      PAYLOAD_ENCRYPTION_KEY: ${PAYLOAD_ENCRYPTION_KEY:-RGlwbG9tYVZlcmlmeUFFUzI1NlNlY3JldEtleTB4T0s=}
     volumes:
       - ./logs:/logs
+      - ./shared/payload_crypto.py:/app/payload_crypto.py:ro
     depends_on:
       postgres:
         condition: service_started

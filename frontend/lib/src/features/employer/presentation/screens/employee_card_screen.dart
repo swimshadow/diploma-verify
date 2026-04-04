@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
-import '../../data/mock_data.dart';
+import '../../bloc/employer_bloc.dart';
+import '../../bloc/employer_state.dart';
 import '../../data/models/employee_model.dart';
 import '../../../student/data/models/diploma_model.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
@@ -13,8 +15,13 @@ class EmployeeCardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final employee =
-        mockEmployees.where((e) => e.id == employeeId).firstOrNull;
+    final employerState = context.read<EmployerBloc>().state;
+    Employee? employee;
+    if (employerState is EmployerLoaded) {
+      employee = employerState.employees
+          .where((e) => e.id == employeeId)
+          .firstOrNull;
+    }
 
     if (employee == null) {
       return Scaffold(
@@ -35,7 +42,7 @@ class _CardView extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final dateFormat = DateFormat('dd.MM.yyyy');
-    final diplomas = mockEmployeeDiplomas[employee.id] ?? [];
+    const List<Diploma> diplomas = [];
 
     return DashboardScaffold(
       title: 'Карточка сотрудника',
@@ -158,17 +165,7 @@ class _CardView extends StatelessWidget {
                   width: double.infinity,
                   child: OutlinedButton.icon(
                     onPressed: () {
-                      // Find chat for this employee or go to chat list
-                      final chatId = mockEmployerConversations
-                          .where((c) => c.participantName
-                              .contains(employee.fullName.split(' ')[0]))
-                          .firstOrNull
-                          ?.id;
-                      if (chatId != null) {
-                        context.push('/employer/chat/$chatId');
-                      } else {
-                        context.push('/employer/chats');
-                      }
+                      context.push('/employer/chats');
                     },
                     icon: const Icon(Icons.chat_outlined),
                     label: const Text('Написать сообщение'),

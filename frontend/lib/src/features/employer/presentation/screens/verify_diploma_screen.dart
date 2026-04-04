@@ -77,7 +77,7 @@ class _VerifyDiplomaScreenState extends State<VerifyDiplomaScreen> {
                             TextField(
                               controller: _certIdController,
                               decoration: const InputDecoration(
-                                hintText: 'Например: CERT-A1B2C3D4',
+                                hintText: 'Введите Certificate ID',
                                 prefixIcon: Icon(Icons.tag),
                               ),
                               enabled: !isLoading,
@@ -118,11 +118,11 @@ class _VerifyDiplomaScreenState extends State<VerifyDiplomaScreen> {
                             onPressed: isLoading
                                 ? null
                                 : () {
-                                    // Mock: simulate QR scan
-                                    context
-                                        .read<VerifyBloc>()
-                                        .add(const VerifyByQr(
-                                            'CERT-A1B2C3D4'));
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content: Text(
+                                              'Наведите камеру на QR-код сертификата')),
+                                    );
                                   },
                             icon: const Icon(Icons.camera_alt_outlined),
                             label: const Text('Сканировать QR-код'),
@@ -193,7 +193,8 @@ class _VerifyDiplomaScreenState extends State<VerifyDiplomaScreen> {
                                       : () {
                                           context.read<VerifyBloc>().add(
                                                 VerifyByFileUpload(
-                                                  filePath: '/mock/path',
+                                                  filePath:
+                                                      _selectedFileName!,
                                                   fileName:
                                                       _selectedFileName!,
                                                 ),

@@ -1,11 +1,16 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../data/models/import_model.dart';
+import '../data/university_repository.dart';
 import 'import_event.dart';
 import 'import_state.dart';
 
 class ImportBloc extends Bloc<ImportEvent, ImportState> {
-  ImportBloc() : super(ImportIdle()) {
+  final UniversityRepository _repository;
+
+  ImportBloc({required UniversityRepository repository})
+      : _repository = repository,
+        super(ImportIdle()) {
     on<ImportStarted>(_onStarted);
   }
 
@@ -16,32 +21,45 @@ class ImportBloc extends Bloc<ImportEvent, ImportState> {
       fileName: event.fileName,
       format: ImportFormat.csv,
       status: ImportStatus.inProgress,
-      totalRecords: 100,
+      totalRecords: 1,
       processedRecords: 0,
       errorsCount: 0,
       startedAt: DateTime.now(),
     );
     emit(ImportRunning(job));
 
-    // Simulate progress
-    for (var i = 1; i <= 10; i++) {
-      await Future.delayed(const Duration(milliseconds: 300));
-      final updated = ImportJob(
+    try {
+      await _repository.uploadDiploma(
+        fileBytes: event.fileBytes,
+        fileName: event.fileName,
+        metadata: event.metadata ?? {},
+      );
+
+      final completed = ImportJob(
         id: job.id,
         fileName: job.fileName,
         format: job.format,
-        status: i == 10 ? ImportStatus.completed : ImportStatus.inProgress,
-        totalRecords: 100,
-        processedRecords: i * 10,
-        errorsCount: i >= 8 ? 2 : 0,
+        status: ImportStatus.completed,
+        totalRecords: 1,
+        processedRecords: 1,
+        errorsCount: 0,
         startedAt: job.startedAt,
-        completedAt: i == 10 ? DateTime.now() : null,
+        completedAt: DateTime.now(),
       );
-      if (i == 10) {
-        emit(ImportCompleted(updated));
-      } else {
-        emit(ImportRunning(updated));
-      }
+      emit(ImportCompleted(completed));
+    } catch (e) {
+      final failed = ImportJob(
+        id: job.id,
+        fileName: job.fileName,
+        format: job.format,
+        status: ImportStatus.failed,
+        totalRecords: 1,
+        processedRecords: 0,
+        errorsCount: 1,
+        startedAt: job.startedAt,
+        completedAt: DateTime.now(),
+      );
+      emit(ImportCompleted(failed));
     }
   }
 }

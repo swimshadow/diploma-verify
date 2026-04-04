@@ -1,6 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../data/mock_data.dart';
 import '../data/models/verification_model.dart';
 import '../data/verify_repository.dart';
 import 'verify_event.dart';
@@ -25,25 +24,24 @@ class VerifyBloc extends Bloc<VerifyEvent, VerifyState> {
       final data = await _repository.verifyByCertificateId(event.certificateId);
       emit(VerifySuccess(_mapResult(data, VerifyMethod.certificateId)));
     } catch (_) {
-      final result = mockVerificationResults.where(
-        (r) =>
-            r.diplomaNumber.contains(event.certificateId) ||
-            event.certificateId == 'CERT-A1B2C3D4',
-      ).firstOrNull;
-      if (result != null) {
-        emit(VerifySuccess(result));
-      } else {
-        emit(const VerifyFailure('Диплом не найден по указанному ID'));
-      }
+      emit(const VerifyFailure('Диплом не найден по указанному ID'));
     }
   }
 
   Future<void> _onByFile(
       VerifyByFileUpload event, Emitter<VerifyState> emit) async {
     emit(VerifyLoading());
-    // File upload verification not yet supported by backend, use mock
-    await Future<void>.delayed(const Duration(seconds: 2));
-    emit(VerifySuccess(mockVerificationResults[1]));
+    try {
+      final data = await _repository.verifyManually(
+        diplomaNumber: event.fileName,
+        series: '',
+        fullName: '',
+        issueDate: '',
+      );
+      emit(VerifySuccess(_mapResult(data, VerifyMethod.fileUpload)));
+    } catch (_) {
+      emit(const VerifyFailure('Не удалось проверить файл'));
+    }
   }
 
   Future<void> _onByQr(VerifyByQr event, Emitter<VerifyState> emit) async {
@@ -52,11 +50,7 @@ class VerifyBloc extends Bloc<VerifyEvent, VerifyState> {
       final data = await _repository.verifyByQr(event.qrData);
       emit(VerifySuccess(_mapResult(data, VerifyMethod.qr)));
     } catch (_) {
-      if (event.qrData.contains('CERT-A1B2C3D4')) {
-        emit(VerifySuccess(mockVerificationResults[0]));
-      } else {
-        emit(VerifySuccess(mockVerificationResults[2]));
-      }
+      emit(const VerifyFailure('QR-код не распознан'));
     }
   }
 

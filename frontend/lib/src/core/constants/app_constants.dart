@@ -42,4 +42,10 @@ class AppConstants {
   // Storage keys
   static const String accessTokenKey = 'access_token';
   static const String refreshTokenKey = 'refresh_token';
+
+  // Payload encryption (AES-256-GCM). Base64-encoded 32-byte key.
+  // Must match PAYLOAD_ENCRYPTION_KEY on backend.
+  static const String payloadEncryptionKey =
+      String.fromEnvironment('PAYLOAD_ENCRYPTION_KEY',
+          defaultValue: 'RGlwbG9tYVZlcmlmeUFFUzI1NlNlY3JldEtleTB4T0s=');
 }

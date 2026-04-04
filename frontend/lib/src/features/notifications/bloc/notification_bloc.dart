@@ -1,6 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../data/mock_data.dart';
 import '../data/models/notification_model.dart';
 import '../data/notification_repository.dart';
 import 'notification_event_state.dart';
@@ -23,7 +22,7 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
       final items = raw.map(_mapNotification).toList();
       emit(NotificationLoaded(items));
     } catch (_) {
-      emit(NotificationLoaded(List.of(mockNotifications)));
+      emit(const NotificationLoaded([]));
     }
   }
 

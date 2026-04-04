@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import 'src/core/di/service_locator.dart';
+import 'src/core/logging/log_overlay.dart';
 import 'src/core/router/app_router.dart';
 import 'src/core/theme/app_theme.dart';
 import 'src/features/auth/bloc/auth_bloc.dart';
@@ -21,12 +22,14 @@ import 'src/features/employer/bloc/verify_bloc.dart';
 import 'src/features/employer/bloc/employer_chat_bloc.dart';
 import 'src/features/employer/bloc/employer_chat_event.dart';
 import 'src/features/employer/data/verify_repository.dart';
+import 'src/features/employer/data/employer_repository.dart';
 import 'src/features/university/bloc/university_bloc.dart';
 import 'src/features/university/bloc/university_event.dart';
 import 'src/features/university/bloc/import_bloc.dart';
 import 'src/features/university/data/university_repository.dart';
 import 'src/features/admin/bloc/admin_bloc.dart';
 import 'src/features/admin/bloc/admin_event.dart';
+import 'src/features/admin/data/admin_repository.dart';
 import 'src/features/notifications/bloc/notification_bloc.dart';
 import 'src/features/notifications/bloc/notification_event_state.dart';
 import 'src/features/notifications/data/notification_repository.dart';
@@ -58,13 +61,13 @@ class _AppState extends State<App> {
     _authBloc = AuthBloc(repository: getIt<AuthRepository>());
     _diplomaBloc = DiplomaBloc(repository: getIt<DiplomaRepository>());
     _chatBloc = ChatBloc();
-    _employerBloc = EmployerBloc();
+    _employerBloc = EmployerBloc(repository: getIt<EmployerRepository>());
     _verifyBloc = VerifyBloc(repository: getIt<VerifyRepository>());
     _employerChatBloc = EmployerChatBloc();
     _universityBloc =
         UniversityBloc(repository: getIt<UniversityRepository>());
-    _importBloc = ImportBloc();
-    _adminBloc = AdminBloc();
+    _importBloc = ImportBloc(repository: getIt<UniversityRepository>());
+    _adminBloc = AdminBloc(repository: getIt<AdminRepository>());
     _notificationBloc =
         NotificationBloc(repository: getIt<NotificationRepository>());
     _router = createRouter(_authBloc);
@@ -118,11 +121,13 @@ class _AppState extends State<App> {
         BlocProvider.value(value: _adminBloc),
         BlocProvider.value(value: _notificationBloc),
       ],
-      child: MaterialApp.router(
-        title: 'DiplomaVerify',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.light,
-        routerConfig: _router,
+      child: LogOverlay(
+        child: MaterialApp.router(
+          title: 'DiplomaVerify',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.light,
+          routerConfig: _router,
+        ),
       ),
     );
   }

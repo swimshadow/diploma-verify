@@ -1,7 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 
-import '../data/mock_data.dart';
 import '../data/models/chat_model.dart';
 import 'chat_event.dart';
 import 'chat_state.dart';
@@ -13,11 +12,11 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<ChatSendMessage>(_onSendMessage);
   }
 
-  List<ChatConversation> _conversations = [];
+  final List<ChatConversation> _conversations = [];
+  final Map<String, List<ChatMessage>> _messages = {};
 
   void _onLoadConversations(
       ChatLoadConversations event, Emitter<ChatState> emit) {
-    _conversations = List.of(mockConversations);
     emit(ChatConversationsLoaded(_conversations));
   }
 
@@ -26,7 +25,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       (c) => c.id == event.conversationId,
       orElse: () => _conversations.first,
     );
-    final messages = mockMessages[event.conversationId] ?? [];
+    final messages = _messages[event.conversationId] ?? [];
     emit(ChatMessagesLoaded(
       conversationId: event.conversationId,
       conversation: conversation,
@@ -44,15 +43,14 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       isMe: true,
     );
 
-    final existing = mockMessages[event.conversationId] ?? [];
-    mockMessages[event.conversationId] = [...existing, newMessage];
+    final existing = _messages[event.conversationId] ?? [];
+    _messages[event.conversationId] = [...existing, newMessage];
 
     final conversation = _conversations.firstWhere(
       (c) => c.id == event.conversationId,
       orElse: () => _conversations.first,
     );
 
-    // Update last message in conversation
     final idx = _conversations.indexWhere((c) => c.id == event.conversationId);
     if (idx >= 0) {
       _conversations[idx] = ChatConversation(
@@ -66,10 +64,12 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       );
     }
 
-    emit(ChatMessagesLoaded(
-      conversationId: event.conversationId,
-      conversation: _conversations[idx],
-      messages: mockMessages[event.conversationId]!,
-    ));
+    if (idx >= 0) {
+      emit(ChatMessagesLoaded(
+        conversationId: event.conversationId,
+        conversation: _conversations[idx],
+        messages: _messages[event.conversationId]!,
+      ));
+    }
   }
 }

@@ -142,12 +142,16 @@ class _UploadSection extends StatelessWidget {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['csv', 'xlsx', 'json', 'xml', 'zip'],
+      withData: true,
     );
     if (result != null && result.files.isNotEmpty && context.mounted) {
       final file = result.files.first;
+      final bytes = file.bytes;
+      if (bytes == null) return;
       context.read<ImportBloc>().add(ImportStarted(
             fileName: file.name,
             formatLabel: file.extension ?? 'csv',
+            fileBytes: bytes,
           ));
     }
   }

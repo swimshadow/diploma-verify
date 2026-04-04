@@ -1,6 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../data/mock_data.dart';
 import '../data/models/registry_diploma_model.dart';
 import '../data/models/certificate_model.dart';
 import '../data/university_repository.dart';
@@ -26,14 +25,14 @@ class UniversityBloc extends Bloc<UniversityEvent, UniversityState> {
       final diplomas = raw.map(_mapDiploma).toList();
       emit(UniversityLoaded(
         diplomas: diplomas,
-        certificates: mockCertificates,
-        importJobs: mockImportJobs,
+        certificates: const [],
+        importJobs: const [],
       ));
     } catch (_) {
-      emit(UniversityLoaded(
-        diplomas: mockRegistryDiplomas,
-        certificates: mockCertificates,
-        importJobs: mockImportJobs,
+      emit(const UniversityLoaded(
+        diplomas: [],
+        certificates: [],
+        importJobs: [],
       ));
     }
   }

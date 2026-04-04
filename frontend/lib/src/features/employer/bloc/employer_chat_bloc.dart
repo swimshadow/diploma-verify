@@ -2,7 +2,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../student/data/models/chat_model.dart';
-import '../data/mock_data.dart';
 import 'employer_chat_event.dart';
 import 'employer_chat_state.dart';
 
@@ -13,11 +12,11 @@ class EmployerChatBloc extends Bloc<EmployerChatEvent, EmployerChatState> {
     on<EmployerChatSendMessage>(_onSendMessage);
   }
 
-  List<ChatConversation> _conversations = [];
+  final List<ChatConversation> _conversations = [];
+  final Map<String, List<ChatMessage>> _messages = {};
 
   void _onLoadConversations(
       EmployerChatLoadConversations event, Emitter<EmployerChatState> emit) {
-    _conversations = List.of(mockEmployerConversations);
     emit(EmployerChatConversationsLoaded(_conversations));
   }
 
@@ -27,7 +26,7 @@ class EmployerChatBloc extends Bloc<EmployerChatEvent, EmployerChatState> {
       (c) => c.id == event.conversationId,
       orElse: () => _conversations.first,
     );
-    final messages = mockEmployerMessages[event.conversationId] ?? [];
+    final messages = _messages[event.conversationId] ?? [];
     emit(EmployerChatMessagesLoaded(
       conversationId: event.conversationId,
       conversation: conversation,
@@ -46,8 +45,8 @@ class EmployerChatBloc extends Bloc<EmployerChatEvent, EmployerChatState> {
       isMe: true,
     );
 
-    final existing = mockEmployerMessages[event.conversationId] ?? [];
-    mockEmployerMessages[event.conversationId] = [...existing, newMessage];
+    final existing = _messages[event.conversationId] ?? [];
+    _messages[event.conversationId] = [...existing, newMessage];
 
     final conversation = _conversations.firstWhere(
       (c) => c.id == event.conversationId,
@@ -67,10 +66,12 @@ class EmployerChatBloc extends Bloc<EmployerChatEvent, EmployerChatState> {
       );
     }
 
-    emit(EmployerChatMessagesLoaded(
-      conversationId: event.conversationId,
-      conversation: _conversations[idx],
-      messages: mockEmployerMessages[event.conversationId]!,
-    ));
+    if (idx >= 0) {
+      emit(EmployerChatMessagesLoaded(
+        conversationId: event.conversationId,
+        conversation: _conversations[idx],
+        messages: _messages[event.conversationId]!,
+      ));
+    }
   }
 }
