@@ -9,7 +9,7 @@ load_dotenv()
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql://hack:hack@localhost:5432/authdb",
+    "postgresql://hack:hack@localhost:5432/diplomadb",
 )
 
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)

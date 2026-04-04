@@ -13,7 +13,7 @@ load_dotenv()
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql://hack:hack@localhost:5432/verifydb",
+    "postgresql://hack:hack@localhost:5432/diplomadb",
 )
 REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379")
 

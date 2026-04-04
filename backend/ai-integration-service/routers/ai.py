@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from http_client import AI_FILE_FETCH_TIMEOUT, HTTP_TIMEOUT
-from models import MlProcessingLog
+from models import Diploma, MlProcessingLog
 from schemas import AiResultRequest, AiResultResponse, ExtractRequest, ExtractResponse
 
 router = APIRouter(prefix="/ai", tags=["ai"])
@@ -40,19 +40,25 @@ async def run_extract_pipeline(file_id: str, diploma_id: str) -> None:
 
     ai_extracted_data["raw_text"] = raw_text
 
-    patch_url = (
-        f"{UNIVERSITY_SERVICE_URL.rstrip('/')}/internal/diplomas/{diploma_id}/ai-data"
-    )
+    # Прямая запись в БД (единая diplomadb)
+    from database import SessionLocal
+    db = SessionLocal()
     try:
-        async with httpx.AsyncClient(timeout=HTTP_TIMEOUT) as client:
-            r = await client.patch(
-                patch_url,
-                json={"ai_extracted_data": ai_extracted_data, "confidence": confidence},
-            )
-        if r.status_code >= 400:
-            logger.warning(f"PATCH ai-data failed: {r.status_code} {r.text}")
-    except httpx.RequestError as e:
-        logger.exception(f"PATCH ai-data error: {e}")
+        diploma = db.query(Diploma).filter(Diploma.id == uuid.UUID(diploma_id)).first()
+        if diploma:
+            diploma.ai_extracted_data = ai_extracted_data
+            diploma.ai_confidence = confidence
+            if confidence > 0.85 and diploma.status == "pending":
+                diploma.status = "verified"
+            db.commit()
+            logger.info(f"AI data saved directly for diploma {diploma_id}, confidence={confidence}")
+        else:
+            logger.warning(f"Diploma {diploma_id} not found in DB")
+    except Exception as e:
+        db.rollback()
+        logger.exception(f"Direct DB update failed: {e}")
+    finally:
+        db.close()
 
 
 @router.post("/extract", response_model=ExtractResponse)
@@ -81,25 +87,17 @@ async def ai_result(
     merged_extracted = payload.extracted_data.model_dump()
     merged_extracted["raw_text"] = payload.raw_text
 
-    patch_url = f"{UNIVERSITY_SERVICE_URL.rstrip('/')}/internal/diplomas/{did}/ai-data"
-    next_status = "pending"
-    try:
-        async with httpx.AsyncClient(timeout=HTTP_TIMEOUT) as client:
-            r = await client.patch(
-                patch_url,
-                json={
-                    "ai_extracted_data": merged_extracted,
-                    "confidence": payload.confidence,
-                },
-            )
-        if r.status_code >= 400:
-            logger.warning(f"PATCH ai-data failed: {r.status_code} {r.text}")
-            raise HTTPException(status_code=502, detail="University service rejected AI data")
-        body = r.json()
-        next_status = str(body.get("status", "pending"))
-    except httpx.RequestError as e:
-        logger.exception(f"PATCH ai-data error: {e}")
-        raise HTTPException(status_code=503, detail="University service unavailable")
+    # Прямой доступ к таблице diplomas (единая БД)
+    diploma = db.query(Diploma).filter(Diploma.id == did).first()
+    if not diploma:
+        raise HTTPException(status_code=404, detail="Diploma not found")
+
+    diploma.ai_extracted_data = merged_extracted
+    diploma.ai_confidence = payload.confidence
+    next_status = diploma.status
+    if payload.confidence > 0.85 and diploma.status == "pending":
+        diploma.status = "verified"
+        next_status = "verified"
 
     auto_verified = payload.confidence > 0.85 and next_status == "verified"
     row = MlProcessingLog(

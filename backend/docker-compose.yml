@@ -10,7 +10,7 @@ services:
     ports:
       - "127.0.0.1:18001:8001"
     environment:
-      DATABASE_URL: postgresql://hack:hack@postgres:5432/authdb
+      DATABASE_URL: postgresql://hack:hack@postgres:5432/diplomadb
       REDIS_URL: ${REDIS_URL:-redis://redis:6379}
       JWT_SECRET: ${JWT_SECRET}
       JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
@@ -43,7 +43,7 @@ services:
     ports:
       - "127.0.0.1:18002:8002"
     environment:
-      DATABASE_URL: postgresql://hack:hack@postgres:5432/universitydb
+      DATABASE_URL: postgresql://hack:hack@postgres:5432/diplomadb
       SECRET_SALT: ${SECRET_SALT}
       AUTH_SERVICE_URL: http://auth-service:8001
       FILE_SERVICE_URL: http://file-service:8005
@@ -108,7 +108,7 @@ services:
     ports:
       - "127.0.0.1:18004:8004"
     environment:
-      DATABASE_URL: postgresql://hack:hack@postgres:5432/verifydb
+      DATABASE_URL: postgresql://hack:hack@postgres:5432/diplomadb
       REDIS_URL: ${REDIS_URL:-redis://redis:6379}
       SECRET_SALT: ${SECRET_SALT}
       UNIVERSITY_SERVICE_URL: http://university-service:8002
@@ -167,7 +167,7 @@ services:
     ports:
       - "127.0.0.1:18005:8005"
     environment:
-      DATABASE_URL: postgresql://hack:hack@postgres:5432/filedb
+      DATABASE_URL: postgresql://hack:hack@postgres:5432/diplomadb
       FILE_INTERNAL_DELETE_TOKEN: ${FILE_INTERNAL_DELETE_TOKEN:-}
       PAYLOAD_ENCRYPTION_KEY: ${PAYLOAD_ENCRYPTION_KEY:-RGlwbG9tYVZlcmlmeUFFUzI1NlNlY3JldEtleTB4T0s=}
     volumes:
@@ -193,7 +193,7 @@ services:
     ports:
       - "127.0.0.1:18006:8006"
     environment:
-      DATABASE_URL: postgresql://hack:hack@postgres:5432/certdb
+      DATABASE_URL: postgresql://hack:hack@postgres:5432/diplomadb
       VERIFY_PUBLIC_BASE_URL: ${VERIFY_PUBLIC_BASE_URL:-http://localhost:8000}
       PAYLOAD_ENCRYPTION_KEY: ${PAYLOAD_ENCRYPTION_KEY:-RGlwbG9tYVZlcmlmeUFFUzI1NlNlY3JldEtleTB4T0s=}
     volumes:
@@ -218,7 +218,7 @@ services:
     ports:
       - "127.0.0.1:18007:8007"
     environment:
-      DATABASE_URL: postgresql://hack:hack@postgres:5432/aidb
+      DATABASE_URL: postgresql://hack:hack@postgres:5432/diplomadb
       FILE_SERVICE_URL: http://file-service:8005
       UNIVERSITY_SERVICE_URL: http://university-service:8002
       HTTP_CLIENT_TIMEOUT: ${HTTP_CLIENT_TIMEOUT:-10}
@@ -250,7 +250,7 @@ services:
     ports:
       - "127.0.0.1:18008:8008"
     environment:
-      DATABASE_URL: postgresql://hack:hack@postgres:5432/notificationdb
+      DATABASE_URL: postgresql://hack:hack@postgres:5432/diplomadb
       AUTH_SERVICE_URL: http://auth-service:8001
       MAIL_SERVICE_URL: http://mail-service:8000
       HTTP_CLIENT_TIMEOUT: ${HTTP_CLIENT_TIMEOUT:-10}
@@ -321,9 +321,7 @@ services:
       - "docs.port=8010"
     ports: ["8010:8010"]
     environment:
-      AUTH_DATABASE_URL: postgresql://hack:hack@postgres:5432/authdb
-      UNIVERSITY_DATABASE_URL: postgresql://hack:hack@postgres:5432/universitydb
-      VERIFY_DATABASE_URL: postgresql://hack:hack@postgres:5432/verifydb
+      DATABASE_URL: postgresql://hack:hack@postgres:5432/diplomadb
       AUTH_SERVICE_URL: http://auth-service:8001
       ADMIN_SETUP_KEY: ${ADMIN_SETUP_KEY}
       NOTIFICATION_SERVICE_URL: http://notification-service:8008

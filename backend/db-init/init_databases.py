@@ -18,13 +18,8 @@ POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "hack")
 POSTGRES_DB = os.getenv("POSTGRES_DB", "diplomadb")
 
 DATABASES = [
-    "authdb",
-    "universitydb",
-    "verifydb",
-    "filedb",
-    "certdb",
-    "notificationdb",
-    "aidb",
+    # Все таблицы в одной БД diplomadb — создаётся автоматически PostgreSQL.
+    # Этот список оставлен пустым; db-init просто ждёт готовности Postgres.
 ]
 
 MAX_RETRIES = 30

@@ -57,4 +57,5 @@ app.include_router(ai_router)
 
 @app.on_event("startup")
 def create_tables():
-    Base.metadata.create_all(bind=engine)
+    from models import MlProcessingLog
+    MlProcessingLog.__table__.create(bind=engine, checkfirst=True)

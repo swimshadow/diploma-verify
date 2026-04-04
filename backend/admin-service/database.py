@@ -11,55 +11,45 @@ from sqlalchemy import create_engine
 
 load_dotenv()
 
-# Подключения к разным БД
-AUTH_DATABASE_URL = os.getenv(
-    "AUTH_DATABASE_URL",
-    "postgresql://hack:hack@localhost:5432/authdb",
+# Единая БД — все таблицы в diplomadb
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql://hack:hack@localhost:5432/diplomadb",
 )
 
-UNIVERSITY_DATABASE_URL = os.getenv(
-    "UNIVERSITY_DATABASE_URL",
-    "postgresql://hack:hack@localhost:5432/universitydb",
-)
+engine = create_engine(DATABASE_URL, pool_pre_ping=True)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-VERIFY_DATABASE_URL = os.getenv(
-    "VERIFY_DATABASE_URL",
-    "postgresql://hack:hack@localhost:5432/verifydb",
-)
-
-auth_engine = create_engine(AUTH_DATABASE_URL, pool_pre_ping=True)
-university_engine = create_engine(UNIVERSITY_DATABASE_URL, pool_pre_ping=True)
-verify_engine = create_engine(VERIFY_DATABASE_URL, pool_pre_ping=True)
-
-AuthSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=auth_engine)
-UniversitySessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=university_engine)
-VerifySessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=verify_engine)
+# Алиасы для обратной совместимости
+auth_engine = engine
+university_engine = engine
+verify_engine = engine
+AuthSessionLocal = SessionLocal
+UniversitySessionLocal = SessionLocal
+VerifySessionLocal = SessionLocal
 
 Base = declarative_base()
 
 
-def get_auth_db() -> Generator:
-    db = AuthSessionLocal()
+def get_db() -> Generator:
+    db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
+
+
+# Обратная совместимость
+def get_auth_db() -> Generator:
+    return get_db()
 
 
 def get_university_db() -> Generator:
-    db = UniversitySessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+    return get_db()
 
 
 def get_verify_db() -> Generator:
-    db = VerifySessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+    return get_db()
 
 
 # ===== AUTHDB models =====
