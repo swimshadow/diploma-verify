@@ -27,6 +27,9 @@ class _UniversityDiplomaUploadScreenState
   final _seriesCtrl = TextEditingController();
   final _numberCtrl = TextEditingController();
   final _dobCtrl = TextEditingController();
+  final _studentEmailCtrl = TextEditingController();
+  final _studentPasswordCtrl = TextEditingController();
+  bool _obscurePassword = true;
 
   String _educationLevel = 'Бакалавр';
   DateTime? _issueDate;
@@ -50,6 +53,8 @@ class _UniversityDiplomaUploadScreenState
     _seriesCtrl.dispose();
     _numberCtrl.dispose();
     _dobCtrl.dispose();
+    _studentEmailCtrl.dispose();
+    _studentPasswordCtrl.dispose();
     _log.info(_tag, 'Screen disposed');
     super.dispose();
   }
@@ -221,6 +226,59 @@ class _UniversityDiplomaUploadScreenState
                   ),
 
                   const SizedBox(height: 24),
+                  Text('Аккаунт студента',
+                      style: theme.textTheme.titleLarge
+                          ?.copyWith(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  Text(
+                    'При загрузке диплома студенту будет автоматически создан аккаунт',
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                  ),
+                  const SizedBox(height: 16),
+
+                  TextFormField(
+                    controller: _studentEmailCtrl,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: const InputDecoration(
+                      labelText: 'Email студента *',
+                      prefixIcon: Icon(Icons.email_outlined),
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) {
+                        return 'Обязательное поле';
+                      }
+                      if (!v.contains('@')) return 'Некорректный email';
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  TextFormField(
+                    controller: _studentPasswordCtrl,
+                    obscureText: _obscurePassword,
+                    decoration: InputDecoration(
+                      labelText: 'Пароль студента *',
+                      prefixIcon: const Icon(Icons.lock_outlined),
+                      border: const OutlineInputBorder(),
+                      suffixIcon: IconButton(
+                        icon: Icon(_obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility),
+                        onPressed: () => setState(
+                            () => _obscurePassword = !_obscurePassword),
+                      ),
+                    ),
+                    validator: (v) {
+                      if (v == null || v.length < 6) {
+                        return 'Минимум 6 символов';
+                      }
+                      return null;
+                    },
+                  ),
+
+                  const SizedBox(height: 24),
                   Text('Данные диплома',
                       style: theme.textTheme.titleLarge
                           ?.copyWith(fontWeight: FontWeight.bold)),
@@ -353,6 +411,8 @@ class _UniversityDiplomaUploadScreenState
       'degree': _educationLevel,
       'specialization': _specialityCtrl.text.trim(),
       'issue_date': '${_issueDate!.year}-${_issueDate!.month.toString().padLeft(2, '0')}-${_issueDate!.day.toString().padLeft(2, '0')}',
+      'student_email': _studentEmailCtrl.text.trim(),
+      'student_password': _studentPasswordCtrl.text,
       if (_dateOfBirth != null)
         'date_of_birth':
             '${_dateOfBirth!.year}-${_dateOfBirth!.month.toString().padLeft(2, '0')}-${_dateOfBirth!.day.toString().padLeft(2, '0')}',

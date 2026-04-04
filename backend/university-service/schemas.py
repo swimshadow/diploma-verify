@@ -17,6 +17,8 @@ class DiplomaMetadata(BaseModel):
     specialization: str
     issue_date: date
     date_of_birth: Optional[date] = None
+    student_email: Optional[str] = None
+    student_password: Optional[str] = None
 
 
 class UploadDiplomaResponse(BaseModel):

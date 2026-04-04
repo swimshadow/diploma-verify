@@ -393,6 +393,32 @@ async def upload_diploma(
     db.refresh(diploma)
     logger.info(f"[UPLOAD] Диплом создан в БД: id={diploma.id}, status=pending")
 
+    # ── Register student account ─────────────────────────────
+    if meta.student_email and meta.student_password:
+        logger.info(f"[UPLOAD] Регистрация студента: email={meta.student_email}")
+        register_url = f"{AUTH_SERVICE_URL.rstrip('/')}/internal/register-student"
+        try:
+            async with httpx.AsyncClient(timeout=HTTP_TIMEOUT) as client:
+                reg_body = {
+                    "email": meta.student_email,
+                    "password": meta.student_password,
+                    "full_name": meta.full_name,
+                }
+                if meta.date_of_birth:
+                    reg_body["date_of_birth"] = meta.date_of_birth.isoformat()
+                rr = await client.post(register_url, json=reg_body)
+            if rr.status_code in (200, 201):
+                student_account_id = uuid.UUID(rr.json()["account_id"])
+                diploma.student_account_id = student_account_id
+                db.commit()
+                logger.info(f"[UPLOAD] Студент зарегистрирован и привязан: {student_account_id}")
+            elif rr.status_code == 409:
+                logger.warning(f"[UPLOAD] Email студента уже занят: {meta.student_email}")
+            else:
+                logger.warning(f"[UPLOAD] Ошибка регистрации студента: {rr.status_code} {rr.text}")
+        except httpx.RequestError as e:
+            logger.warning(f"[UPLOAD] Не удалось зарегистрировать студента: {e}")
+
     ai_url = f"{AI_SERVICE_URL.rstrip('/')}/ai/extract"
     logger.info(f"[UPLOAD] Запуск AI extraction: {ai_url}")
     try:
