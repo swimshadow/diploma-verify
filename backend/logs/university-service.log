@@ -243,3 +243,21 @@
 2026-04-04 23:15:20.096 | INFO     | routers.universities:upload_diploma:440 - [UPLOAD] Уведомление отправлено
 2026-04-04 23:15:20.115 | INFO     | routers.universities:upload_diploma:453 - [UPLOAD] Аудит записан. Загрузка завершена успешно. diploma_id=1de80dcb-1c66-4bc4-9444-d1d0aa55baa4
 2026-04-04 23:33:33.577 | INFO     | main:create_tables:83 - University service tables ready
+2026-04-05 04:15:22.991 | INFO     | routers.universities:upload_diploma:293 - [UPLOAD] Начало загрузки диплома. user=b938abfe-1b35-4a2f-8143-1bbc29683454
+2026-04-05 04:15:22.993 | INFO     | routers.universities:upload_diploma:294 - [UPLOAD] Файл: name=________________________ ______________________ ____________________________(1).pdf, content_type=application/pdf, size=356218
+2026-04-05 04:15:22.994 | INFO     | routers.universities:upload_diploma:295 - [UPLOAD] Metadata (raw): {"full_name":"StrongPass123 StrongPass123 StrongPass123","diploma_number":"3232123212321232121","series":"123432","degree":"Бакалавр","specialization":"StrongPass123","issue_date":"2026-04-02","student_email":"StrongPass123@StrongPass123.com","student_password":"StrongPass123"}
+2026-04-05 04:15:22.997 | INFO     | routers.universities:upload_diploma:298 - [UPLOAD] Metadata parsed: full_name=StrongPass123 StrongPass123 StrongPass123, diploma_number=3232123212321232121, degree=Бакалавр
+2026-04-05 04:15:22.997 | INFO     | routers.universities:upload_diploma:307 - [UPLOAD] Валидация файла: fname=________________________ ______________________ ____________________________(1).pdf, content_type=application/pdf
+2026-04-05 04:15:23.010 | INFO     | routers.universities:upload_diploma:316 - [UPLOAD] Университет: dgtu (b938abfe-1b35-4a2f-8143-1bbc29683454)
+2026-04-05 04:15:23.010 | INFO     | routers.universities:upload_diploma:324 - [UPLOAD] Data hash computed: e96b107c777031fe...
+2026-04-05 04:15:23.011 | INFO     | routers.universities:upload_diploma:326 - [UPLOAD] Прочитано 356218 bytes из файла
+2026-04-05 04:15:23.011 | INFO     | routers.universities:upload_diploma:328 - [UPLOAD] Загрузка файла в file-service: http://file-service:8005/files/upload
+2026-04-05 04:15:23.072 | INFO     | routers.universities:upload_diploma:353 - [UPLOAD] Файл загружен, file_id=9ed2f26c-c913-427a-af8b-273e6d103695
+2026-04-05 04:15:23.072 | INFO     | routers.universities:upload_diploma:374 - [UPLOAD] Без шифрования полей
+2026-04-05 04:15:23.081 | INFO     | routers.universities:upload_diploma:394 - [UPLOAD] Диплом создан в БД: id=7948643b-eb29-4e1f-8310-4851474d29e4, status=pending
+2026-04-05 04:15:23.082 | INFO     | routers.universities:upload_diploma:398 - [UPLOAD] Регистрация студента: email=StrongPass123@StrongPass123.com
+2026-04-05 04:15:23.306 | INFO     | routers.universities:upload_diploma:414 - [UPLOAD] Студент зарегистрирован и привязан: 4b7fa528-d314-4ac6-aab2-8f185413148f
+2026-04-05 04:15:23.306 | INFO     | routers.universities:upload_diploma:423 - [UPLOAD] Запуск AI extraction: http://ai-integration-service:8007/ai/extract
+2026-04-05 04:15:23.410 | INFO     | routers.universities:upload_diploma:430 - [UPLOAD] AI extraction запущен
+2026-04-05 04:15:23.424 | INFO     | routers.universities:upload_diploma:440 - [UPLOAD] Уведомление отправлено
+2026-04-05 04:15:23.443 | INFO     | routers.universities:upload_diploma:453 - [UPLOAD] Аудит записан. Загрузка завершена успешно. diploma_id=7948643b-eb29-4e1f-8310-4851474d29e4

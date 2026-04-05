@@ -115,3 +115,9 @@
 2026-04-04 23:33:33.075 | INFO     | main:create_tables:100 - Auth service tables ready
 2026-04-04 23:34:25.877 | INFO     | routers.auth:login:259 - [LOGIN] Попытка входа: email=admin@example.com
 2026-04-04 23:34:26.075 | INFO     | routers.auth:login:305 - [LOGIN] Вход успешен: account_id=c4dddccb-c493-4a31-8729-214917456e2f, role=admin
+2026-04-05 04:12:16.087 | INFO     | routers.auth:register:159 - [REGISTER] Начало регистрации: email=dgtu@dgtu.ru, role=university
+2026-04-05 04:12:16.312 | INFO     | routers.auth:register:241 - [REGISTER] Регистрация успешна: account_id=b938abfe-1b35-4a2f-8143-1bbc29683454, role=university
+2026-04-05 04:12:16.387 | INFO     | routers.auth:login:259 - [LOGIN] Попытка входа: email=dgtu@dgtu.ru
+2026-04-05 04:12:16.590 | INFO     | routers.auth:login:305 - [LOGIN] Вход успешен: account_id=b938abfe-1b35-4a2f-8143-1bbc29683454, role=university
+2026-04-05 04:14:06.096 | INFO     | routers.auth:login:259 - [LOGIN] Попытка входа: email=admin@example.com
+2026-04-05 04:14:06.296 | INFO     | routers.auth:login:305 - [LOGIN] Вход успешен: account_id=c4dddccb-c493-4a31-8729-214917456e2f, role=admin
