@@ -7,7 +7,7 @@ String _detectOrigin() {
     return Uri.base.origin;
   }
   // Мобилка → IP сервера в локальной сети
-  const serverIp = String.fromEnvironment('SERVER_IP', defaultValue: '10.71.249.250');
+  const serverIp = String.fromEnvironment('SERVER_IP', defaultValue: '5.42.123.118');
   return 'http://$serverIp:8000';
 }
 
