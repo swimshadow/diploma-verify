@@ -13,7 +13,7 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from database import compute_data_hash, get_db
-from deps import get_current_user, require_role
+from deps import get_current_user, require_role, require_verified_university
 from field_crypto import display_full_name, encrypt_field, make_search_hash
 from internal_deps import internal_only
 from http_client import HTTP_TIMEOUT, UPLOAD_HTTP_TIMEOUT
@@ -288,7 +288,7 @@ async def upload_diploma(
     file: UploadFile = File(...),
     metadata: str = Form(...),
     db: Session = Depends(get_db),
-    user: dict = Depends(require_role("university")),
+    user: dict = Depends(require_verified_university()),
 ):
     logger.info(f"[UPLOAD] Начало загрузки диплома. user={user.get('account_id')}")
     logger.info(f"[UPLOAD] Файл: name={file.filename}, content_type={file.content_type}, size={file.size}")
@@ -518,7 +518,7 @@ async def get_diploma(
 async def verify_manual(
     diploma_id: uuid.UUID,
     db: Session = Depends(get_db),
-    user: dict = Depends(require_role("university")),
+    user: dict = Depends(require_verified_university()),
 ):
     logger.info(f"[VERIFY] Начало верификации diploma_id={diploma_id}, user={user.get('account_id')}")
     uid = uuid.UUID(user["account_id"])
@@ -570,7 +570,7 @@ async def verify_manual(
 async def revoke_diploma(
     diploma_id: uuid.UUID,
     db: Session = Depends(get_db),
-    user: dict = Depends(require_role("university")),
+    user: dict = Depends(require_verified_university()),
 ):
     logger.info(f"[REVOKE] Начало отзыва diploma_id={diploma_id}, user={user.get('account_id')}")
     uid = uuid.UUID(user["account_id"])

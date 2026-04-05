@@ -74,6 +74,7 @@ class VerifyTokenResponse(BaseModel):
     account_id: str
     role: str
     profile_id: str
+    is_verified: bool = False
 
 
 class InternalProfileResponse(BaseModel):

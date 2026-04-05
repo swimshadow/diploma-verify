@@ -65,6 +65,7 @@ async def verify_token(token: str, db: Session = Depends(get_db)):
             account_id=str(account_id),
             role=account.role,
             profile_id=str(profile_id),
+            is_verified=True,
         )
 
     actual_pid: uuid.UUID | None = None
@@ -80,6 +81,7 @@ async def verify_token(token: str, db: Session = Depends(get_db)):
         account_id=str(account_id),
         role=account.role,
         profile_id=str(profile_id),
+        is_verified=getattr(account, 'is_verified', False),
     )
 
 

@@ -8,6 +8,7 @@ import '../../bloc/verify_event.dart';
 import '../../bloc/verify_state.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
 import '../../../../shared/widgets/app_snack_bar.dart';
+import 'qr_scanner_screen.dart';
 
 class VerifyDiplomaScreen extends StatefulWidget {
   const VerifyDiplomaScreen({super.key});
@@ -126,13 +127,7 @@ class _VerifyDiplomaScreenState extends State<VerifyDiplomaScreen> {
                           child: OutlinedButton.icon(
                             onPressed: isLoading
                                 ? null
-                                : () {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                          content: Text(
-                                              'Наведите камеру на QR-код сертификата')),
-                                    );
-                                  },
+                                : () => _openQrScanner(context),
                             icon: const Icon(Icons.camera_alt_outlined),
                             label: const Text('Сканировать QR-код'),
                           ),
@@ -253,6 +248,26 @@ class _VerifyDiplomaScreenState extends State<VerifyDiplomaScreen> {
         _selectedFileName = result.files.first.name;
       });
     }
+  }
+
+  Future<void> _openQrScanner(BuildContext context) async {
+    final scannedData = await Navigator.of(context).push<String>(
+      MaterialPageRoute(builder: (_) => const QrScannerScreen()),
+    );
+    if (scannedData == null || !mounted) return;
+
+    // Extract the QR token from the URL if it's a full verification URL
+    final uri = Uri.tryParse(scannedData);
+    String qrToken;
+    if (uri != null && uri.pathSegments.isNotEmpty) {
+      // URL like https://host/api/verify/qr/{token} or .../verify/{token}
+      qrToken = uri.pathSegments.last;
+    } else {
+      qrToken = scannedData;
+    }
+
+    if (!mounted) return;
+    context.read<VerifyBloc>().add(VerifyByQr(qrToken));
   }
 }
 

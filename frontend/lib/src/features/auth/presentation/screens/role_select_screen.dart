@@ -91,7 +91,7 @@ class _RoleCard extends StatelessWidget {
               CircleAvatar(
                 radius: 28,
                 backgroundColor: theme.colorScheme.primaryContainer,
-                child: Icon(icon, color: theme.colorScheme.primary, size: 28),
+                child: Icon(icon, color: Colors.white, size: 28),
               ),
               const SizedBox(width: 16),
               Expanded(

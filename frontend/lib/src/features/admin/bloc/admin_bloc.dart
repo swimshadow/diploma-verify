@@ -41,7 +41,9 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
                 contactEmail: u.email,
                 status: u.isBlocked
                     ? ModerationStatus.rejected
-                    : ModerationStatus.approved,
+                    : u.isVerified
+                        ? ModerationStatus.approved
+                        : ModerationStatus.pending,
                 appliedAt: u.createdAt,
               ))
           .toList();
@@ -80,7 +82,7 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
         if (u.id == event.userId) {
           return PlatformUser(
             id: u.id, email: u.email, fullName: u.fullName,
-            role: u.role, isBlocked: true,
+            role: u.role, isBlocked: true, isVerified: u.isVerified,
             createdAt: u.createdAt, lastLoginAt: u.lastLoginAt,
           );
         }
@@ -108,7 +110,7 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
         if (u.id == event.userId) {
           return PlatformUser(
             id: u.id, email: u.email, fullName: u.fullName,
-            role: u.role, isBlocked: false,
+            role: u.role, isBlocked: false, isVerified: u.isVerified,
             createdAt: u.createdAt, lastLoginAt: u.lastLoginAt,
           );
         }
@@ -129,7 +131,7 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
         if (u.id == event.userId) {
           return PlatformUser(
             id: u.id, email: u.email, fullName: u.fullName,
-            role: event.newRole, isBlocked: u.isBlocked,
+            role: event.newRole, isBlocked: u.isBlocked, isVerified: u.isVerified,
             createdAt: u.createdAt, lastLoginAt: u.lastLoginAt,
           );
         }
@@ -257,6 +259,7 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
       fullName: fullName,
       role: (j['role'] ?? 'student').toString(),
       isBlocked: j['is_blocked'] == true,
+      isVerified: j['is_verified'] == true,
       createdAt:
           DateTime.tryParse(j['created_at']?.toString() ?? '') ?? DateTime.now(),
       lastLoginAt: DateTime.tryParse(j['last_login_at']?.toString() ?? ''),

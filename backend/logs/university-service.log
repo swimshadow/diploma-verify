@@ -262,3 +262,5 @@
 2026-04-05 04:15:23.424 | INFO     | routers.universities:upload_diploma:440 - [UPLOAD] Уведомление отправлено
 2026-04-05 04:15:23.443 | INFO     | routers.universities:upload_diploma:453 - [UPLOAD] Аудит записан. Загрузка завершена успешно. diploma_id=7948643b-eb29-4e1f-8310-4851474d29e4
 2026-04-05 05:51:06.965 | INFO     | main:create_tables:83 - University service tables ready
+2026-04-05 06:21:23.293 | INFO     | main:create_tables:83 - University service tables ready
+2026-04-05 06:49:51.361 | INFO     | main:create_tables:83 - University service tables ready

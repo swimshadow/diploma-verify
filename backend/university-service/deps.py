@@ -44,3 +44,15 @@ def require_role(*roles: str) -> Callable:
         return user
 
     return _dep
+
+
+def require_verified_university() -> Callable:
+    async def _dep(user: dict = Depends(require_role("university"))) -> dict:
+        if not user.get("is_verified"):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="University must be verified by admin to perform this action",
+            )
+        return user
+
+    return _dep

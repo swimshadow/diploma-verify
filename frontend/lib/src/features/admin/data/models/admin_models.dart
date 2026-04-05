@@ -6,6 +6,7 @@ class PlatformUser extends Equatable {
   final String fullName;
   final String role;
   final bool isBlocked;
+  final bool isVerified;
   final DateTime createdAt;
   final DateTime? lastLoginAt;
 
@@ -15,12 +16,13 @@ class PlatformUser extends Equatable {
     required this.fullName,
     required this.role,
     this.isBlocked = false,
+    this.isVerified = false,
     required this.createdAt,
     this.lastLoginAt,
   });
 
   @override
-  List<Object?> get props => [id, isBlocked, role];
+  List<Object?> get props => [id, isBlocked, isVerified, role];
 }
 
 enum ModerationStatus { pending, approved, rejected }
