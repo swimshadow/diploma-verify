@@ -1,9 +1,14 @@
+import base64
+import hashlib
 import os
 import uuid
 from datetime import datetime, timedelta
 from typing import Optional
 
 import httpx
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import padding, utils
+from cryptography.exceptions import InvalidSignature
 from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from loguru import logger
 from sqlalchemy.orm import Session
@@ -255,3 +260,71 @@ async def unverify_account(
     acc.is_verified = False
     db.commit()
     return {"account_id": str(acc.id), "is_verified": False}
+
+
+@router.post("/accounts/{account_id}/verify-ecp")
+async def verify_account_ecp(
+    account_id: uuid.UUID,
+    body: dict,
+    db: Session = Depends(get_auth_db),
+    admin: dict = Depends(get_admin_user),
+):
+    """
+    Подтверждение организации с электронной подписью (ЭП).
+    Принимает payload, подпись (base64) и публичный ключ (PEM).
+    Верифицирует подпись RSA-SHA256 и одобряет аккаунт.
+    """
+    payload = body.get("payload")
+    signature_b64 = body.get("signature")
+    public_key_pem = body.get("public_key_pem")
+
+    if not payload or not signature_b64 or not public_key_pem:
+        raise HTTPException(422, "payload, signature and public_key_pem are required")
+
+    # Decode signature
+    try:
+        signature_bytes = base64.b64decode(signature_b64)
+    except Exception:
+        raise HTTPException(422, "Invalid base64 signature")
+
+    # Parse public key
+    try:
+        public_key = serialization.load_pem_public_key(public_key_pem.encode())
+    except Exception as e:
+        raise HTTPException(422, f"Invalid public key: {e}")
+
+    # Verify RSA-SHA256 signature
+    try:
+        public_key.verify(
+            signature_bytes,
+            payload.encode(),
+            padding.PKCS1v15(),
+            hashes.SHA256(),
+        )
+    except InvalidSignature:
+        raise HTTPException(401, "Invalid digital signature")
+    except Exception as e:
+        logger.error(f"Signature verification error: {e}")
+        raise HTTPException(422, f"Signature verification error: {e}")
+
+    # Approve account
+    acc = db.query(Account).filter(Account.id == account_id).first()
+    if not acc:
+        raise HTTPException(404, "Account not found")
+
+    acc.is_verified = True
+    db.commit()
+
+    fingerprint = hashlib.sha256(public_key_pem.encode()).hexdigest()
+    logger.info(
+        f"Account {account_id} verified via ECP by admin {admin.get('account_id')}, "
+        f"key fingerprint: {fingerprint}"
+    )
+
+    return {
+        "account_id": str(acc.id),
+        "is_verified": True,
+        "ecp_verified": True,
+        "key_fingerprint": fingerprint,
+        "signed_payload": payload,
+    }

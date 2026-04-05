@@ -162,3 +162,27 @@
 2026-04-05 07:38:41.214 | INFO     | routers.auth:register:241 - [REGISTER] Регистрация успешна: account_id=b7dd088d-a199-4217-af50-e12d1ec9bf90, role=employer
 2026-04-05 07:38:41.267 | INFO     | routers.auth:login:259 - [LOGIN] Попытка входа: email=st@st.com
 2026-04-05 07:38:41.453 | INFO     | routers.auth:login:305 - [LOGIN] Вход успешен: account_id=b7dd088d-a199-4217-af50-e12d1ec9bf90, role=employer
+2026-04-05 08:15:19.748 | INFO     | routers.auth:login:259 - [LOGIN] Попытка входа: email=dgtu@dgtu.com
+2026-04-05 08:15:19.956 | INFO     | routers.auth:login:305 - [LOGIN] Вход успешен: account_id=82f5d2af-d330-4543-b8ad-17e018bcc9ba, role=university
+2026-04-05 08:18:15.772 | INFO     | routers.auth:login:259 - [LOGIN] Попытка входа: email=dgtu@dgtu.ru
+2026-04-05 08:18:15.968 | INFO     | routers.auth:login:305 - [LOGIN] Вход успешен: account_id=b938abfe-1b35-4a2f-8143-1bbc29683454, role=university
+2026-04-05 08:20:57.655 | INFO     | routers.auth:login:259 - [LOGIN] Попытка входа: email=dgtu@dgtu.ru
+2026-04-05 08:20:57.848 | INFO     | routers.auth:login:305 - [LOGIN] Вход успешен: account_id=b938abfe-1b35-4a2f-8143-1bbc29683454, role=university
+2026-04-05 08:45:28.379 | INFO     | main:create_tables:100 - Auth service tables ready
+2026-04-05 09:08:23.996 | INFO     | routers.auth:register:159 - [REGISTER] Начало регистрации: email=cusnarenkomaron@yande.ru, role=university
+2026-04-05 09:08:24.189 | INFO     | routers.auth:register:241 - [REGISTER] Регистрация успешна: account_id=d9710312-c202-4a58-a4d5-714659426a3b, role=university
+2026-04-05 09:09:36.111 | INFO     | routers.auth:register:159 - [REGISTER] Начало регистрации: email=sobakasutulaa406@gmail.com, role=university
+2026-04-05 09:09:36.320 | INFO     | routers.auth:register:241 - [REGISTER] Регистрация успешна: account_id=07e8289f-b62c-43d0-b624-8d5591f2d041, role=university
+2026-04-05 10:15:25.113 | INFO     | routers.auth:register:159 - [REGISTER] Начало регистрации: email=cusnarenko@gmail.com, role=university
+2026-04-05 10:15:25.410 | INFO     | routers.auth:register:241 - [REGISTER] Регистрация успешна: account_id=12e28fd3-2208-4e0a-90fe-61e7667f2f13, role=university
+2026-04-05 10:15:25.466 | INFO     | routers.auth:login:259 - [LOGIN] Попытка входа: email=cusnarenko@gmail.com
+2026-04-05 10:15:25.781 | INFO     | routers.auth:login:305 - [LOGIN] Вход успешен: account_id=12e28fd3-2208-4e0a-90fe-61e7667f2f13, role=university
+2026-04-05 10:17:27.845 | INFO     | routers.auth:update_profile:475 - [PROFILE] Профиль обновлён: account_id=12e28fd3-2208-4e0a-90fe-61e7667f2f13, role=university
+2026-04-05 10:30:40.563 | INFO     | routers.auth:register:159 - [REGISTER] Начало регистрации: email=cusnarenko@yandex.ru, role=university
+2026-04-05 10:30:40.789 | INFO     | routers.auth:register:241 - [REGISTER] Регистрация успешна: account_id=017b44d4-afe4-484e-bd33-0c7c82d14959, role=university
+2026-04-05 10:31:13.927 | INFO     | routers.auth:login:259 - [LOGIN] Попытка входа: email=cusnarenko@yandex.ru
+2026-04-05 10:31:14.162 | INFO     | routers.auth:login:305 - [LOGIN] Вход успешен: account_id=017b44d4-afe4-484e-bd33-0c7c82d14959, role=university
+2026-04-05 10:31:32.413 | INFO     | routers.auth:register:159 - [REGISTER] Начало регистрации: email=dhtu@dhtu.ru, role=university
+2026-04-05 10:31:32.623 | INFO     | routers.auth:register:241 - [REGISTER] Регистрация успешна: account_id=4b4b7ebb-9e9c-41f7-a4ac-f7221b1bf84e, role=university
+2026-04-05 10:31:32.782 | INFO     | routers.auth:login:259 - [LOGIN] Попытка входа: email=dhtu@dhtu.ru
+2026-04-05 10:31:32.981 | INFO     | routers.auth:login:305 - [LOGIN] Вход успешен: account_id=4b4b7ebb-9e9c-41f7-a4ac-f7221b1bf84e, role=university
