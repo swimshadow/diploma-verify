@@ -37,6 +37,14 @@ class AdminApproveUniversity extends AdminEvent {
   List<Object?> get props => [universityId];
 }
 
+class AdminApproveUniversityWithEcp extends AdminEvent {
+  final String universityId;
+  final String privateKeyPem;
+  const AdminApproveUniversityWithEcp(this.universityId, this.privateKeyPem);
+  @override
+  List<Object?> get props => [universityId, privateKeyPem];
+}
+
 class AdminRejectUniversity extends AdminEvent {
   final String universityId;
   final String comment;

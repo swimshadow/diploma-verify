@@ -89,15 +89,32 @@ class _AppState extends State<App> {
   }
 
   void _loadAllData() {
-    _log.info(_tag, '_loadAllData() → отправка запросов во все BLoCs');
-    _diplomaBloc.add(DiplomaLoadRequested());
-    _chatBloc.add(ChatLoadConversations());
-    _employerBloc.add(EmployerLoadRequested());
-    _employerChatBloc.add(EmployerChatLoadConversations());
-    _universityBloc.add(UniversityLoadRequested());
-    _adminBloc.add(AdminLoadRequested());
+    final authState = _authBloc.state;
+    if (authState is! AuthAuthenticated) return;
+    final role = authState.user.role;
+    _log.info(_tag, '_loadAllData() → отправка запросов для роли: $role');
+
+    // Уведомления — для всех ролей
     _notificationBloc.add(NotificationLoadRequested());
-    _log.info(_tag, '_loadAllData() ← все события отправлены');
+
+    switch (role) {
+      case 'student':
+        _diplomaBloc.add(DiplomaLoadRequested());
+        _chatBloc.add(ChatLoadConversations());
+        break;
+      case 'employer':
+        _employerBloc.add(EmployerLoadRequested());
+        _employerChatBloc.add(EmployerChatLoadConversations());
+        break;
+      case 'university':
+        _universityBloc.add(UniversityLoadRequested());
+        break;
+      case 'admin':
+        _adminBloc.add(AdminLoadRequested());
+        break;
+    }
+
+    _log.info(_tag, '_loadAllData() ← события отправлены');
   }
 
   @override

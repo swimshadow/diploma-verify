@@ -47,6 +47,7 @@ class ModerationUniversity extends Equatable {
   final String contactEmail;
   final ModerationStatus status;
   final String? moderatorComment;
+  final bool ecpVerified;
   final DateTime appliedAt;
 
   const ModerationUniversity({
@@ -56,11 +57,12 @@ class ModerationUniversity extends Equatable {
     required this.contactEmail,
     required this.status,
     this.moderatorComment,
+    this.ecpVerified = false,
     required this.appliedAt,
   });
 
   @override
-  List<Object?> get props => [id, status];
+  List<Object?> get props => [id, status, ecpVerified];
 }
 
 enum AdminDiplomaStatus { verified, rejected, disputed, pendingReview }

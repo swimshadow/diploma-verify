@@ -142,6 +142,21 @@ class AdminRepository {
     _log.info(_tag, 'verifyUniversity() ← OK');
   }
 
+  Future<void> verifyUniversityWithEcp({
+    required String accountId,
+    required String payload,
+    required String signature,
+    required String publicKeyPem,
+  }) async {
+    _log.info(_tag, 'verifyUniversityWithEcp($accountId)');
+    await _dio.post('/api/admin/accounts/$accountId/verify-ecp', data: {
+      'payload': payload,
+      'signature': signature,
+      'public_key_pem': publicKeyPem,
+    });
+    _log.info(_tag, 'verifyUniversityWithEcp() ← OK');
+  }
+
   Future<void> unverifyUniversity(String accountId) async {
     _log.info(_tag, 'unverifyUniversity($accountId)');
     await _dio.post('/api/admin/accounts/$accountId/unverify');

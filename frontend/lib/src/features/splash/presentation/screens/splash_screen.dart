@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../auth/bloc/auth_bloc.dart';
 import '../../../auth/bloc/auth_event.dart';
+import '../../../auth/bloc/auth_state.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -15,7 +16,11 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<AuthBloc>().add(AuthCheckRequested());
+    final authBloc = context.read<AuthBloc>();
+    // Не сбрасывать состояние, если уже идёт login/register
+    if (authBloc.state is! AuthLoading) {
+      authBloc.add(AuthCheckRequested());
+    }
   }
 
   @override

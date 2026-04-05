@@ -1,8 +1,21 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
+
+String _detectOrigin() {
+  if (kIsWeb) {
+    // На web-платформе берём origin из адресной строки браузера,
+    // чтобы работало и с localhost, и с IP в локальной сети.
+    return Uri.base.origin;
+  }
+  // Мобилка → IP сервера в локальной сети
+  const serverIp = String.fromEnvironment('SERVER_IP', defaultValue: '10.71.249.250');
+  return 'http://$serverIp:8000';
+}
+
 class AppConstants {
   AppConstants._();
 
-  static const String apiBaseUrl = 'http://localhost:8000';
-  static const String publicBaseUrl = 'http://localhost:8000';
+  static final String apiBaseUrl = _detectOrigin();
+  static final String publicBaseUrl = _detectOrigin();
   static const String appName = 'DiplomaVerify';
 
   // Auth API

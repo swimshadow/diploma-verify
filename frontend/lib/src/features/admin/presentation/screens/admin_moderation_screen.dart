@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -9,6 +12,7 @@ import '../../data/models/admin_models.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
 import '../../../../shared/widgets/error_state_widget.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../core/crypto/ecp_service.dart';
 
 class AdminModerationScreen extends StatelessWidget {
   const AdminModerationScreen({super.key});
@@ -99,7 +103,42 @@ class AdminModerationScreen extends StatelessWidget {
                                 size: 20,
                               ),
                             ),
-                            title: Text(uni.name),
+                            title: Row(
+                              children: [
+                                Flexible(child: Text(uni.name)),
+                                if (uni.ecpVerified) ...[
+                                  const SizedBox(width: 8),
+                                  Tooltip(
+                                    message: 'Подтверждено электронной подписью',
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: Colors.green.shade50,
+                                        borderRadius: BorderRadius.circular(4),
+                                        border: Border.all(
+                                            color: Colors.green.shade300),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(Icons.verified_user,
+                                              size: 14,
+                                              color: Colors.green.shade700),
+                                          const SizedBox(width: 3),
+                                          Text('ЭП',
+                                              style: TextStyle(
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w600,
+                                                  color:
+                                                      Colors.green.shade700)),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
                             subtitle: Text(
                               '${uni.city} · ${uni.contactEmail}'
                               '${uni.moderatorComment != null ? '\n${uni.moderatorComment}' : ''}',
@@ -183,17 +222,12 @@ class _PendingCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
                 FilledButton.icon(
-                  onPressed: () {
-                    context
-                        .read<AdminBloc>()
-                        .add(AdminApproveUniversity(uni.id));
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text('${uni.name} подтверждён'),
-                      behavior: SnackBarBehavior.floating,
-                    ));
-                  },
-                  icon: const Icon(Icons.check, size: 18),
-                  label: const Text('Подтвердить'),
+                  onPressed: () => _showEcpApprovalDialog(context),
+                  icon: const Icon(Icons.verified_user, size: 18),
+                  label: const Text('Подтвердить с ЭП'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Colors.green.shade700,
+                  ),
                 ),
               ],
             ),
@@ -242,6 +276,287 @@ class _PendingCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  void _showEcpApprovalDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => _EcpApprovalDialog(uni: uni),
+    );
+  }
+}
+
+class _EcpApprovalDialog extends StatefulWidget {
+  final ModerationUniversity uni;
+  const _EcpApprovalDialog({required this.uni});
+
+  @override
+  State<_EcpApprovalDialog> createState() => _EcpApprovalDialogState();
+}
+
+class _EcpApprovalDialogState extends State<_EcpApprovalDialog> {
+  String? _fileName;
+  String? _privateKeyPem;
+  String? _errorMessage;
+  bool _keyValid = false;
+  bool _signing = false;
+  String? _keyInfo;
+
+  Future<void> _pickKeyFile() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pem', 'key', 'txt'],
+      withData: true,
+    );
+    if (result == null || result.files.isEmpty) return;
+
+    final file = result.files.first;
+    if (file.bytes == null) {
+      setState(() {
+        _errorMessage = 'Не удалось прочитать файл';
+        _keyValid = false;
+      });
+      return;
+    }
+
+    final pem = utf8.decode(file.bytes!);
+    setState(() {
+      _fileName = file.name;
+      _privateKeyPem = pem;
+      _errorMessage = null;
+    });
+
+    _validateKey(pem);
+  }
+
+  void _validateKey(String pem) {
+    try {
+      final ecpService = EcpService();
+      final privateKey = ecpService.parsePrivateKeyPem(pem);
+      final bits = privateKey.modulus!.bitLength;
+      setState(() {
+        _keyValid = true;
+        _keyInfo = 'RSA-$bits';
+        _errorMessage = null;
+      });
+    } catch (e) {
+      setState(() {
+        _keyValid = false;
+        _keyInfo = null;
+        _errorMessage = 'Неверный формат ключа: $e';
+      });
+    }
+  }
+
+  void _generateAndUseKey() {
+    setState(() => _signing = true);
+    try {
+      final ecpService = EcpService();
+      final pair = ecpService.generateKeyPair();
+      final pem = ecpService.privateKeyToPem(pair.privateKey);
+      setState(() {
+        _privateKeyPem = pem;
+        _fileName = 'Сгенерированный ключ RSA-2048';
+        _keyValid = true;
+        _keyInfo = 'RSA-2048 (новый)';
+        _errorMessage = null;
+        _signing = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Ошибка генерации ключа: $e';
+        _signing = false;
+      });
+    }
+  }
+
+  void _signAndApprove() {
+    if (_privateKeyPem == null || !_keyValid) return;
+    setState(() => _signing = true);
+
+    context.read<AdminBloc>().add(
+          AdminApproveUniversityWithEcp(widget.uni.id, _privateKeyPem!),
+        );
+
+    Navigator.pop(context);
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Row(
+        children: [
+          const Icon(Icons.verified_user, color: Colors.white, size: 18),
+          const SizedBox(width: 8),
+          Text('${widget.uni.name} подтверждён с ЭП'),
+        ],
+      ),
+      backgroundColor: Colors.green.shade700,
+      behavior: SnackBarBehavior.floating,
+    ));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return AlertDialog(
+      title: Row(
+        children: [
+          Icon(Icons.verified_user, color: Colors.green.shade700),
+          const SizedBox(width: 8),
+          const Expanded(child: Text('Подтверждение с ЭП')),
+        ],
+      ),
+      content: SizedBox(
+        width: 460,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue.shade200),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.account_balance,
+                      color: Colors.blue.shade700, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      widget.uni.name,
+                      style: theme.textTheme.titleSmall
+                          ?.copyWith(fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text('Электронная подпись',
+                style: theme.textTheme.titleSmall
+                    ?.copyWith(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 4),
+            Text(
+              'Загрузите PEM-файл приватного ключа RSA или сгенерируйте новый.',
+              style: theme.textTheme.bodySmall
+                  ?.copyWith(color: Colors.grey.shade600),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _signing ? null : _pickKeyFile,
+                    icon: const Icon(Icons.upload_file, size: 18),
+                    label: const Text('Загрузить ключ'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _signing ? null : _generateAndUseKey,
+                    icon: const Icon(Icons.key, size: 18),
+                    label: const Text('Сгенерировать'),
+                  ),
+                ),
+              ],
+            ),
+            if (_fileName != null) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: _keyValid
+                      ? Colors.green.shade50
+                      : Colors.red.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: _keyValid
+                        ? Colors.green.shade300
+                        : Colors.red.shade300,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      _keyValid ? Icons.check_circle : Icons.error,
+                      color: _keyValid ? Colors.green : Colors.red,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(_fileName!,
+                              style: theme.textTheme.bodySmall
+                                  ?.copyWith(fontWeight: FontWeight.w600)),
+                          if (_keyInfo != null)
+                            Text('Алгоритм: $_keyInfo',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                    color: Colors.grey.shade600,
+                                    fontSize: 11)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            if (_errorMessage != null) ...[
+              const SizedBox(height: 8),
+              Text(_errorMessage!,
+                  style: theme.textTheme.bodySmall
+                      ?.copyWith(color: Colors.red)),
+            ],
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline,
+                      size: 16, color: Colors.grey.shade600),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Подпись подтверждает решение администратора '
+                      'и сохраняется в системе как доказательство.',
+                      style: theme.textTheme.bodySmall
+                          ?.copyWith(color: Colors.grey.shade600, fontSize: 11),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Отмена'),
+        ),
+        FilledButton.icon(
+          onPressed: _keyValid && !_signing ? _signAndApprove : null,
+          icon: _signing
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2, color: Colors.white))
+              : const Icon(Icons.draw, size: 18),
+          label: const Text('Подписать и подтвердить'),
+          style: FilledButton.styleFrom(
+            backgroundColor: Colors.green.shade700,
+          ),
+        ),
+      ],
     );
   }
 }

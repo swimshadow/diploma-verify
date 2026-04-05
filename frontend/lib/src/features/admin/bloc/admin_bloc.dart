@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/crypto/ecp_service.dart';
 import '../../../core/utils/api_error_handler.dart';
 import '../data/admin_repository.dart';
 import '../data/models/admin_models.dart';
@@ -17,6 +18,7 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
     on<AdminUnblockUser>(_onUnblock);
     on<AdminChangeUserRole>(_onChangeRole);
     on<AdminApproveUniversity>(_onApproveUni);
+    on<AdminApproveUniversityWithEcp>(_onApproveUniEcp);
     on<AdminRejectUniversity>(_onRejectUni);
     on<AdminVerifyDiploma>(_onVerifyDiploma);
     on<AdminRejectDiploma>(_onRejectDiploma);
@@ -161,6 +163,47 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
             id: u.id, name: u.name, city: u.city,
             contactEmail: u.contactEmail,
             status: ModerationStatus.approved,
+            appliedAt: u.appliedAt,
+          );
+        }
+        return u;
+      }).toList(),
+      diplomas: current.diplomas,
+      services: current.services,
+      logs: current.logs,
+    ));
+  }
+
+  Future<void> _onApproveUniEcp(AdminApproveUniversityWithEcp event, Emitter<AdminState> emit) async {
+    final current = _loaded;
+    if (current == null) return;
+    try {
+      final ecpService = EcpService();
+      final privateKey = ecpService.parsePrivateKeyPem(event.privateKeyPem);
+      final publicKey = ecpService.extractPublicKey(privateKey);
+      final publicKeyPem = ecpService.publicKeyToPem(publicKey);
+      final payload = ecpService.buildApprovalPayload(event.universityId);
+      final signature = ecpService.sign(payload, privateKey);
+
+      await _repository.verifyUniversityWithEcp(
+        accountId: event.universityId,
+        payload: payload,
+        signature: signature,
+        publicKeyPem: publicKeyPem,
+      );
+    } catch (e) {
+      emit(AdminFailure(ApiErrorHandler.message(e)));
+      return;
+    }
+    emit(AdminLoaded(
+      users: current.users,
+      universities: current.universities.map((u) {
+        if (u.id == event.universityId) {
+          return ModerationUniversity(
+            id: u.id, name: u.name, city: u.city,
+            contactEmail: u.contactEmail,
+            status: ModerationStatus.approved,
+            ecpVerified: true,
             appliedAt: u.appliedAt,
           );
         }
