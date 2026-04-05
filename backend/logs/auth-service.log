@@ -141,3 +141,4 @@
 2026-04-05 06:53:56.316 | INFO     | routers.auth:register:241 - [REGISTER] Регистрация успешна: account_id=dfd66788-ceb0-4a35-ba17-7fb686007ecf, role=employer
 2026-04-05 06:53:56.418 | INFO     | routers.auth:login:259 - [LOGIN] Попытка входа: email=qwerty@qwerty.com
 2026-04-05 06:53:56.625 | INFO     | routers.auth:login:305 - [LOGIN] Вход успешен: account_id=dfd66788-ceb0-4a35-ba17-7fb686007ecf, role=employer
+2026-04-05 07:06:07.551 | INFO     | main:create_tables:100 - Auth service tables ready
