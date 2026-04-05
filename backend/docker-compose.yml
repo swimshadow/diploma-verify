@@ -404,7 +404,7 @@ services:
       - "8000:80"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - ../frontend:/srv:ro
+      - ../frontend/build/web:/srv:ro
       - diploma_uploads:/uploads
     depends_on:
       - docs_service
