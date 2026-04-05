@@ -9,6 +9,7 @@ import '../../bloc/university_state.dart';
 import '../../data/models/registry_diploma_model.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
 import '../../../../shared/widgets/anti_fraud_badge.dart';
+import '../../../../shared/widgets/error_state_widget.dart';
 
 const _tag = 'UniversityDiplomaCardScreen';
 
@@ -26,6 +27,12 @@ class UniversityDiplomaCardScreen extends StatelessWidget {
       title: 'Карточка диплома',
       body: BlocBuilder<UniversityBloc, UniversityState>(
         builder: (context, state) {
+          if (state is UniversityFailure) {
+            return ErrorStateWidget(
+              message: state.message,
+              onRetry: () => context.read<UniversityBloc>().add(UniversityLoadRequested()),
+            );
+          }
           if (state is! UniversityLoaded) {
             return const Center(child: CircularProgressIndicator());
           }

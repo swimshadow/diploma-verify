@@ -240,10 +240,9 @@ class _DetailView extends StatelessWidget {
       case DiplomaStatus.verified:
         return Colors.green;
       case DiplomaStatus.processing:
-      case DiplomaStatus.uploaded:
-      case DiplomaStatus.recognized:
+      case DiplomaStatus.pending:
         return Colors.orange;
-      case DiplomaStatus.rejected:
+      case DiplomaStatus.revoked:
         return Colors.red;
     }
   }

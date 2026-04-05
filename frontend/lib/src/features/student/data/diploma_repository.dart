@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/logging/app_logger.dart';
@@ -47,7 +49,7 @@ class DiplomaRepository {
     try {
       final formData = FormData.fromMap({
         'file': MultipartFile.fromBytes(fileBytes, filename: fileName),
-        'metadata': metadata.toString(),
+        'metadata': jsonEncode(metadata),
       });
       await _dio.post(
         '${AppConstants.universityDiplomasPath}/upload',

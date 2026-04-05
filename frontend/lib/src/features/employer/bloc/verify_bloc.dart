@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/utils/api_error_handler.dart';
 import '../data/models/verification_model.dart';
 import '../data/verify_repository.dart';
 import 'verify_event.dart';
@@ -23,8 +24,8 @@ class VerifyBloc extends Bloc<VerifyEvent, VerifyState> {
     try {
       final data = await _repository.verifyByCertificateId(event.certificateId);
       emit(VerifySuccess(_mapResult(data, VerifyMethod.certificateId)));
-    } catch (_) {
-      emit(const VerifyFailure('Диплом не найден по указанному ID'));
+    } catch (e) {
+      emit(VerifyFailure(ApiErrorHandler.message(e)));
     }
   }
 
@@ -39,8 +40,8 @@ class VerifyBloc extends Bloc<VerifyEvent, VerifyState> {
         issueDate: '',
       );
       emit(VerifySuccess(_mapResult(data, VerifyMethod.fileUpload)));
-    } catch (_) {
-      emit(const VerifyFailure('Не удалось проверить файл'));
+    } catch (e) {
+      emit(VerifyFailure(ApiErrorHandler.message(e)));
     }
   }
 
@@ -49,8 +50,8 @@ class VerifyBloc extends Bloc<VerifyEvent, VerifyState> {
     try {
       final data = await _repository.verifyByQr(event.qrData);
       emit(VerifySuccess(_mapResult(data, VerifyMethod.qr)));
-    } catch (_) {
-      emit(const VerifyFailure('QR-код не распознан'));
+    } catch (e) {
+      emit(VerifyFailure(ApiErrorHandler.message(e)));
     }
   }
 

@@ -6,6 +6,7 @@ import '../../../../core/logging/app_logger.dart';
 import '../../bloc/auth_bloc.dart';
 import '../../bloc/auth_event.dart';
 import '../../bloc/auth_state.dart';
+import '../../../../shared/widgets/app_snack_bar.dart';
 
 const _tag = 'LoginScreen';
 
@@ -61,14 +62,7 @@ class _LoginScreenState extends State<LoginScreen> {
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthFailure) {
-            ScaffoldMessenger.of(context)
-              ..hideCurrentSnackBar()
-              ..showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: theme.colorScheme.error,
-                ),
-              );
+            AppSnackBar.error(context, state.message);
           }
         },
         child: SafeArea(
@@ -105,7 +99,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           if (v == null || v.trim().isEmpty) {
                             return 'Введите email';
                           }
-                          if (!v.contains('@')) return 'Некорректный email';
+                          final email = v.trim();
+                          if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email)) {
+                            return 'Некорректный формат email';
+                          }
                           return null;
                         },
                       ),

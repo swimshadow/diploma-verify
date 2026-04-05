@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/utils/api_error_handler.dart';
 import '../data/models/registry_diploma_model.dart';
 import '../data/models/certificate_model.dart';
 import '../data/university_repository.dart';
@@ -28,12 +29,8 @@ class UniversityBloc extends Bloc<UniversityEvent, UniversityState> {
         certificates: const [],
         importJobs: const [],
       ));
-    } catch (_) {
-      emit(const UniversityLoaded(
-        diplomas: [],
-        certificates: [],
-        importJobs: [],
-      ));
+    } catch (e) {
+      emit(UniversityFailure(ApiErrorHandler.message(e)));
     }
   }
 
@@ -44,8 +41,9 @@ class UniversityBloc extends Bloc<UniversityEvent, UniversityState> {
 
     try {
       await _repository.revokeDiploma(event.diplomaId);
-    } catch (_) {
-      // continue with local update
+    } catch (e) {
+      emit(UniversityFailure(ApiErrorHandler.message(e)));
+      return;
     }
 
     final updated = current.diplomas.map((d) {

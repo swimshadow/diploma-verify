@@ -101,7 +101,7 @@ class AdminRepository {
       final response = await _dio
           .get('/api/admin/logs/verifications', queryParameters: {'page': page});
       final data = response.data as Map<String, dynamic>;
-      final result = (data['items'] as List? ?? []).cast<Map<String, dynamic>>();
+      final result = (data['logs'] as List? ?? []).cast<Map<String, dynamic>>();
       _log.info(_tag, 'fetchVerificationLogs() ← ${result.length} записей');
       return result;
     } catch (e, st) {

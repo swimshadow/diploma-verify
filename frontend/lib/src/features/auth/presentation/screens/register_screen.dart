@@ -6,6 +6,7 @@ import '../../../../core/logging/app_logger.dart';
 import '../../bloc/auth_bloc.dart';
 import '../../bloc/auth_event.dart';
 import '../../bloc/auth_state.dart';
+import '../../../../shared/widgets/app_snack_bar.dart';
 
 const _tag = 'RegisterScreen';
 
@@ -145,14 +146,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             );
             context.go('/login');
           } else if (state is AuthFailure) {
-            ScaffoldMessenger.of(context)
-              ..hideCurrentSnackBar()
-              ..showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: theme.colorScheme.error,
-                ),
-              );
+            AppSnackBar.error(context, state.message);
           }
         },
         child: SafeArea(
@@ -180,7 +174,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           if (v == null || v.trim().isEmpty) {
                             return 'Введите email';
                           }
-                          if (!v.contains('@')) return 'Некорректный email';
+                          final email = v.trim();
+                          if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email)) {
+                            return 'Некорректный формат email';
+                          }
                           return null;
                         },
                       ),
@@ -192,6 +189,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         textInputAction: TextInputAction.next,
                         decoration: InputDecoration(
                           labelText: 'Пароль',
+                          helperText: 'Минимум 6 символов',
                           prefixIcon: const Icon(Icons.lock_outlined),
                           suffixIcon: IconButton(
                             icon: Icon(_obscurePassword
@@ -306,9 +304,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
             decoration: const InputDecoration(
               labelText: 'ИНН',
               prefixIcon: Icon(Icons.numbers),
+              helperText: '10 или 12 цифр',
             ),
-            validator: (v) =>
-                (v == null || v.trim().isEmpty) ? 'Обязательное поле' : null,
+            validator: (v) {
+              if (v == null || v.trim().isEmpty) return 'Обязательное поле';
+              final digits = v.trim();
+              if (!RegExp(r'^\d{10}$|^\d{12}$').hasMatch(digits)) {
+                return 'ИНН должен содержать 10 или 12 цифр';
+              }
+              return null;
+            },
           ),
           const SizedBox(height: 16),
           TextFormField(
@@ -318,9 +323,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
             decoration: const InputDecoration(
               labelText: 'ОГРН',
               prefixIcon: Icon(Icons.numbers),
+              helperText: '13 цифр',
             ),
-            validator: (v) =>
-                (v == null || v.trim().isEmpty) ? 'Обязательное поле' : null,
+            validator: (v) {
+              if (v == null || v.trim().isEmpty) return 'Обязательное поле';
+              if (!RegExp(r'^\d{13}$').hasMatch(v.trim())) {
+                return 'ОГРН должен содержать 13 цифр';
+              }
+              return null;
+            },
           ),
         ];
       case 'student':
@@ -331,9 +342,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
             decoration: const InputDecoration(
               labelText: 'ФИО',
               prefixIcon: Icon(Icons.person_outlined),
+              helperText: 'Фамилия Имя Отчество',
             ),
-            validator: (v) =>
-                (v == null || v.trim().isEmpty) ? 'Обязательное поле' : null,
+            validator: (v) {
+              if (v == null || v.trim().isEmpty) return 'Обязательное поле';
+              if (v.trim().split(' ').where((w) => w.isNotEmpty).length < 2) {
+                return 'Введите фамилию и имя';
+              }
+              return null;
+            },
           ),
           const SizedBox(height: 16),
           TextFormField(
@@ -369,9 +386,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
             decoration: const InputDecoration(
               labelText: 'ИНН компании',
               prefixIcon: Icon(Icons.numbers),
+              helperText: '10 или 12 цифр',
             ),
-            validator: (v) =>
-                (v == null || v.trim().isEmpty) ? 'Обязательное поле' : null,
+            validator: (v) {
+              if (v == null || v.trim().isEmpty) return 'Обязательное поле';
+              final digits = v.trim();
+              if (!RegExp(r'^\d{10}$|^\d{12}$').hasMatch(digits)) {
+                return 'ИНН должен содержать 10 или 12 цифр';
+              }
+              return null;
+            },
           ),
         ];
       default:

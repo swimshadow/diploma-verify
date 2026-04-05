@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/utils/api_error_handler.dart';
 import '../data/admin_repository.dart';
 import '../data/models/admin_models.dart';
 import 'admin_event.dart';
@@ -55,7 +56,7 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
         logs: logs,
       ));
     } catch (e) {
-      emit(AdminFailure(e.toString()));
+      emit(AdminFailure(ApiErrorHandler.message(e)));
     }
   }
 
@@ -70,7 +71,10 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
     if (current == null) return;
     try {
       await _repository.blockUser(event.userId);
-    } catch (_) {}
+    } catch (e) {
+      emit(AdminFailure(ApiErrorHandler.message(e)));
+      return;
+    }
     emit(AdminLoaded(
       users: current.users.map((u) {
         if (u.id == event.userId) {
@@ -95,7 +99,10 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
     if (current == null) return;
     try {
       await _repository.unblockUser(event.userId);
-    } catch (_) {}
+    } catch (e) {
+      emit(AdminFailure(ApiErrorHandler.message(e)));
+      return;
+    }
     emit(AdminLoaded(
       users: current.users.map((u) {
         if (u.id == event.userId) {
@@ -140,7 +147,10 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
     if (current == null) return;
     try {
       await _repository.verifyUniversity(event.universityId);
-    } catch (_) {}
+    } catch (e) {
+      emit(AdminFailure(ApiErrorHandler.message(e)));
+      return;
+    }
     emit(AdminLoaded(
       users: current.users,
       universities: current.universities.map((u) {
@@ -165,7 +175,10 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
     if (current == null) return;
     try {
       await _repository.unverifyUniversity(event.universityId);
-    } catch (_) {}
+    } catch (e) {
+      emit(AdminFailure(ApiErrorHandler.message(e)));
+      return;
+    }
     emit(AdminLoaded(
       users: current.users,
       universities: current.universities.map((u) {
@@ -295,6 +308,8 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
       case 'unblock':
         return LogAction.unblock;
       case 'diploma_review':
+      case 'DIPLOMA_FORCE_VERIFIED':
+      case 'DIPLOMA_FORCE_REVOKED':
         return LogAction.diplomaReview;
       case 'moderation_decision':
       case 'moderation':

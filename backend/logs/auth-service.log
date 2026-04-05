@@ -121,3 +121,15 @@
 2026-04-05 04:12:16.590 | INFO     | routers.auth:login:305 - [LOGIN] Вход успешен: account_id=b938abfe-1b35-4a2f-8143-1bbc29683454, role=university
 2026-04-05 04:14:06.096 | INFO     | routers.auth:login:259 - [LOGIN] Попытка входа: email=admin@example.com
 2026-04-05 04:14:06.296 | INFO     | routers.auth:login:305 - [LOGIN] Вход успешен: account_id=c4dddccb-c493-4a31-8729-214917456e2f, role=admin
+2026-04-05 05:50:45.925 | INFO     | main:create_tables:100 - Auth service tables ready
+2026-04-05 05:51:06.450 | INFO     | main:create_tables:100 - Auth service tables ready
+2026-04-05 05:53:39.025 | INFO     | routers.auth:register:159 - [REGISTER] Начало регистрации: email=dgtu@dgtu.ru, role=university
+2026-04-05 05:53:39.037 | WARNING  | routers.auth:register:161 - [REGISTER] Email уже зарегистрирован: dgtu@dgtu.ru
+2026-04-05 05:53:49.409 | INFO     | routers.auth:login:259 - [LOGIN] Попытка входа: email=dgtu@dgtu.ru
+2026-04-05 05:53:50.301 | INFO     | routers.auth:login:305 - [LOGIN] Вход успешен: account_id=b938abfe-1b35-4a2f-8143-1bbc29683454, role=university
+2026-04-05 05:56:42.659 | INFO     | routers.auth:register:159 - [REGISTER] Начало регистрации: email=pisa@pisa.com, role=university
+2026-04-05 05:56:42.859 | INFO     | routers.auth:register:241 - [REGISTER] Регистрация успешна: account_id=46d2e4a2-2932-4e90-ba64-94321a4ace41, role=university
+2026-04-05 05:56:42.930 | INFO     | routers.auth:login:259 - [LOGIN] Попытка входа: email=pisa@pisa.com
+2026-04-05 05:56:43.117 | INFO     | routers.auth:login:305 - [LOGIN] Вход успешен: account_id=46d2e4a2-2932-4e90-ba64-94321a4ace41, role=university
+2026-04-05 05:58:03.970 | INFO     | routers.auth:login:259 - [LOGIN] Попытка входа: email=admin@example.com
+2026-04-05 05:58:04.172 | INFO     | routers.auth:login:305 - [LOGIN] Вход успешен: account_id=c4dddccb-c493-4a31-8729-214917456e2f, role=admin

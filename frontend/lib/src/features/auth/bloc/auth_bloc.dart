@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/logging/app_logger.dart';
+import '../../../core/utils/api_error_handler.dart';
 import '../data/auth_repository.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
@@ -53,13 +54,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       _log.info(_tag, '_onLoginRequested → AuthAuthenticated: role=${fullUser.role}');
       emit(AuthAuthenticated(fullUser));
     } on DioException catch (e) {
-      final msg = _extractError(e);
+      final msg = ApiErrorHandler.message(e);
       _log.error(_tag, '_onLoginRequested ОШИБКА: $msg', e);
       emit(AuthFailure(msg));
       emit(AuthUnauthenticated());
     } catch (e, st) {
       _log.error(_tag, '_onLoginRequested ОШИБКА (неожиданная)', e, st);
-      emit(AuthFailure(e.toString()));
+      emit(AuthFailure(ApiErrorHandler.message(e)));
       emit(AuthUnauthenticated());
     }
   }
@@ -81,12 +82,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       _log.info(_tag, '_onRegisterRequested → AuthAuthenticated: role=${user.role}');
       emit(AuthAuthenticated(user));
     } on DioException catch (e) {
-      final msg = _extractError(e);
+      final msg = ApiErrorHandler.message(e);
       _log.error(_tag, '_onRegisterRequested ОШИБКА: $msg', e);
       emit(AuthFailure(msg));
     } catch (e, st) {
       _log.error(_tag, '_onRegisterRequested ОШИБКА (неожиданная)', e, st);
-      emit(AuthFailure(e.toString()));
+      emit(AuthFailure(ApiErrorHandler.message(e)));
     }
   }
 
@@ -96,26 +97,5 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     await _repository.logout();
     _log.info(_tag, '_onLogoutRequested → AuthUnauthenticated');
     emit(AuthUnauthenticated());
-  }
-
-  String _extractError(DioException e) {
-    final data = e.response?.data;
-    if (data is Map<String, dynamic> && data.containsKey('detail')) {
-      final detail = data['detail'];
-      if (detail is String) return detail;
-      if (detail is List && detail.isNotEmpty) {
-        return detail.map((d) => d['msg'] ?? d.toString()).join('; ');
-      }
-      return detail.toString();
-    }
-    final statusCode = e.response?.statusCode;
-    if (statusCode == 409) {
-      return 'Этот email уже зарегистрирован';
-    }
-    if (e.type == DioExceptionType.connectionTimeout ||
-        e.type == DioExceptionType.receiveTimeout) {
-      return 'Сервер не отвечает. Проверьте подключение.';
-    }
-    return 'Произошла ошибка. Попробуйте снова.';
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/utils/api_error_handler.dart';
 import '../data/employer_repository.dart';
 import '../data/models/verification_model.dart';
 import 'employer_event.dart';
@@ -24,11 +25,8 @@ class EmployerBloc extends Bloc<EmployerEvent, EmployerState> {
         employees: const [],
         history: history,
       ));
-    } catch (_) {
-      emit(const EmployerLoaded(
-        employees: [],
-        history: [],
-      ));
+    } catch (e) {
+      emit(EmployerFailure(ApiErrorHandler.message(e)));
     }
   }
 
@@ -36,6 +34,8 @@ class EmployerBloc extends Bloc<EmployerEvent, EmployerState> {
     switch (s) {
       case 'qr':
         return VerifyMethod.qr;
+      case 'manual':
+        return VerifyMethod.certificateId;
       case 'file':
       case 'file_upload':
         return VerifyMethod.fileUpload;

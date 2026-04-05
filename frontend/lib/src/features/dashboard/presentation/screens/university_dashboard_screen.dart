@@ -3,9 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../university/bloc/university_bloc.dart';
+import '../../../university/bloc/university_event.dart';
 import '../../../university/bloc/university_state.dart';
 import '../../../university/data/models/import_model.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
+import '../../../../shared/widgets/error_state_widget.dart';
 
 class UniversityDashboardScreen extends StatelessWidget {
   const UniversityDashboardScreen({super.key});
@@ -21,6 +23,12 @@ class UniversityDashboardScreen extends StatelessWidget {
           }
           if (state is UniversityLoaded) {
             return _DashboardBody(state: state);
+          }
+          if (state is UniversityFailure) {
+            return ErrorStateWidget(
+              message: state.message,
+              onRetry: () => context.read<UniversityBloc>().add(UniversityLoadRequested()),
+            );
           }
           return const SizedBox.shrink();
         },

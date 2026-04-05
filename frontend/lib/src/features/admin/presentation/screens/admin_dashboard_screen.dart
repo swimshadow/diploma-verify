@@ -3,9 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../bloc/admin_bloc.dart';
+import '../../bloc/admin_event.dart';
 import '../../bloc/admin_state.dart';
 import '../../data/models/admin_models.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
+import '../../../../shared/widgets/error_state_widget.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
   const AdminDashboardScreen({super.key});
@@ -21,6 +23,12 @@ class AdminDashboardScreen extends StatelessWidget {
           }
           if (state is AdminLoaded) {
             return _Body(state: state);
+          }
+          if (state is AdminFailure) {
+            return ErrorStateWidget(
+              message: state.message,
+              onRetry: () => context.read<AdminBloc>().add(AdminLoadRequested()),
+            );
           }
           return const SizedBox.shrink();
         },

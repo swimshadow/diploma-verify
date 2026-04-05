@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/utils/api_error_handler.dart';
 import '../data/models/import_model.dart';
 import '../data/university_repository.dart';
 import 'import_event.dart';
@@ -60,6 +61,7 @@ class ImportBloc extends Bloc<ImportEvent, ImportState> {
         completedAt: DateTime.now(),
       );
       emit(ImportCompleted(failed));
+      emit(ImportFailed(ApiErrorHandler.message(e)));
     }
   }
 }

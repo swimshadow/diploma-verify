@@ -43,29 +43,28 @@ class _DiplomaComparisonScreenState extends State<DiplomaComparisonScreen> {
         data: formData,
         options: Options(contentType: 'multipart/form-data'),
       );
-      final fileId = uploadResp.data['id']?.toString() ?? '';
+      final fileId = uploadResp.data['file_id']?.toString() ?? '';
 
-      // 2. Trigger AI extraction
+      // 2. Trigger AI extraction (asynchronous — result is sent to university-service)
       await dio.post(AppConstants.aiExtractPath, data: {
         'file_id': fileId,
         'diploma_id': fileId,
       });
 
-      // 3. Wait briefly for result
-      await Future.delayed(const Duration(seconds: 3));
+      // 3. AI processes asynchronously; show placeholder result
       if (!mounted) return;
 
       setState(() {
         _processing = false;
         _ocrResult = _OcrResult(
-          fullName: uploadResp.data['full_name']?.toString() ?? 'Распознавание...',
-          university: uploadResp.data['university']?.toString() ?? '',
-          speciality: uploadResp.data['specialization']?.toString() ?? '',
-          diplomaNumber: uploadResp.data['diploma_number']?.toString() ?? '',
-          issueDate: uploadResp.data['issue_date']?.toString() ?? '',
-          educationLevel: uploadResp.data['degree']?.toString() ?? '',
-          confidence: (uploadResp.data['confidence'] as num?)?.toDouble() ?? 0.0,
-          mismatches: const [],
+          fullName: 'Распознавание запущено...',
+          university: 'Ожидание результата AI',
+          speciality: '',
+          diplomaNumber: '',
+          issueDate: '',
+          educationLevel: '',
+          confidence: 0.0,
+          mismatches: const ['Результат AI-распознавания появится в реестре дипломов'],
         );
       });
     } catch (e) {

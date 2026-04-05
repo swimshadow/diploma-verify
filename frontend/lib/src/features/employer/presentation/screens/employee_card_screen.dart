@@ -194,10 +194,9 @@ class _CardView extends StatelessWidget {
       case DiplomaStatus.verified:
         return Colors.green;
       case DiplomaStatus.processing:
-      case DiplomaStatus.uploaded:
-      case DiplomaStatus.recognized:
+      case DiplomaStatus.pending:
         return Colors.orange;
-      case DiplomaStatus.rejected:
+      case DiplomaStatus.revoked:
         return Colors.red;
     }
   }
@@ -208,11 +207,9 @@ class _CardView extends StatelessWidget {
         return Icons.verified;
       case DiplomaStatus.processing:
         return Icons.hourglass_top;
-      case DiplomaStatus.uploaded:
+      case DiplomaStatus.pending:
         return Icons.cloud_upload;
-      case DiplomaStatus.recognized:
-        return Icons.auto_awesome;
-      case DiplomaStatus.rejected:
+      case DiplomaStatus.revoked:
         return Icons.cancel;
     }
   }

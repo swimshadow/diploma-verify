@@ -3,9 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../bloc/admin_bloc.dart';
+import '../../bloc/admin_event.dart';
 import '../../bloc/admin_state.dart';
 import '../../data/models/admin_models.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
+import '../../../../shared/widgets/error_state_widget.dart';
 
 class AdminDiplomasScreen extends StatefulWidget {
   const AdminDiplomasScreen({super.key});
@@ -26,6 +28,12 @@ class _AdminDiplomasScreenState extends State<AdminDiplomasScreen> {
       title: 'Реестр дипломов (админ)',
       body: BlocBuilder<AdminBloc, AdminState>(
         builder: (context, state) {
+          if (state is AdminFailure) {
+            return ErrorStateWidget(
+              message: state.message,
+              onRetry: () => context.read<AdminBloc>().add(AdminLoadRequested()),
+            );
+          }
           if (state is! AdminLoaded) {
             return const Center(child: CircularProgressIndicator());
           }

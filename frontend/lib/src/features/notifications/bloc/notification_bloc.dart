@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/utils/api_error_handler.dart';
 import '../data/models/notification_model.dart';
 import '../data/notification_repository.dart';
 import 'notification_event_state.dart';
@@ -21,8 +22,8 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
       final raw = await _repository.fetchNotifications();
       final items = raw.map(_mapNotification).toList();
       emit(NotificationLoaded(items));
-    } catch (_) {
-      emit(const NotificationLoaded([]));
+    } catch (e) {
+      emit(NotificationFailure(ApiErrorHandler.message(e)));
     }
   }
 

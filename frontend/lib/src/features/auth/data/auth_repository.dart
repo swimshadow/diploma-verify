@@ -64,7 +64,7 @@ class AuthRepository {
     }
   }
 
-  Future<void> register({
+  Future<AuthUser> register({
     required String email,
     required String password,
     required String role,
@@ -72,7 +72,7 @@ class AuthRepository {
   }) async {
     _log.info(_tag, 'register() → POST ${AppConstants.registerPath} email=$email role=$role');
     try {
-      await _dio.post(
+      final response = await _dio.post(
         AppConstants.registerPath,
         data: {
           'email': email,
@@ -81,7 +81,18 @@ class AuthRepository {
           'profile': profile,
         },
       );
+      final data = response.data as Map<String, dynamic>;
       _log.info(_tag, 'register() ← OK');
+      await _tokenStorage.saveTokens(
+        accessToken: data['access_token'] as String,
+        refreshToken: data['refresh_token'] as String,
+      );
+      return AuthUser(
+        accountId: (data['account_id'] ?? '').toString(),
+        email: email,
+        role: data['role'] as String,
+        profile: {},
+      );
     } catch (e, st) {
       _log.error(_tag, 'register() ОШИБКА', e, st);
       rethrow;

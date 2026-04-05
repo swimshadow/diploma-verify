@@ -7,6 +7,7 @@ import '../../bloc/notification_bloc.dart';
 import '../../bloc/notification_event_state.dart';
 import '../../data/models/notification_model.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
+import '../../../../shared/widgets/error_state_widget.dart';
 
 class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({super.key});
@@ -19,6 +20,12 @@ class NotificationsScreen extends StatelessWidget {
       title: 'Уведомления',
       body: BlocBuilder<NotificationBloc, NotificationState>(
         builder: (context, state) {
+          if (state is NotificationFailure) {
+            return ErrorStateWidget(
+              message: state.message,
+              onRetry: () => context.read<NotificationBloc>().add(NotificationLoadRequested()),
+            );
+          }
           if (state is! NotificationLoaded) {
             return const Center(child: CircularProgressIndicator());
           }

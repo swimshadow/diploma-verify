@@ -3,9 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 import '../../bloc/employer_bloc.dart';
+import '../../bloc/employer_event.dart';
 import '../../bloc/employer_state.dart';
 import '../../data/models/verification_model.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
+import '../../../../shared/widgets/error_state_widget.dart';
 
 class VerificationHistoryScreen extends StatelessWidget {
   const VerificationHistoryScreen({super.key});
@@ -16,6 +18,12 @@ class VerificationHistoryScreen extends StatelessWidget {
       title: 'История проверок',
       body: BlocBuilder<EmployerBloc, EmployerState>(
         builder: (context, state) {
+          if (state is EmployerFailure) {
+            return ErrorStateWidget(
+              message: state.message,
+              onRetry: () => context.read<EmployerBloc>().add(EmployerLoadRequested()),
+            );
+          }
           if (state is! EmployerLoaded) {
             return const Center(child: CircularProgressIndicator());
           }

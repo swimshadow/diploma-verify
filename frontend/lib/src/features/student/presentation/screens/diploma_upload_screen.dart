@@ -9,6 +9,7 @@ import '../../bloc/diploma_bloc.dart';
 import '../../bloc/diploma_event.dart';
 import '../../bloc/diploma_state.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
+import '../../../../shared/widgets/app_snack_bar.dart';
 
 class DiplomaUploadScreen extends StatefulWidget {
   const DiplomaUploadScreen({super.key});
@@ -48,14 +49,15 @@ class _DiplomaUploadScreenState extends State<DiplomaUploadScreen> {
         _log.info(_tag, 'Файл выбран: ${file.name} (${file.size} байт)');
         if (file.bytes == null || file.bytes!.isEmpty) {
           _log.error(_tag, 'Файл не содержит данных (bytes == null)');
+          if (mounted) {
+            AppSnackBar.error(context, 'Не удалось прочитать файл. Попробуйте другой.');
+          }
           return;
         }
         if (file.size > 10 * 1024 * 1024) {
           _log.warning(_tag, 'Файл слишком большой: ${file.size} байт');
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Файл слишком большой (макс. 10 МБ)')),
-            );
+            AppSnackBar.warning(context, 'Файл слишком большой (макс. 10 МБ)');
           }
           return;
         }
@@ -94,17 +96,10 @@ class _DiplomaUploadScreenState extends State<DiplomaUploadScreen> {
       body: BlocListener<DiplomaBloc, DiplomaState>(
         listener: (context, state) {
           if (state is DiplomaUploadSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Диплом успешно загружен!')),
-            );
+            AppSnackBar.success(context, 'Диплом успешно загружен!');
             Navigator.of(context).pop();
           } else if (state is DiplomaFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: theme.colorScheme.error,
-              ),
-            );
+            AppSnackBar.error(context, state.message);
           }
         },
         child: SingleChildScrollView(

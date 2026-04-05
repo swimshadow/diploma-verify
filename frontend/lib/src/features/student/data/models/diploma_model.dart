@@ -1,31 +1,28 @@
 import 'package:equatable/equatable.dart';
 
 enum DiplomaStatus {
-  uploaded,
+  pending,
   processing,
-  recognized,
   verified,
-  rejected,
+  revoked,
 }
 
 extension DiplomaStatusX on DiplomaStatus {
   String get label {
     switch (this) {
-      case DiplomaStatus.uploaded:
-        return 'Загружен';
+      case DiplomaStatus.pending:
+        return 'Ожидает проверки';
       case DiplomaStatus.processing:
         return 'В обработке';
-      case DiplomaStatus.recognized:
-        return 'Распознан';
       case DiplomaStatus.verified:
         return 'Подтверждён';
-      case DiplomaStatus.rejected:
-        return 'Отклонён';
+      case DiplomaStatus.revoked:
+        return 'Отозван';
     }
   }
 
   bool get isFinal =>
-      this == DiplomaStatus.verified || this == DiplomaStatus.rejected;
+      this == DiplomaStatus.verified || this == DiplomaStatus.revoked;
 }
 
 class VerificationStep extends Equatable {

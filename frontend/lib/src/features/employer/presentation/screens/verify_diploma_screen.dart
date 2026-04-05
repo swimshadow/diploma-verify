@@ -7,6 +7,7 @@ import '../../bloc/verify_bloc.dart';
 import '../../bloc/verify_event.dart';
 import '../../bloc/verify_state.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
+import '../../../../shared/widgets/app_snack_bar.dart';
 
 class VerifyDiplomaScreen extends StatefulWidget {
   const VerifyDiplomaScreen({super.key});
@@ -18,6 +19,7 @@ class VerifyDiplomaScreen extends StatefulWidget {
 class _VerifyDiplomaScreenState extends State<VerifyDiplomaScreen> {
   final _certIdController = TextEditingController();
   String? _selectedFileName;
+  String? _certIdError;
 
   @override
   void dispose() {
@@ -34,9 +36,7 @@ class _VerifyDiplomaScreenState extends State<VerifyDiplomaScreen> {
         if (state is VerifySuccess) {
           context.push('/employer/verify-result/${state.result.id}');
         } else if (state is VerifyFailure) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message)),
-          );
+          AppSnackBar.error(context, state.message);
         }
       },
       child: DashboardScaffold(
@@ -76,11 +76,17 @@ class _VerifyDiplomaScreenState extends State<VerifyDiplomaScreen> {
                           children: [
                             TextField(
                               controller: _certIdController,
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 hintText: 'Введите Certificate ID',
-                                prefixIcon: Icon(Icons.tag),
+                                prefixIcon: const Icon(Icons.tag),
+                                errorText: _certIdError,
                               ),
                               enabled: !isLoading,
+                              onChanged: (_) {
+                                if (_certIdError != null) {
+                                  setState(() => _certIdError = null);
+                                }
+                              },
                             ),
                             const SizedBox(height: 12),
                             SizedBox(
@@ -91,7 +97,10 @@ class _VerifyDiplomaScreenState extends State<VerifyDiplomaScreen> {
                                     : () {
                                         final id =
                                             _certIdController.text.trim();
-                                        if (id.isEmpty) return;
+                                        if (id.isEmpty) {
+                                          setState(() => _certIdError = 'Введите ID сертификата');
+                                          return;
+                                        }
                                         context
                                             .read<VerifyBloc>()
                                             .add(VerifyByCertificateId(id));

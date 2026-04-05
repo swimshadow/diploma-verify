@@ -3,9 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../employer/bloc/employer_bloc.dart';
+import '../../../employer/bloc/employer_event.dart';
 import '../../../employer/bloc/employer_state.dart';
 import '../../../employer/data/models/verification_model.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
+import '../../../../shared/widgets/error_state_widget.dart';
 
 class EmployerDashboardScreen extends StatelessWidget {
   const EmployerDashboardScreen({super.key});
@@ -21,6 +23,12 @@ class EmployerDashboardScreen extends StatelessWidget {
           }
           if (state is EmployerLoaded) {
             return _DashboardBody(state: state);
+          }
+          if (state is EmployerFailure) {
+            return ErrorStateWidget(
+              message: state.message,
+              onRetry: () => context.read<EmployerBloc>().add(EmployerLoadRequested()),
+            );
           }
           return const SizedBox.shrink();
         },

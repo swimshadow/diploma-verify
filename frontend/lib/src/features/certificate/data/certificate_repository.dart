@@ -11,12 +11,18 @@ class CertificateRepository {
     _log.info(_tag, 'CertificateRepository создан');
   }
 
-  Future<Map<String, dynamic>> generate(String diplomaId) async {
+  Future<Map<String, dynamic>> generate(
+    String diplomaId, {
+    required Map<String, dynamic> diplomaData,
+  }) async {
     _log.info(_tag, 'generate($diplomaId)');
     try {
       final response = await _dio.post(
         '${AppConstants.certificatesPath}/generate',
-        data: {'diploma_id': diplomaId},
+        data: {
+          'diploma_id': diplomaId,
+          'diploma_data': diplomaData,
+        },
       );
       _log.info(_tag, 'generate() ← OK');
       return response.data as Map<String, dynamic>;

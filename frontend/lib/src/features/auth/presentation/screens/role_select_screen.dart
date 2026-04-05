@@ -109,7 +109,7 @@ class _RoleCard extends StatelessWidget {
                 ),
               ),
               Icon(Icons.chevron_right,
-                  color: theme.colorScheme.onSurfaceVariant),
+                  color: Colors.white),
             ],
           ),
         ),

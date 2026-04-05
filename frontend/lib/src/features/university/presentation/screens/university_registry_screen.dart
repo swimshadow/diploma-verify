@@ -4,9 +4,11 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/logging/app_logger.dart';
 import '../../bloc/university_bloc.dart';
+import '../../bloc/university_event.dart';
 import '../../bloc/university_state.dart';
 import '../../data/models/registry_diploma_model.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
+import '../../../../shared/widgets/error_state_widget.dart';
 
 const _tag = 'UniversityRegistryScreen';
 
@@ -31,6 +33,12 @@ class _UniversityRegistryScreenState extends State<UniversityRegistryScreen> {
       title: 'Реестр дипломов',
       body: BlocBuilder<UniversityBloc, UniversityState>(
         builder: (context, state) {
+          if (state is UniversityFailure) {
+            return ErrorStateWidget(
+              message: state.message,
+              onRetry: () => context.read<UniversityBloc>().add(UniversityLoadRequested()),
+            );
+          }
           if (state is! UniversityLoaded) {
             return const Center(child: CircularProgressIndicator());
           }

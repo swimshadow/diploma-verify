@@ -7,6 +7,7 @@ import '../../bloc/admin_event.dart';
 import '../../bloc/admin_state.dart';
 import '../../data/models/admin_models.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
+import '../../../../shared/widgets/error_state_widget.dart';
 
 class AdminModerationScreen extends StatelessWidget {
   const AdminModerationScreen({super.key});
@@ -20,6 +21,12 @@ class AdminModerationScreen extends StatelessWidget {
       title: 'Модерация вузов',
       body: BlocBuilder<AdminBloc, AdminState>(
         builder: (context, state) {
+          if (state is AdminFailure) {
+            return ErrorStateWidget(
+              message: state.message,
+              onRetry: () => context.read<AdminBloc>().add(AdminLoadRequested()),
+            );
+          }
           if (state is! AdminLoaded) {
             return const Center(child: CircularProgressIndicator());
           }

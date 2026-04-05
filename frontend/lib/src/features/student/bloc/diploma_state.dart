@@ -28,7 +28,7 @@ class DiplomaLoaded extends DiplomaState {
   int get processingCount =>
       allDiplomas.where((d) => d.status == DiplomaStatus.processing).length;
   int get rejectedCount =>
-      allDiplomas.where((d) => d.status == DiplomaStatus.rejected).length;
+      allDiplomas.where((d) => d.status == DiplomaStatus.revoked).length;
 
   @override
   List<Object?> get props => [allDiplomas, filteredDiplomas, activeFilter];

@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/logging/app_logger.dart';
+import '../../../core/utils/api_error_handler.dart';
 import '../data/diploma_repository.dart';
 import '../data/models/diploma_model.dart';
 import 'diploma_event.dart';
@@ -34,6 +35,7 @@ class DiplomaBloc extends Bloc<DiplomaEvent, DiplomaState> {
     } catch (e, st) {
       _log.error(_tag, '_onLoad ОШИБКА', e, st);
       _diplomas = [];
+      emit(DiplomaFailure(ApiErrorHandler.message(e)));
     }
     emit(DiplomaLoaded(
       allDiplomas: _diplomas,
@@ -68,6 +70,8 @@ class DiplomaBloc extends Bloc<DiplomaEvent, DiplomaState> {
       _log.info(_tag, '_onUpload ← загрузка на сервер OK');
     } catch (e, st) {
       _log.error(_tag, '_onUpload ОШИБКА при загрузке', e, st);
+      emit(DiplomaFailure(ApiErrorHandler.message(e)));
+      return;
     }
 
     final newDiploma = Diploma(
@@ -77,7 +81,7 @@ class DiplomaBloc extends Bloc<DiplomaEvent, DiplomaState> {
       speciality: '—',
       diplomaNumber: '—',
       issueDate: DateTime.now(),
-      status: DiplomaStatus.uploaded,
+      status: DiplomaStatus.pending,
       trustScore: 0.0,
       createdAt: DateTime.now(),
       timeline: [
@@ -106,14 +110,12 @@ class DiplomaBloc extends Bloc<DiplomaEvent, DiplomaState> {
     switch (s) {
       case 'verified':
         return DiplomaStatus.verified;
+      case 'revoked':
+        return DiplomaStatus.revoked;
       case 'processing':
         return DiplomaStatus.processing;
-      case 'recognized':
-        return DiplomaStatus.recognized;
-      case 'rejected':
-        return DiplomaStatus.rejected;
       default:
-        return DiplomaStatus.uploaded;
+        return DiplomaStatus.pending;
     }
   }
 

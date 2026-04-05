@@ -3,9 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../student/bloc/diploma_bloc.dart';
+import '../../../student/bloc/diploma_event.dart';
 import '../../../student/bloc/diploma_state.dart';
 import '../../../student/data/models/diploma_model.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
+import '../../../../shared/widgets/error_state_widget.dart';
 
 class StudentDashboardScreen extends StatelessWidget {
   const StudentDashboardScreen({super.key});
@@ -21,6 +23,12 @@ class StudentDashboardScreen extends StatelessWidget {
           }
           if (state is DiplomaLoaded) {
             return _DashboardBody(state: state);
+          }
+          if (state is DiplomaFailure) {
+            return ErrorStateWidget(
+              message: state.message,
+              onRetry: () => context.read<DiplomaBloc>().add(DiplomaLoadRequested()),
+            );
           }
           return const SizedBox.shrink();
         },
@@ -182,10 +190,9 @@ class _DashboardBody extends StatelessWidget {
       case DiplomaStatus.verified:
         return Colors.green;
       case DiplomaStatus.processing:
-      case DiplomaStatus.uploaded:
-      case DiplomaStatus.recognized:
+      case DiplomaStatus.pending:
         return Colors.orange;
-      case DiplomaStatus.rejected:
+      case DiplomaStatus.revoked:
         return Colors.red;
     }
   }
@@ -196,11 +203,9 @@ class _DashboardBody extends StatelessWidget {
         return Icons.verified;
       case DiplomaStatus.processing:
         return Icons.hourglass_top;
-      case DiplomaStatus.uploaded:
+      case DiplomaStatus.pending:
         return Icons.cloud_upload;
-      case DiplomaStatus.recognized:
-        return Icons.auto_awesome;
-      case DiplomaStatus.rejected:
+      case DiplomaStatus.revoked:
         return Icons.cancel;
     }
   }

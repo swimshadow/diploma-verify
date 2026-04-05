@@ -32,8 +32,27 @@ class _OneTimeLinkScreenState extends State<OneTimeLinkScreen> {
 
   void _generate() {
     setState(() => _loading = true);
+
+    // Retrieve diploma data for the certificate generation request
+    final diplomaState = context.read<DiplomaBloc>().state;
+    Diploma? diploma;
+    if (diplomaState is DiplomaLoaded) {
+      diploma = diplomaState.allDiplomas
+          .where((d) => d.id == widget.diplomaId)
+          .firstOrNull;
+    }
+
     getIt<CertificateRepository>()
-        .generate(widget.diplomaId)
+        .generate(
+      widget.diplomaId,
+      diplomaData: {
+        'full_name': diploma?.title ?? '',
+        'degree': diploma?.title ?? '',
+        'specialization': diploma?.speciality ?? '',
+        'issue_date': diploma?.issueDate.toIso8601String().split('T').first ?? '',
+        'university_name': diploma?.university ?? '',
+      },
+    )
         .then((data) {
       if (!mounted) return;
       setState(() {

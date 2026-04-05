@@ -38,3 +38,10 @@ class NotificationLoaded extends NotificationState {
   @override
   List<Object?> get props => [notifications];
 }
+
+class NotificationFailure extends NotificationState {
+  final String message;
+  const NotificationFailure(this.message);
+  @override
+  List<Object?> get props => [message];
+}
