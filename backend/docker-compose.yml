@@ -210,6 +210,34 @@ services:
       start_period: 40s
     restart: unless-stopped
 
+  ml-extract-service:
+    build: ./ml-extract-service
+    ports:
+      - "127.0.0.1:13000:3000"
+    environment:
+      PORT: "3000"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
+  ml-classifier-service:
+    build: ./ml-classifier-service
+    ports:
+      - "127.0.0.1:13001:3001"
+    environment:
+      - PORT=3001
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:3001/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
   ai-integration-service:
     build: ./ai-integration-service
     labels:
@@ -221,6 +249,8 @@ services:
       DATABASE_URL: postgresql://hack:hack@postgres:5432/diplomadb
       FILE_SERVICE_URL: http://file-service:8005
       UNIVERSITY_SERVICE_URL: http://university-service:8002
+      ML_EXTRACT_URL: http://ml-extract-service:3000
+      ML_CLASSIFIER_URL: http://ml-classifier-service:3001
       HTTP_CLIENT_TIMEOUT: ${HTTP_CLIENT_TIMEOUT:-10}
       AI_FILE_FETCH_TIMEOUT: ${AI_FILE_FETCH_TIMEOUT:-120}
       PAYLOAD_ENCRYPTION_KEY: ${PAYLOAD_ENCRYPTION_KEY:-RGlwbG9tYVZlcmlmeUFFUzI1NlNlY3JldEtleTB4T0s=}
@@ -233,6 +263,10 @@ services:
       file-service:
         condition: service_started
       university-service:
+        condition: service_started
+      ml-extract-service:
+        condition: service_started
+      ml-classifier-service:
         condition: service_started
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8007/health')"]
@@ -414,6 +448,8 @@ services:
       - verify-service
       - file-service
       - certificate-service
+      - ml-extract-service
+      - ml-classifier-service
       - ai-integration-service
       - admin-service
       - notification-service

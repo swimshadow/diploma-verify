@@ -1,0 +1,19 @@
+{
+  "name": "ml-extract-service",
+  "version": "1.0.0",
+  "description": "ML Diploma Data Extraction Service",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "PORT=3000 node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "multer": "^1.4.5-lts.1",
+    "pdf-parse": "^1.1.1",
+    "tesseract.js": "^4.1.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
