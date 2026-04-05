@@ -9,6 +9,7 @@ import '../../bloc/diploma_bloc.dart';
 import '../../bloc/diploma_state.dart';
 import '../../data/models/diploma_model.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
+import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/anti_fraud_badge.dart';
 
 class DiplomaDetailScreen extends StatelessWidget {
@@ -52,7 +53,7 @@ class _DetailView extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 600),
+            constraints: BoxConstraints(maxWidth: Responsive.isMobile(context) ? double.infinity : 600),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

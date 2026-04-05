@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/logging/app_logger.dart';
+import '../../../../core/utils/responsive.dart';
 import '../../bloc/university_bloc.dart';
 import '../../bloc/university_event.dart';
 import '../../bloc/university_state.dart';
@@ -60,7 +61,62 @@ class _UniversityRegistryScreenState extends State<UniversityRegistryScreen> {
               // ── Filters ──
               Padding(
                 padding: const EdgeInsets.all(16),
-                child: Row(
+                child: Responsive.isMobile(context)
+                    ? Column(
+                        children: [
+                          TextField(
+                            decoration: InputDecoration(
+                              hintText: 'Поиск по ФИО, номеру...',
+                              prefixIcon: const Icon(Icons.search),
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                              isDense: true,
+                            ),
+                            onChanged: (v) {
+                              _log.debug(_tag, 'Поиск изменён: "$v"');
+                              setState(() => _searchQuery = v);
+                            },
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: DropdownButtonFormField<RegistryDiplomaStatus?>(
+                                  initialValue: _statusFilter,
+                                  decoration: InputDecoration(
+                                    isDense: true,
+                                    border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12)),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 10),
+                                  ),
+                                  hint: const Text('Статус'),
+                                  items: [
+                                    const DropdownMenuItem(
+                                        value: null, child: Text('Все')),
+                                    ...RegistryDiplomaStatus.values.map((s) =>
+                                        DropdownMenuItem(
+                                            value: s, child: Text(s.label))),
+                                  ],
+                                  onChanged: (v) {
+                                    _log.info(_tag, 'Фильтр статуса: $v');
+                                    setState(() => _statusFilter = v);
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              IconButton.filled(
+                                onPressed: () {
+                                  _log.info(_tag, 'BTN: Добавить диплом — нажата');
+                                  context.push('/university/diploma-upload');
+                                },
+                                icon: const Icon(Icons.add, size: 20),
+                              ),
+                            ],
+                          ),
+                        ],
+                      )
+                    : Row(
                   children: [
                     Expanded(
                       child: TextField(
@@ -121,11 +177,19 @@ class _UniversityRegistryScreenState extends State<UniversityRegistryScreen> {
               ),
               const SizedBox(height: 8),
 
-              // ── Table ──
+              // ── Table or Card list ──
               Expanded(
                 child: filtered.isEmpty
                     ? const Center(child: Text('Дипломы не найдены'))
-                    : SingleChildScrollView(
+                    : Responsive.isMobile(context)
+                        ? _MobileRegistryList(
+                            diplomas: filtered,
+                            onTap: (d) {
+                              _log.info(_tag, 'Открыть диплом ${d.id}');
+                              context.push('/university/diploma/${d.id}');
+                            },
+                          )
+                        : SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: SingleChildScrollView(
                           child: DataTable(
@@ -215,6 +279,91 @@ class _StatusBadge extends StatelessWidget {
                   color: color,
                   fontSize: 12,
                   fontWeight: FontWeight.w600)),
+        ],
+      ),
+    );
+  }
+}
+
+class _MobileRegistryList extends StatelessWidget {
+  final List<RegistryDiploma> diplomas;
+  final ValueChanged<RegistryDiploma> onTap;
+
+  const _MobileRegistryList({
+    required this.diplomas,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      itemCount: diplomas.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 8),
+      itemBuilder: (context, i) {
+        final d = diplomas[i];
+        return Card(
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: () => onTap(d),
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          d.holderFullName,
+                          style: theme.textTheme.titleSmall
+                              ?.copyWith(fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                      _StatusBadge(status: d.status),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  _InfoRow(label: 'Номер', value: '${d.diplomaSeries} ${d.diplomaNumber}'),
+                  _InfoRow(label: 'Факультет', value: d.faculty),
+                  _InfoRow(label: 'Уровень', value: d.educationLevel),
+                  _InfoRow(label: 'GPA', value: d.gpa.toStringAsFixed(2)),
+                  if (d.certificateId != null)
+                    _InfoRow(label: 'Сертификат', value: d.certificateId!),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  final String label;
+  final String value;
+  const _InfoRow({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(top: 2),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 90,
+            child: Text(label,
+                style: theme.textTheme.bodySmall
+                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+          ),
+          Expanded(
+            child: Text(value,
+                style: theme.textTheme.bodySmall
+                    ?.copyWith(fontWeight: FontWeight.w500)),
+          ),
         ],
       ),
     );

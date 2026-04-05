@@ -8,6 +8,7 @@ import '../../bloc/verify_event.dart';
 import '../../bloc/verify_state.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
 import '../../../../shared/widgets/app_snack_bar.dart';
+import '../../../../core/utils/responsive.dart';
 import 'qr_scanner_screen.dart';
 
 class VerifyDiplomaScreen extends StatefulWidget {
@@ -47,10 +48,13 @@ class _VerifyDiplomaScreenState extends State<VerifyDiplomaScreen> {
             final isLoading = state is VerifyLoading;
 
             return SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.symmetric(
+                horizontal: Responsive.horizontalPadding(context),
+                vertical: Responsive.isMobile(context) ? 16 : 20,
+              ),
               child: Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 600),
+                  constraints: BoxConstraints(maxWidth: Responsive.isMobile(context) ? double.infinity : 600),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

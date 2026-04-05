@@ -8,6 +8,7 @@ import '../../bloc/admin_state.dart';
 import '../../data/models/admin_models.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
 import '../../../../shared/widgets/error_state_widget.dart';
+import '../../../../core/utils/responsive.dart';
 
 class AdminModerationScreen extends StatelessWidget {
   const AdminModerationScreen({super.key});
@@ -39,10 +40,13 @@ class AdminModerationScreen extends StatelessWidget {
               .toList();
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.symmetric(
+              horizontal: Responsive.horizontalPadding(context),
+              vertical: Responsive.isMobile(context) ? 16 : 20,
+            ),
             child: Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 700),
+                constraints: BoxConstraints(maxWidth: Responsive.isMobile(context) ? double.infinity : 700),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

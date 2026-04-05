@@ -8,6 +8,7 @@ import '../../bloc/employer_state.dart';
 import '../../data/models/employee_model.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
 import '../../../../shared/widgets/error_state_widget.dart';
+import '../../../../core/utils/responsive.dart';
 
 class EmployeeListScreen extends StatelessWidget {
   const EmployeeListScreen({super.key});
@@ -41,12 +42,16 @@ class _EmployeeList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isMobile = Responsive.isMobile(context);
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.symmetric(
+        horizontal: Responsive.horizontalPadding(context),
+        vertical: isMobile ? 16 : 20,
+      ),
       child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 800),
+          constraints: BoxConstraints(maxWidth: isMobile ? double.infinity : 800),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -63,46 +68,70 @@ class _EmployeeList extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
-              // ── Table ──
-              Card(
-                clipBehavior: Clip.antiAlias,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: DataTable(
-                    headingRowColor: WidgetStateProperty.all(
-                        theme.colorScheme.surfaceContainerHighest
-                            .withValues(alpha: 0.5)),
-                    columns: const [
-                      DataColumn(label: Text('ФИО')),
-                      DataColumn(label: Text('Должность')),
-                      DataColumn(label: Text('Отдел')),
-                      DataColumn(label: Text('Статус диплома')),
-                      DataColumn(label: Text('')),
-                    ],
-                    rows: employees
-                        .map((e) => DataRow(
-                              cells: [
-                                DataCell(Text(e.fullName,
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.w500))),
-                                DataCell(Text(e.position)),
-                                DataCell(Text(e.department)),
-                                DataCell(_StatusBadge(
-                                    status: e.diplomaStatus)),
-                                DataCell(
-                                  IconButton(
-                                    icon: const Icon(Icons.arrow_forward_ios,
-                                        size: 16),
-                                    onPressed: () => context.push(
-                                        '/employer/employee/${e.id}'),
+              if (isMobile)
+                ...employees.map((e) => Card(
+                      clipBehavior: Clip.antiAlias,
+                      margin: const EdgeInsets.only(bottom: 10),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        leading: CircleAvatar(
+                          backgroundColor: _statusColor(e.diplomaStatus)
+                              .withValues(alpha: 0.12),
+                          child: Icon(
+                            _statusIcon(e.diplomaStatus),
+                            color: _statusColor(e.diplomaStatus),
+                            size: 20,
+                          ),
+                        ),
+                        title: Text(e.fullName,
+                            style: const TextStyle(fontWeight: FontWeight.w500)),
+                        subtitle: Text('${e.position} · ${e.department}'),
+                        trailing: _StatusBadge(status: e.diplomaStatus),
+                        onTap: () =>
+                            context.push('/employer/employee/${e.id}'),
+                      ),
+                    ))
+              else
+                Card(
+                  clipBehavior: Clip.antiAlias,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: DataTable(
+                      headingRowColor: WidgetStateProperty.all(
+                          theme.colorScheme.surfaceContainerHighest
+                              .withValues(alpha: 0.5)),
+                      columns: const [
+                        DataColumn(label: Text('ФИО')),
+                        DataColumn(label: Text('Должность')),
+                        DataColumn(label: Text('Отдел')),
+                        DataColumn(label: Text('Статус диплома')),
+                        DataColumn(label: Text('')),
+                      ],
+                      rows: employees
+                          .map((e) => DataRow(
+                                cells: [
+                                  DataCell(Text(e.fullName,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.w500))),
+                                  DataCell(Text(e.position)),
+                                  DataCell(Text(e.department)),
+                                  DataCell(_StatusBadge(
+                                      status: e.diplomaStatus)),
+                                  DataCell(
+                                    IconButton(
+                                      icon: const Icon(Icons.arrow_forward_ios,
+                                          size: 16),
+                                      onPressed: () => context.push(
+                                          '/employer/employee/${e.id}'),
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ))
-                        .toList(),
+                                ],
+                              ))
+                          .toList(),
+                    ),
                   ),
                 ),
-              ),
 
               const SizedBox(height: 40),
             ],
@@ -110,6 +139,32 @@ class _EmployeeList extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  static Color _statusColor(VerificationStatus s) {
+    switch (s) {
+      case VerificationStatus.verified:
+        return Colors.green;
+      case VerificationStatus.pending:
+        return Colors.orange;
+      case VerificationStatus.suspicious:
+        return Colors.red;
+      case VerificationStatus.notChecked:
+        return Colors.grey;
+    }
+  }
+
+  static IconData _statusIcon(VerificationStatus s) {
+    switch (s) {
+      case VerificationStatus.verified:
+        return Icons.verified;
+      case VerificationStatus.pending:
+        return Icons.hourglass_top;
+      case VerificationStatus.suspicious:
+        return Icons.warning;
+      case VerificationStatus.notChecked:
+        return Icons.help_outline;
+    }
   }
 }
 

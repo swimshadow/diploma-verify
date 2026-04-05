@@ -8,6 +8,7 @@ import '../../bloc/admin_state.dart';
 import '../../data/models/admin_models.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
 import '../../../../shared/widgets/error_state_widget.dart';
+import '../../../../core/utils/responsive.dart';
 
 class AdminUsersScreen extends StatefulWidget {
   const AdminUsersScreen({super.key});
@@ -52,7 +53,42 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
             children: [
               Padding(
                 padding: const EdgeInsets.all(16),
-                child: Row(
+                child: Responsive.isMobile(context)
+                    ? Column(
+                        children: [
+                          TextField(
+                            decoration: InputDecoration(
+                              hintText: 'Поиск по имени или email...',
+                              prefixIcon: const Icon(Icons.search),
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                              isDense: true,
+                            ),
+                            onChanged: (v) => setState(() => _search = v),
+                          ),
+                          const SizedBox(height: 8),
+                          DropdownButtonFormField<String?>(
+                            initialValue: _roleFilter,
+                            decoration: InputDecoration(
+                              isDense: true,
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 10),
+                            ),
+                            hint: const Text('Роль'),
+                            items: const [
+                              DropdownMenuItem(value: null, child: Text('Все')),
+                              DropdownMenuItem(value: 'student', child: Text('Студент')),
+                              DropdownMenuItem(value: 'employer', child: Text('Работодатель')),
+                              DropdownMenuItem(value: 'university', child: Text('Вуз')),
+                              DropdownMenuItem(value: 'admin', child: Text('Админ')),
+                            ],
+                            onChanged: (v) => setState(() => _roleFilter = v),
+                          ),
+                        ],
+                      )
+                    : Row(
                   children: [
                     Expanded(
                       child: TextField(
@@ -89,7 +125,16 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
               ),
               const SizedBox(height: 8),
               Expanded(
-                child: SingleChildScrollView(
+                child: Responsive.isMobile(context)
+                    ? _MobileUserList(
+                        users: filtered,
+                        dateFmt: dateFmt,
+                        onBlock: (u) => _confirmBlock(context, u),
+                        onUnblock: (u) =>
+                            context.read<AdminBloc>().add(AdminUnblockUser(u.id)),
+                        onRoleChange: (u) => _showRoleDialog(context, u),
+                      )
+                    : SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: SingleChildScrollView(
                     child: DataTable(
@@ -272,6 +317,107 @@ class _BlockedBadge extends StatelessWidget {
                   fontWeight: FontWeight.w600)),
         ],
       ),
+    );
+  }
+}
+
+class _MobileUserList extends StatelessWidget {
+  final List<PlatformUser> users;
+  final DateFormat dateFmt;
+  final ValueChanged<PlatformUser> onBlock;
+  final ValueChanged<PlatformUser> onUnblock;
+  final ValueChanged<PlatformUser> onRoleChange;
+
+  const _MobileUserList({
+    required this.users,
+    required this.dateFmt,
+    required this.onBlock,
+    required this.onUnblock,
+    required this.onRoleChange,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      itemCount: users.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 8),
+      itemBuilder: (context, i) {
+        final u = users[i];
+        return Card(
+          clipBehavior: Clip.antiAlias,
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        u.fullName,
+                        style: theme.textTheme.titleSmall
+                            ?.copyWith(fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                    _RoleBadge(role: u.role),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(u.email,
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    if (u.isBlocked)
+                      const _BlockedBadge()
+                    else
+                      Text('Активен',
+                          style: theme.textTheme.bodySmall
+                              ?.copyWith(color: Colors.green, fontWeight: FontWeight.w500)),
+                    const Spacer(),
+                    Text(
+                      u.lastLoginAt != null
+                          ? dateFmt.format(u.lastLoginAt!)
+                          : 'Не входил',
+                      style: theme.textTheme.bodySmall
+                          ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                    ),
+                  ],
+                ),
+                const Divider(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    if (u.isBlocked)
+                      TextButton.icon(
+                        onPressed: () => onUnblock(u),
+                        icon: const Icon(Icons.lock_open, size: 16, color: Colors.green),
+                        label: const Text('Разблокировать',
+                            style: TextStyle(fontSize: 12)),
+                      )
+                    else
+                      TextButton.icon(
+                        onPressed: () => onBlock(u),
+                        icon: const Icon(Icons.block, size: 16, color: Colors.red),
+                        label: const Text('Заблокировать',
+                            style: TextStyle(fontSize: 12, color: Colors.red)),
+                      ),
+                    const SizedBox(width: 8),
+                    TextButton.icon(
+                      onPressed: () => onRoleChange(u),
+                      icon: const Icon(Icons.swap_horiz, size: 16),
+                      label: const Text('Роль', style: TextStyle(fontSize: 12)),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

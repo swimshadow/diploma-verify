@@ -142,3 +142,23 @@
 2026-04-05 06:53:56.418 | INFO     | routers.auth:login:259 - [LOGIN] Попытка входа: email=qwerty@qwerty.com
 2026-04-05 06:53:56.625 | INFO     | routers.auth:login:305 - [LOGIN] Вход успешен: account_id=dfd66788-ceb0-4a35-ba17-7fb686007ecf, role=employer
 2026-04-05 07:06:07.551 | INFO     | main:create_tables:100 - Auth service tables ready
+2026-04-05 07:24:04.765 | INFO     | routers.auth:login:259 - [LOGIN] Попытка входа: email=dgtu@dgtu.com
+2026-04-05 07:24:04.776 | WARNING  | routers.auth:login:273 - [LOGIN] Неверные учётные данные: dgtu@dgtu.com
+2026-04-05 07:25:14.889 | INFO     | routers.auth:register:159 - [REGISTER] Начало регистрации: email=dgtu@dgtu.com, role=university
+2026-04-05 07:25:15.089 | INFO     | routers.auth:register:241 - [REGISTER] Регистрация успешна: account_id=82f5d2af-d330-4543-b8ad-17e018bcc9ba, role=university
+2026-04-05 07:25:15.188 | INFO     | routers.auth:login:259 - [LOGIN] Попытка входа: email=dgtu@dgtu.com
+2026-04-05 07:25:15.381 | INFO     | routers.auth:login:305 - [LOGIN] Вход успешен: account_id=82f5d2af-d330-4543-b8ad-17e018bcc9ba, role=university
+2026-04-05 07:29:46.941 | INFO     | routers.auth:register:159 - [REGISTER] Начало регистрации: email=st@st.ru, role=employer
+2026-04-05 07:29:47.129 | INFO     | routers.auth:register:241 - [REGISTER] Регистрация успешна: account_id=ca946bd4-2121-4718-98b7-7ca1830fc04c, role=employer
+2026-04-05 07:29:47.206 | INFO     | routers.auth:login:259 - [LOGIN] Попытка входа: email=st@st.ru
+2026-04-05 07:29:47.393 | INFO     | routers.auth:login:305 - [LOGIN] Вход успешен: account_id=ca946bd4-2121-4718-98b7-7ca1830fc04c, role=employer
+2026-04-05 07:33:23.877 | INFO     | routers.auth:login:259 - [LOGIN] Попытка входа: email=admin@exaple.com
+2026-04-05 07:33:23.880 | WARNING  | routers.auth:login:273 - [LOGIN] Неверные учётные данные: admin@exaple.com
+2026-04-05 07:35:04.333 | INFO     | routers.auth:login:259 - [LOGIN] Попытка входа: email=admin@example.com
+2026-04-05 07:35:04.522 | INFO     | routers.auth:login:305 - [LOGIN] Вход успешен: account_id=c4dddccb-c493-4a31-8729-214917456e2f, role=admin
+2026-04-05 07:36:49.052 | INFO     | routers.auth:login:259 - [LOGIN] Попытка входа: email=dgtu@dgtu.com
+2026-04-05 07:36:49.242 | INFO     | routers.auth:login:305 - [LOGIN] Вход успешен: account_id=82f5d2af-d330-4543-b8ad-17e018bcc9ba, role=university
+2026-04-05 07:38:40.994 | INFO     | routers.auth:register:159 - [REGISTER] Начало регистрации: email=st@st.com, role=employer
+2026-04-05 07:38:41.214 | INFO     | routers.auth:register:241 - [REGISTER] Регистрация успешна: account_id=b7dd088d-a199-4217-af50-e12d1ec9bf90, role=employer
+2026-04-05 07:38:41.267 | INFO     | routers.auth:login:259 - [LOGIN] Попытка входа: email=st@st.com
+2026-04-05 07:38:41.453 | INFO     | routers.auth:login:305 - [LOGIN] Вход успешен: account_id=b7dd088d-a199-4217-af50-e12d1ec9bf90, role=employer

@@ -8,6 +8,7 @@ import '../../bloc/admin_state.dart';
 import '../../data/models/admin_models.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
 import '../../../../shared/widgets/error_state_widget.dart';
+import '../../../../core/utils/responsive.dart';
 
 class AdminDiplomasScreen extends StatefulWidget {
   const AdminDiplomasScreen({super.key});
@@ -53,7 +54,43 @@ class _AdminDiplomasScreenState extends State<AdminDiplomasScreen> {
             children: [
               Padding(
                 padding: const EdgeInsets.all(16),
-                child: Row(
+                child: Responsive.isMobile(context)
+                    ? Column(
+                        children: [
+                          TextField(
+                            decoration: InputDecoration(
+                              hintText: 'Поиск по ФИО, номеру, вузу...',
+                              prefixIcon: const Icon(Icons.search),
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                              isDense: true,
+                            ),
+                            onChanged: (v) => setState(() => _search = v),
+                          ),
+                          const SizedBox(height: 8),
+                          DropdownButtonFormField<AdminDiplomaStatus?>(
+                            initialValue: _statusFilter,
+                            decoration: InputDecoration(
+                              isDense: true,
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 10),
+                            ),
+                            hint: const Text('Статус'),
+                            items: [
+                              const DropdownMenuItem(
+                                  value: null, child: Text('Все')),
+                              ...AdminDiplomaStatus.values.map((s) =>
+                                  DropdownMenuItem(
+                                      value: s, child: Text(s.label))),
+                            ],
+                            onChanged: (v) =>
+                                setState(() => _statusFilter = v),
+                          ),
+                        ],
+                      )
+                    : Row(
                   children: [
                     Expanded(
                       child: TextField(
@@ -85,7 +122,48 @@ class _AdminDiplomasScreenState extends State<AdminDiplomasScreen> {
               Expanded(
                 child: filtered.isEmpty
                     ? const Center(child: Text('Дипломы не найдены'))
-                    : SingleChildScrollView(
+                    : Responsive.isMobile(context)
+                        ? ListView.separated(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
+                            itemCount: filtered.length,
+                            separatorBuilder: (_, _) =>
+                                const SizedBox(height: 8),
+                            itemBuilder: (context, i) {
+                              final d = filtered[i];
+                              return Card(
+                                clipBehavior: Clip.antiAlias,
+                                child: ListTile(
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 8),
+                                  leading: CircleAvatar(
+                                    backgroundColor: _trustColor(d.trustScore)
+                                        .withValues(alpha: 0.12),
+                                    child: Text(
+                                      '${(d.trustScore * 100).toInt()}%',
+                                      style: TextStyle(
+                                        color: _trustColor(d.trustScore),
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                  title: Text(d.holderName,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.w500)),
+                                  subtitle: Text(
+                                    '${d.diplomaNumber} · ${d.universityName}',
+                                    style: theme.textTheme.bodySmall,
+                                  ),
+                                  trailing: _DiplomaStatusBadge(
+                                      status: d.status),
+                                  onTap: () => context
+                                      .push('/admin/diploma/${d.id}'),
+                                ),
+                              );
+                            },
+                          )
+                        : SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: SingleChildScrollView(
                           child: DataTable(
@@ -131,6 +209,12 @@ class _AdminDiplomasScreenState extends State<AdminDiplomasScreen> {
         },
       ),
     );
+  }
+
+  static Color _trustColor(double score) {
+    if (score >= 0.8) return Colors.green;
+    if (score >= 0.5) return Colors.orange;
+    return Colors.red;
   }
 }
 

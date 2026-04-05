@@ -8,6 +8,7 @@ import '../../../../core/logging/app_logger.dart';
 import '../../bloc/diploma_bloc.dart';
 import '../../bloc/diploma_event.dart';
 import '../../bloc/diploma_state.dart';
+import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
 import '../../../../shared/widgets/app_snack_bar.dart';
 
@@ -103,10 +104,13 @@ class _DiplomaUploadScreenState extends State<DiplomaUploadScreen> {
           }
         },
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.symmetric(
+            horizontal: Responsive.horizontalPadding(context),
+            vertical: Responsive.isMobile(context) ? 16 : 24,
+          ),
           child: Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 500),
+              constraints: BoxConstraints(maxWidth: Responsive.isMobile(context) ? double.infinity : 500),
               child: Column(
                 children: [
                   const SizedBox(height: 20),

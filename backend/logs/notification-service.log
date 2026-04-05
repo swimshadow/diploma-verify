@@ -1622,3 +1622,6 @@ LINE 1: ...tifications (id, account_id, type, subject, body, is_read, r...
 2026-04-05 04:15:23.422 | INFO     | routers.internal:send_notification:105 - Notification sent: type=diploma_uploaded account_id=b938abfe-1b35-4a2f-8143-1bbc29683454 subject=Диплом загружен
 2026-04-05 05:56:42.895 | INFO     | routers.internal:send_notification:105 - Notification sent: type=welcome account_id=46d2e4a2-2932-4e90-ba64-94321a4ace41 subject=Добро пожаловать
 2026-04-05 06:53:56.350 | INFO     | routers.internal:send_notification:105 - Notification sent: type=welcome account_id=dfd66788-ceb0-4a35-ba17-7fb686007ecf subject=Добро пожаловать
+2026-04-05 07:25:15.124 | INFO     | routers.internal:send_notification:105 - Notification sent: type=welcome account_id=82f5d2af-d330-4543-b8ad-17e018bcc9ba subject=Добро пожаловать
+2026-04-05 07:29:47.141 | INFO     | routers.internal:send_notification:105 - Notification sent: type=welcome account_id=ca946bd4-2121-4718-98b7-7ca1830fc04c subject=Добро пожаловать
+2026-04-05 07:38:41.234 | INFO     | routers.internal:send_notification:105 - Notification sent: type=welcome account_id=b7dd088d-a199-4217-af50-e12d1ec9bf90 subject=Добро пожаловать

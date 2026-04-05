@@ -8,6 +8,7 @@ import '../../bloc/admin_state.dart';
 import '../../data/models/admin_models.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
 import '../../../../shared/widgets/error_state_widget.dart';
+import '../../../../core/utils/responsive.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
   const AdminDashboardScreen({super.key});
@@ -45,11 +46,14 @@ class _Body extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    final isMobile = Responsive.isMobile(context);
+    final hPad = Responsive.horizontalPadding(context);
+
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.symmetric(horizontal: hPad, vertical: isMobile ? 16 : 20),
       child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 800),
+          constraints: BoxConstraints(maxWidth: isMobile ? double.infinity : 800),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

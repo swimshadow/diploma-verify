@@ -5,6 +5,7 @@ import '../../bloc/admin_bloc.dart';
 import '../../bloc/admin_state.dart';
 import '../../data/models/admin_models.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
+import '../../../../core/utils/responsive.dart';
 
 class AdminStatisticsScreen extends StatelessWidget {
   const AdminStatisticsScreen({super.key});
@@ -49,10 +50,13 @@ class AdminStatisticsScreen extends StatelessWidget {
               .length;
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.symmetric(
+              horizontal: Responsive.horizontalPadding(context),
+              vertical: Responsive.isMobile(context) ? 16 : 20,
+            ),
             child: Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 800),
+                constraints: BoxConstraints(maxWidth: Responsive.isMobile(context) ? double.infinity : 800),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

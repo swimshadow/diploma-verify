@@ -6,6 +6,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/di/service_locator.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
+import '../../../../core/utils/responsive.dart';
 
 /// Compares a paper diploma image (left) with OCR-recognized digital fields (right).
 class DiplomaComparisonScreen extends StatefulWidget {
@@ -96,7 +97,7 @@ class _DiplomaComparisonScreenState extends State<DiplomaComparisonScreen> {
         padding: const EdgeInsets.all(20),
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1000),
+            constraints: BoxConstraints(maxWidth: Responsive.isMobile(context) ? double.infinity : 1000),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

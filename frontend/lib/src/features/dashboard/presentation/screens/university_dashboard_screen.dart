@@ -8,6 +8,7 @@ import '../../../university/bloc/university_state.dart';
 import '../../../university/data/models/import_model.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
 import '../../../../shared/widgets/error_state_widget.dart';
+import '../../../../core/utils/responsive.dart';
 
 class UniversityDashboardScreen extends StatelessWidget {
   const UniversityDashboardScreen({super.key});
@@ -45,11 +46,14 @@ class _DashboardBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    final isMobile = Responsive.isMobile(context);
+    final hPad = Responsive.horizontalPadding(context);
+
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.symmetric(horizontal: hPad, vertical: isMobile ? 16 : 20),
       child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 700),
+          constraints: BoxConstraints(maxWidth: Responsive.contentMaxWidth(context)),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

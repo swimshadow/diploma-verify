@@ -6,6 +6,7 @@ import '../../bloc/admin_event.dart';
 import '../../bloc/admin_state.dart';
 import '../../data/models/admin_models.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
+import '../../../../core/utils/responsive.dart';
 
 class AdminDiplomaReviewScreen extends StatelessWidget {
   final String diplomaId;
@@ -35,7 +36,7 @@ class AdminDiplomaReviewScreen extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             child: Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 800),
+                constraints: BoxConstraints(maxWidth: Responsive.isMobile(context) ? double.infinity : 800),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

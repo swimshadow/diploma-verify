@@ -5,6 +5,7 @@ import '../../bloc/admin_bloc.dart';
 import '../../bloc/admin_state.dart';
 import '../../data/models/admin_models.dart';
 import '../../../../shared/widgets/dashboard_scaffold.dart';
+import '../../../../core/utils/responsive.dart';
 
 class AdminMonitoringScreen extends StatelessWidget {
   const AdminMonitoringScreen({super.key});
@@ -22,10 +23,13 @@ class AdminMonitoringScreen extends StatelessWidget {
           }
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.symmetric(
+              horizontal: Responsive.horizontalPadding(context),
+              vertical: Responsive.isMobile(context) ? 16 : 20,
+            ),
             child: Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 700),
+                constraints: BoxConstraints(maxWidth: Responsive.isMobile(context) ? double.infinity : 700),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
